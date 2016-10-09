@@ -46,7 +46,7 @@ public class TestBroker {
 	}
 	@Test
 	public void expectNewClientAdded() throws IOException{
-		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
+		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen";
 		String testId = "01";
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
 		// get status does not require authentication
@@ -66,7 +66,8 @@ public class TestBroker {
 		int nodeId = node.id;
 		// retrieve info only for the single node
 		node = a.getNode(nodeId);
-		Assert.assertEquals(testCn, node.clientDN);		
+		Assert.assertEquals(testCn, node.clientDN);
+		Assert.assertEquals("Test Nachname", node.getCommonName());
 	}
 	@Test
 	public void testAddDeleteQuery() throws IOException{
