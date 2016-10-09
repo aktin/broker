@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<name>AKTIN : Broker : Client Websocket</name>
+
+	<groupId>org.aktin</groupId>
+	<artifactId>broker-client-websocket</artifactId>
+	<version>0.1-SNAPSHOT</version>
+
+	<description>
+		Broker websocket client library. This library
+		can be used to keep a live connection to the broker
+		and retrieve notifications for new queries.
+	</description>
+	
+	
+	<parent>
+		<groupId>org.aktin</groupId>
+		<artifactId>broker</artifactId>
+		<version>0.1-SNAPSHOT</version>
+	</parent>
+	
+  	<build>
+		<plugins>
+			<!-- backward compatibility with Java 7  -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>org.aktin.broker.client.Application</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.eclipse.jetty.websocket/websocket-client -->
+		<dependency>
+		    <groupId>org.eclipse.jetty.websocket</groupId>
+		    <artifactId>websocket-client</artifactId>
+		    <version>9.3.11.v20160721</version>
+		</dependency>
+	</dependencies>
+</project>

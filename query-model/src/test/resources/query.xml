@@ -1,0 +1,45 @@
+<query xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:dwh="http://aktin.org/ns/dwh" xmlns:psm="http://www.i2b2.org/xsd/cell/crc/psm/1.1/">
+	<id>123</id>
+	<description>Lala</description>
+	<principal>
+		<name>Prince Ipal</name>
+		<organisation>AKTIN</organisation>
+		<email>it-support@aktin.org</email>
+		<phone>+49 (441) 798 - 2772</phone>
+		<!-- optional cryptographic signature at a later release <signature></signature> -->
+	</principal>
+	<schedule xsi:type="singleExecution">
+		<duration>-P1M</duration>
+		<reference>2016-04-01T00:00:00Z</reference>
+	</schedule>
+	<!-- export descriptor -->
+	<export xmlns="http://sekmi.de/ns/histream/export-v1" xmlns:eav="http://sekmi.de/histream/ns/eav-data">
+		<concepts>
+			<group class="diag">
+				<concept wildcard-notation="ICD10:*" />
+			</group>
+			<concept notation="T:full" />
+			<concept wildcard-notation="CEDIS:*" />
+		</concepts>
+		<patient-table>
+			<column header="pid" xpath="@id" />
+			<column header="dob" xpath="eav:birthdate" />
+			<column header="sex" xpath="eav:gender" />
+			<column header="modified" xpath="eav:source/@timestamp" />
+		</patient-table>
+		<visit-table>
+			<column header="vid" xpath="@id" />
+			<column header="start" xpath="eav:start" />
+			<column header="f_start" xpath="eav:fact[@concept='T:full']/@start" />
+			<column header="f_end" xpath="eav:fact[@concept='T:full']/@end" />
+			<column header="f_loc" xpath="eav:fact[@concept='T:full']/@location" />
+			<column header="f_val" xpath="eav:fact[@concept='T:full']/eav:value" />
+		</visit-table>
+	</export>
+	<!-- also possible: xsi:type="psm:query_definition" -->
+	<!-- also possible: xsi:type="dwh:eclectic_query", see http://methods.schattauer.de/en/contents/archivestandard/issue/2168/manuscript/21349/show.html -->
+	<dwh:sql xsi:type="dwh:sqlt">
+		SELECT a, b;
+	</dwh:sql>
+</query>

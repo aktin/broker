@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- 
+
+((92:2 like C18%) or (29:2 like C20%)) or ((29:2 like C61%) and (7:2 eq 8140/3))
+ -->
+<ns4:View xmlns:ns2="http://schema.samply.de/ccp/Value"
+	xmlns:ns3="http://schema.samply.de/ccp/Attribute" xmlns:ns4="http://schema.samply.de/ccp/Query"
+	xmlns:ns5="http://schema.samply.de/ccp/MdrKey">
+	<ns4:Query>
+		<ns4:Where>
+			<ns4:And>
+				<ns4:And>
+					<ns4:Or>
+						<ns4:Or>
+							<ns4:Like>
+								<ns3:Attribute>
+									<ns5:MdrKey>urn:dktk:dataelement:29:2</ns5:MdrKey>
+									<ns2:Value>C18%</ns2:Value>
+								</ns3:Attribute>
+							</ns4:Like>
+							<ns4:Like>
+								<ns3:Attribute>
+									<ns5:MdrKey>urn:dktk:dataelement:29:2</ns5:MdrKey>
+									<ns2:Value>C20%</ns2:Value>
+								</ns3:Attribute>
+							</ns4:Like>
+						</ns4:Or>
+						<ns4:And>
+							<ns4:Like>
+								<ns3:Attribute>
+									<ns5:MdrKey>urn:dktk:dataelement:29:2</ns5:MdrKey>
+									<ns2:Value>C61%</ns2:Value>
+								</ns3:Attribute>
+							</ns4:Like>
+							<ns4:Eq>
+								<ns3:Attribute>
+									<ns5:MdrKey>urn:dktk:dataelement:7:2</ns5:MdrKey>
+									<ns2:Value>8140/3</ns2:Value>
+								</ns3:Attribute>
+							</ns4:Eq>
+						</ns4:And>
+					</ns4:Or>
+				</ns4:And>
+			</ns4:And>
+		</ns4:Where>
+	</ns4:Query>
+	<ns4:ViewFields>
+		<ns5:MdrKey>urn:dktk:dataelement:54:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:26:4</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:1:3</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:24:3</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:25:4</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:46:3</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:43:3</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:45:3</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:74:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:72:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:73:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:2:3</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:18:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:17:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:16:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:10:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:87:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:15:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:86:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:14:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:13:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:28:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:21:3</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:29:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:32:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:20:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:9:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:3:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:8:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:5:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:19:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:4:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:22:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:7:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:6:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:83:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:89:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:39:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:38:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:69:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:23:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:67:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:40:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:36:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:33:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:34:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:49:4</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:50:2</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:76:1</ns5:MdrKey>
+		<ns5:MdrKey>urn:dktk:dataelement:75:1</ns5:MdrKey>
+	</ns4:ViewFields>
+</ns4:View>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:queryResultStatistic
+	xmlns:ns2="http://de.kairos.centraxx/ccp/QueryResultStatistic">
+	<requestId>cf45c691-3109-4572-a6c2-6deebfe51696</requestId>
+	<numberOfPages>11</numberOfPages>
+	<totalSize>518</totalSize>
+</ns2:queryResultStatistic>
+

@@ -1,0 +1,15 @@
+<broker-status>
+	<timestamp></timestamp>
+	<uptime></uptime>
+	<!-- latest software for nodes -->
+	<node-software>
+		<module id="dwh">
+			<version></version>
+			<url></url>
+		</module>
+		<module id="aktin.art-decor.runtime">
+			<version></version>
+			<url></url>
+		</module>
+	</node-software>
+</broker-status>

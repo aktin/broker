@@ -1,0 +1,17 @@
+<node-status xmlns="http://aktin.org/ns/exchange">
+	<!-- when the status was collected -->
+	<timestamp>2016-07-08T00:00:00Z</timestamp>
+	<!-- duration the (application)server is running -->
+	<uptime>123300</uptime>
+	<!-- timestamp when the latest data/CDA was imported -->
+	<latest-import></latest-import>
+	<!-- version number of the running EAR, all other versions 
+	can be deduced from the release POM -->
+	<!-- get this info via new InitialContext().lookup("java:app/AppName") -->
+	<module id="dwh">
+		<version>dwh-ear-0.2-SNAPSHOT</version>
+	</module>
+	<module id="aktin.art-decor.runtime">
+		<version></version>
+	</module>
+</node-status>

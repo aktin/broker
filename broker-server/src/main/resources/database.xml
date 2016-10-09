@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd
+	http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+	<changeSet id="1" author="rwm">
+		<comment>
+		Create search-broker tables
+		</comment>
+		
+		<createTable tableName="requests">
+			<column name="id" type="INTEGER" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="created" type="TIMESTAMP">
+				<constraints nullable="false"/>
+			</column>
+			<column name="published" type="TIMESTAMP">
+				<constraints nullable="true"/>
+			</column>
+			<column name="closed" type="TIMESTAMP">
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+		<createTable tableName="request_definitions">
+			<column name="request_id" type="INTEGER" remarks="Foreign key to requests">
+				<constraints nullable="false"/>
+			</column>
+			<column name="media_type" type="VARCHAR(64)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="query_def" type="CLOB">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+		<!-- <addPrimaryKey tableName="request_definitions" columnNames="request_id, media_type"/> -->
+		<createIndex indexName="request_definition_pri" tableName="request_definitions" unique="true">
+			<column name="request_id"/>
+			<column name="media_type"/>
+   		</createIndex>		
+		<createIndex tableName="request_definitions" unique="false"
+		             indexName="request_definition_request_id">
+		    <column name="request_id"/>
+		</createIndex>
+		
+		<createTable tableName="nodes">
+			<column name="id" autoIncrement="true" type="INTEGER">
+				<constraints primaryKey="true" nullable="false"/>
+			</column>
+			<column name="client_key" type="VARCHAR(128)">
+				<constraints nullable="false" unique="true"/>
+			</column>
+			<column name="subject_dn" type="text">
+				<constraints nullable="true"/>
+			</column>
+			<column name="last_contact" type="TIMESTAMP">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+
+		<createTable tableName="request_node_status">
+			<column name="request_id" type="INTEGER" remarks="Foreign key to requests">
+				<constraints nullable="false"/>
+			</column>
+			<column name="node_id" type="INTEGER" remarks="Foreign key to nodes">
+				<constraints nullable="false"/>
+			</column>
+			<column name="retrieved" type="TIMESTAMP" remarks="Timestamp when the client first retrieved a request definition. May be null, if the client deletes a request without retrieving it (e.g. after list))">
+				<constraints nullable="true"/>
+			</column>
+			<column name="deleted" type="TIMESTAMP" remarks="Will be set, if the client requests the query to be deleted">
+				<constraints nullable="true"/>
+			</column>
+			<column name="accepted" type="TIMESTAMP" remarks="Timestamp when the client reported the request was accepted for execution. This is completely optional and may be omitted if the query is immediately executed">
+				<constraints nullable="true"/>
+			</column>
+			<column name="processing" type="TIMESTAMP" remarks="Timestamp when the client reported that it started the execution">
+				<constraints nullable="true"/>
+			</column>
+			<column name="completed" type="TIMESTAMP" remarks="Timestamp when the client reported that the request was completed successfully">
+				<constraints nullable="true"/>
+			</column>
+			<column name="rejected" type="TIMESTAMP" remarks="Timestamp when the client reported the request was rejected">
+				<constraints nullable="true"/>
+			</column>
+			<column name="failed" type="TIMESTAMP" remarks="Timestamp when the client reported that the request failed">
+				<constraints nullable="true"/>
+			</column>
+			<column name="message_type" type="VARCHAR(64)" remarks="Media type of the status message">
+				<constraints nullable="true"/>
+			</column>
+			<column name="message" type="TEXT" remarks="Status message contents">
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+<!-- 		<addPrimaryKey tableName="request_node_status" columnNames="request_id, node_id"/>
+ -->
+		<createIndex tableName="request_node_status" unique="true" indexName="request_node_status_pri" >
+			<column name="request_id"/>
+			<column name="node_id"/>
+   		</createIndex>		
+
+		<createTable tableName="request_node_results">
+			<column name="request_id" type="INTEGER">
+				<constraints nullable="false"/>
+			</column>
+			<column name="node_id" type="INTEGER">
+				<constraints nullable="false"/>
+			</column>
+			<column name="media_type" type="VARCHAR(64)">
+				<!-- currently only one result per query allowed. -->
+				<!-- TODO allow multiple different media_types?  -->
+				<constraints nullable="false"/>
+			</column>
+			<column name="first_received" type="TIMESTAMP">
+				<constraints nullable="false"/>
+			</column>
+			<column name="last_modified" type="TIMESTAMP">
+				<constraints nullable="false"/>
+			</column>
+			<column name="data_file" type="VARCHAR(64)">
+				<!-- flat JSON map containing report options -->
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+
+<!-- 		<addPrimaryKey tableName="request_node_results" columnNames="request_id, node_id"/>
+ -->
+		<createIndex tableName="request_node_results" unique="true" indexName="request_node_results_pri" >
+			<column name="request_id"/>
+			<column name="node_id"/>
+   		</createIndex>		
+
+	</changeSet>
+
+</databaseChangeLog>
