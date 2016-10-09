@@ -38,4 +38,11 @@ Use the REST API from the command line
 curl --cert keystore.p12:xxx123 --cert-type P12 --insecure https://blue.at.struktu.ro/idm/lala.test?asdf
 ```
 
+View database contents
+----------------------
+The HSQL database can be viewed with the command
+```
+java -cp ~/.m2/repository/org/hsqldb/hsqldb/2.3.4/hsqldb-2.3.4.jar org.hsqldb.util.DatabaseManager
+
+```
  

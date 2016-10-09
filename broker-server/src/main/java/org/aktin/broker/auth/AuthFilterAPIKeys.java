@@ -55,11 +55,17 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter {
         	return;
 		}
 
-		// TODO check API key against whitelist
+		// check API key against whitelist
+		String clientDn = getClientDN(key);
+		if( clientDn == null ){
+			// access denied
+			ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+			log.info("Access denied for API key: "+key);
+		}
 
 		Principal principal;
 		try {
-			principal = authCache.getPrincipal(key, getClientDN(key));
+			principal = authCache.getPrincipal(key, clientDn);
 			ctx.setSecurityContext(principal);
 			log.info("Principal found: "+principal.getName());
 		} catch (SQLException e) {
