@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="request-node-status")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RequestStatusInfo {
-	public String node;
+	public int node;
 	public Instant retrieved;
 	public Instant deleted;
 	public Instant accepted;
@@ -30,7 +30,7 @@ public class RequestStatusInfo {
 
 	public RequestStatusInfo(){
 	}
-	public RequestStatusInfo(String node){
+	public RequestStatusInfo(int node){
 		this.node = node;
 	}
 	public RequestStatus getStatus(){

@@ -160,7 +160,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 	}
 	// TODO ResultInfo getResultInfo(String requestId, String nodeId)
 	// TODO remove Function<...> for Java 7 compatibility
-	public <T> T getResult(String requestId, String nodeId, String acceptMediaType, Function<DataSource,T> unmarshaller) throws IOException{
+	public <T> T getResult(String requestId, int nodeId, String acceptMediaType, Function<DataSource,T> unmarshaller) throws IOException{
 		HttpURLConnection c = openConnection("GET", resolveAggregatorURI("request/"+requestId+"/result/"+nodeId));
 		if( acceptMediaType != null ){
 			c.setRequestProperty("Accept", acceptMediaType);
@@ -175,7 +175,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 	}
 
-	public String getResultString(String requestId, String nodeId, String acceptMediaType) throws IOException{
+	public String getResultString(String requestId, int nodeId, String acceptMediaType) throws IOException{
 		// TODO can we use Function in Java7?
 		return getResult(requestId, nodeId, acceptMediaType, new Function<DataSource, String>() {
 

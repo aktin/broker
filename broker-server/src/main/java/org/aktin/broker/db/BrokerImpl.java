@@ -395,7 +395,7 @@ public class BrokerImpl implements BrokerBackend {
 			Statement st = dbc.createStatement();
 			ResultSet rs = st.executeQuery("SELECT node_id, retrieved, deleted, accepted, processing, completed, rejected, failed, message_type  FROM request_node_status WHERE request_id="+requestId);
 			while( rs.next() ){
-				RequestStatusInfo info = new RequestStatusInfo(Integer.toString(rs.getInt(1)));
+				RequestStatusInfo info = new RequestStatusInfo(rs.getInt(1));
 				info.retrieved = optionalTimestamp(rs, 2);
 				info.deleted = optionalTimestamp(rs, 3);
 				info.accepted = optionalTimestamp(rs, 4);
