@@ -21,10 +21,6 @@
 		<module>broker-client</module>
 		<module>broker-client-websocket</module>
 		<module>broker-server</module>
-		<module>i2b2-node</module>
-		<module>dktk-node</module>
-		<module>i2b2-broker</module>
-		<module>i2b2-shrine</module>
 	</modules>
 	<scm>
 		<developerConnection>scm:git:git@gitlab.uni-oldenburg.de:AKTIN/broker-query.git</developerConnection>
