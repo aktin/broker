@@ -420,22 +420,22 @@ public class BrokerImpl implements BrokerBackend {
 		return null;
 	}
 
-	public Principal accessPrincipal(String certId, String clientDn) throws SQLException{
+	public Principal accessPrincipal(String clientKey, String clientDn) throws SQLException{
 		Principal p;
 		try( Connection dbc = brokerDB.getConnection() ){
 			// try to load from database
 			PreparedStatement select_node = dbc.prepareStatement("SELECT id, subject_dn FROM nodes WHERE client_key=?");
-			p = loadPrincipalByCertId(select_node, certId);
+			p = loadPrincipalByCertId(select_node, clientKey);
 			if( p == null ){
 				// insert into database
 				PreparedStatement ps = dbc.prepareStatement("INSERT INTO nodes(client_key, subject_dn, last_contact)VALUES(?,?,NOW())");
-				ps.setString(1, certId);
+				ps.setString(1, clientKey);
 				ps.setString(2, clientDn);
 				ps.executeUpdate();
 				ps.close();
 				// retrieve id
 				select_node.clearParameters();
-				p = loadPrincipalByCertId(select_node, certId);
+				p = loadPrincipalByCertId(select_node, clientKey);
 			}else{
 				// TODO update last contact
 			}
