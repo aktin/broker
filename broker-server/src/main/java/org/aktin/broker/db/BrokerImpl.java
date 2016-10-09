@@ -75,6 +75,23 @@ public class BrokerImpl implements BrokerBackend {
 		}
 		return nl;
 	}
+
+	@Override
+	public Node getNode(int nodeId) throws SQLException{
+		Node n;
+		try( Connection dbc = brokerDB.getConnection() ){
+			Statement st = dbc.createStatement();
+			ResultSet rs = st.executeQuery("SELECT id, subject_dn, last_contact FROM nodes WHERE id="+nodeId);
+			if( rs.next() ){
+				n = new Node(rs.getInt(1), rs.getString(2), rs.getTimestamp(3).toInstant());
+			}else{
+				n = null;
+			}
+			rs.close();
+			st.close();
+		}		
+		return n;
+	}
 //	public int incrementSequence(Connection dbc, String sequence_name) throws SQLException{
 //		try( Statement st = dbc.createStatement();
 //				ResultSet rs = st.executeQuery("SELECT NEXTVAL('"+sequence_name+"')") ){

@@ -104,7 +104,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 	}
 
 	public List<org.aktin.broker.xml.Node> listNodes() throws IOException{
-		HttpURLConnection c = openConnection("GET", "all");
+		HttpURLConnection c = openConnection("GET", "node");
 		NodeList nl;
 		try( InputStream response = c.getInputStream() ){
 			nl = JAXB.unmarshal(response, NodeList.class);
@@ -113,6 +113,14 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			return Collections.emptyList();
 		}else{
 			return nl.getNodes();
+		}
+	}
+	public org.aktin.broker.xml.Node getNode(int nodeId) throws IOException{
+		HttpURLConnection c = openConnection("GET", "node/"+nodeId);
+		if( c.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND ){
+			return null;
+		}else try( InputStream response = c.getInputStream() ){
+			return JAXB.unmarshal(response, org.aktin.broker.xml.Node.class);
 		}
 	}
 	public List<RequestInfo> listAllRequests() throws IOException{

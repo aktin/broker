@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response.Status;
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.xml.BrokerStatus;
+import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.NodeList;
 import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
@@ -79,7 +80,7 @@ public class BrokerEndpoint {
 	 * @return JSON list of nodes
 	 */
 	@GET
-	@Path("all")
+	@Path("node")
 	@Produces(MediaType.APPLICATION_XML)
 	public Response allNodes(){
 		try {
@@ -87,6 +88,29 @@ public class BrokerEndpoint {
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "unable to retrieve node list", e);
 			return Response.serverError().build();
+		}
+	}
+	/**
+	 * Retrieve a list of registered nodes with the
+	 * broker.
+	 * @return JSON list of nodes
+	 */
+	@GET
+	@Path("node/{id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public Response getNodeInfo(@PathParam("id") int nodeId){
+		Node node;
+		try {
+			node = db.getNode(nodeId);
+		} catch (SQLException e) {
+			log.log(Level.SEVERE, "unable to retrieve node list", e);
+			return Response.serverError().build();
+		}
+		if( node == null ){
+			// not found
+			return Response.status(404).build();
+		}else{
+			return Response.ok(node).build();			
 		}
 	}
 	

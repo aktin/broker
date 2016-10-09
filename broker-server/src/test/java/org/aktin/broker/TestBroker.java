@@ -63,6 +63,10 @@ public class TestBroker {
 		Assert.assertEquals(1, nl.size());
 		Node node = nl.get(0);
 		Assert.assertEquals(testCn, node.clientDN);
+		int nodeId = node.id;
+		// retrieve info only for the single node
+		node = a.getNode(nodeId);
+		Assert.assertEquals(testCn, node.clientDN);		
 	}
 	@Test
 	public void testAddDeleteQuery() throws IOException{
