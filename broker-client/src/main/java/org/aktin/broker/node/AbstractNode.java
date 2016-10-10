@@ -75,9 +75,10 @@ public abstract class AbstractNode {
 		} catch (ParserConfigurationException e) {
 			throw new TransformerException("Failed to create document builder", e);
 		}
-		DOMResult res = new DOMResult(b.newDocument());
+		Document doc = b.newDocument();
+		DOMResult res = new DOMResult(doc);
 		transformer.transform(dom, res);
-		return res.getNode().getOwnerDocument();
+		return doc;
 	}
 
 }
