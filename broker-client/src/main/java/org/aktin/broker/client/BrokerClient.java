@@ -56,6 +56,14 @@ public class BrokerClient extends AbstractBrokerClient{
 	protected URI getQueryBaseURI() {
 		return resolveBrokerURI("my/request/");
 	}
+
+	/**
+	 * Post status for the client node. Additional software modules can be specified.
+	 * 
+	 * @param startupEpochMillis
+	 * @param software
+	 * @throws IOException
+	 */
 	public void postMyStatus(long startupEpochMillis, Iterable<SoftwareModule> software) throws IOException{
 		HttpURLConnection c = openConnection("POST", "my/status");
 		c.setDoOutput(true);
