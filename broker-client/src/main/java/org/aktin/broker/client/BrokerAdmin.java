@@ -173,7 +173,9 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		if( acceptMediaType != null ){
 			c.setRequestProperty("Accept", acceptMediaType);
 		}
-		
+		if( c.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND ){
+			return null;
+		}
 		DataSource ds = new URLConnectionDataSource(c);
 		try{
 			return unmarshaller.apply(ds);

@@ -92,7 +92,12 @@ public class AggregatorEndpoint {
 			log.log(Level.SEVERE, "Unable to retrieve data", e);
 			return Response.serverError().build();
 		}
-		return Response.ok(data).lastModified(Date.from(data.getLastModified())).build();
+		if( data == null ){
+			// no data for this request/node combination
+			return Response.status(404).build();
+		}else{
+			return Response.ok(data).lastModified(Date.from(data.getLastModified())).build();
+		}
 	}
 
 }
