@@ -184,7 +184,9 @@ public class BrokerEndpoint {
 		try {
 			db.setRequestNodeStatus(requestId, user.getNodeId(), status, date.toInstant());
 			if( headers.getMediaType() != null ){
-				db.setRequestNodeStatusMessage(requestId, user.getNodeId(), headers.getMediaType().toString(), content);
+				// clear charset information, since we already have the string representation
+				MediaType messageType = removeCharsetInfo(headers.getMediaType());
+				db.setRequestNodeStatusMessage(requestId, user.getNodeId(), messageType.toString(), content);
 			}
 			content.close();
 		} catch (SQLException e) {
@@ -339,7 +341,6 @@ public class BrokerEndpoint {
 	public Response getRequestInfo(@PathParam("id") Integer requestId) throws SQLException, IOException{
 		// TODO return RequestInfo
 		List<RequestStatusInfo> list = db.listRequestNodeStatus(requestId);
-		
 		if( list == null ){
 			return Response.status(Status.NOT_FOUND).build();
 		}else{

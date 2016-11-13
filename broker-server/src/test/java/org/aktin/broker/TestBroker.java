@@ -112,7 +112,8 @@ public class TestBroker {
 		// update status (e.g. failed)
 		c.postRequestFailed("0", "Only test", new UnsupportedOperationException());
 		list = a.listRequestStatus("0");
-		Assert.assertNotNull(list.get(0).type); // now, there is a message	
+		// now, there is a message
+		Assert.assertEquals("text/plain", list.get(0).type);
 		
 	}
 
