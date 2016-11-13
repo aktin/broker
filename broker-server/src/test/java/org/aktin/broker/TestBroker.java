@@ -162,6 +162,10 @@ public class TestBroker {
 		Assert.assertEquals(2, ri.types.length);
 		// check request info for single request
 		Assert.assertEquals(2, ri.types.length);
+		// replace definition
+		a.putRequestDefinition(loc, "text/x-test-2", "test2-2");
+		Reader r = a.getRequestDefinition(loc, "text/x-test-2");
+		Assert.assertEquals("test2-2", Util.readContent(r));		
 	}
 	@Test
 	public void testRequestSubmitResult() throws IOException{

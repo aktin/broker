@@ -127,27 +127,51 @@ public class BrokerImpl implements BrokerBackend {
 			id = getLastInsertId(dbc);
 
 			// insert request content
-			addRequestDefinition(dbc, id, mediaType, content);
+			setRequestDefinition(dbc, id, mediaType, content);
 			// commit transaction
 			dbc.commit();
 		}
 		return id;
 	}
-	private void addRequestDefinition(Connection dbc, int requestId, String mediaType, Reader content) throws SQLException{
-		PreparedStatement ps = dbc.prepareStatement("INSERT INTO request_definitions (request_id, media_type, query_def) VALUES(?,?,?)");
+	private void setRequestDefinition(Connection dbc, int requestId, String mediaType, Reader content) throws SQLException{
+		// determine a definition is already there
+		PreparedStatement ps = dbc.prepareStatement("SELECT COUNT(*) FROM request_definitions WHERE request_id=? AND media_type=?");
 		ps.setInt(1, requestId);
 		ps.setString(2, mediaType);
-		ps.setClob(3, content);
-		ps.executeUpdate();		
-		log.info("New definition for request "+requestId+": "+mediaType);
+		ResultSet rs = ps.executeQuery();
+		rs.next();
+		boolean hasRecord = (rs.getInt(1) != 0);
+		rs.close();
+		ps.close();
+		ps = null;
+		if( hasRecord ){
+			// already there, update the definition
+			ps = dbc.prepareStatement("UPDATE request_definitions SET query_def=? WHERE request_id=? AND media_type=?");
+			ps.setClob(1, content);
+			ps.setInt(2, requestId);
+			ps.setString(3, mediaType);
+			ps.executeUpdate();		
+			ps.close();
+			log.info("Updated definition for request "+requestId+": "+mediaType);
+		}else{
+			// no definition, create one
+			ps = dbc.prepareStatement("INSERT INTO request_definitions (request_id, media_type, query_def) VALUES(?,?,?)");
+			ps.setInt(1, requestId);
+			ps.setString(2, mediaType);
+			ps.setClob(3, content);
+			ps.executeUpdate();
+			ps.close();
+			log.info("New definition for request "+requestId+": "+mediaType);
+		}
 	}
 	/* (non-Javadoc)
 	 * @see org.aktin.broker.db.BrokerBackend#addRequestDefinition(int, java.lang.String, java.io.Reader)
 	 */
 	@Override
-	public void addRequestDefinition(int requestId, String mediaType, Reader content) throws SQLException{
+	public void setRequestDefinition(int requestId, String mediaType, Reader content) throws SQLException{
 		try( Connection dbc = brokerDB.getConnection() ){
-			addRequestDefinition(dbc, requestId, mediaType, content);	
+			// TODO should also replace existing definitions
+			setRequestDefinition(dbc, requestId, mediaType, content);	
 			dbc.commit();
 		}
 	}

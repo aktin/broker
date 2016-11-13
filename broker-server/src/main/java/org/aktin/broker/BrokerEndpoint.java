@@ -247,8 +247,8 @@ public class BrokerEndpoint {
 		try {
 			// remove charset information, since we already have the string representation
 			type = removeCharsetInfo(type);
-			// TODO check if request exists
-			db.addRequestDefinition(Integer.parseInt(requestId), type.toString(), content);
+			// create or replace if already exists
+			db.setRequestDefinition(Integer.parseInt(requestId), type.toString(), content);
 			return Response.ok().build();
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to create request definition", e);

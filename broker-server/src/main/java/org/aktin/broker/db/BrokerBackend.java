@@ -23,7 +23,7 @@ public interface BrokerBackend {
 
 	int createRequest(String mediaType, Reader content) throws SQLException;
 
-	void addRequestDefinition(int requestId, String mediaType, Reader content) throws SQLException;
+	void setRequestDefinition(int requestId, String mediaType, Reader content) throws SQLException;
 
 	void deleteRequest(int id) throws SQLException;
 
