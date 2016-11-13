@@ -5,16 +5,11 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Priority;
 import javax.inject.Inject;
-import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
-
-import org.aktin.broker.Authenticated;
 
 /**
  * Extend this class for API key authentication.
