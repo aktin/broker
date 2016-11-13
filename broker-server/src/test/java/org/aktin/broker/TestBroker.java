@@ -108,7 +108,12 @@ public class TestBroker {
 		Assert.assertEquals(1, list.size());
 		Assert.assertNotNull(list.get(0).accepted);
 		Assert.assertNull(list.get(0).rejected);
-		// update status
+		Assert.assertNull(list.get(0).type); // should be no message type		
+		// update status (e.g. failed)
+		c.postRequestFailed("0", "Only test", new UnsupportedOperationException());
+		list = a.listRequestStatus("0");
+		Assert.assertNotNull(list.get(0).type); // now, there is a message	
+		
 	}
 
 	@Test
@@ -184,6 +189,7 @@ public class TestBroker {
 		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker-notify"), new ClientUpgradeRequest());
 		System.out.println("Connecting..");
 		Session s = f.get(5, TimeUnit.SECONDS);
+		s.getClass(); // don't need the session
 		// connected, wait for messages
 		websocket.expectedMessages.await(5, TimeUnit.SECONDS);
 		client.stop();

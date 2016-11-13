@@ -52,6 +52,18 @@ public interface BrokerBackend {
 	void setRequestNodeStatus(int requestId, int nodeId, RequestStatus status, Instant timestamp) throws SQLException;
 
 	/**
+	 * Set the node status message. The status must be set previously e.g. using {@link #setRequestNodeStatus(int, int, RequestStatus, Instant)},
+	 * If there is no status entry for the specified node, this method will fail.
+	 * 
+	 * @param requestId request id
+	 * @param nodeId node id
+	 * @param messageType media type for the status message
+	 * @param message content of the status message
+	 * @throws SQLException sql errror
+	 */
+	void setRequestNodeStatusMessage(int requestId, int nodeId, String messageType, Reader message) throws SQLException;
+
+	/**
 	 * Mark a request as deleted for a given node
 	 * 
 	 * @param nodeId node id

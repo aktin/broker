@@ -184,7 +184,7 @@ public class BrokerEndpoint {
 		try {
 			db.setRequestNodeStatus(requestId, user.getNodeId(), status, date.toInstant());
 			if( headers.getMediaType() != null ){
-				// TODO set status text
+				db.setRequestNodeStatusMessage(requestId, user.getNodeId(), headers.getMediaType().toString(), content);
 			}
 			content.close();
 		} catch (SQLException e) {
@@ -347,6 +347,15 @@ public class BrokerEndpoint {
 		}
 	}
 
+	// TODO add method to retrieve request node status message (e.g. error messages)
+	@GET
+	@Path("request/{id}/status/{nodeId}")
+	public Response getRequestNodeStatusMessage(@PathParam("id") String requestId, @PathParam("nodeId") String nodeId){
+		// TODO set header: timestamp, custom header with status code
+		// TODO implement
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
+	
 	// TODO @RequireAdminCert
 	@POST
 	@Path("request/{id}/publish")

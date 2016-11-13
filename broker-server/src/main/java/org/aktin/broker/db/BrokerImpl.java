@@ -366,6 +366,19 @@ public class BrokerImpl implements BrokerBackend {
 			dbc.commit();
 		}
 	}
+	@Override
+	public void setRequestNodeStatusMessage(int requestId, int nodeId, String mediaType, Reader message) throws SQLException{
+		try( Connection dbc = brokerDB.getConnection() ){
+			PreparedStatement ps = dbc.prepareStatement("UPDATE request_node_status SET message_type=?, message=? WHERE request_id=? AND node_id=?");
+			ps.setString(1, mediaType);
+			ps.setClob(2, message);
+			ps.setInt(3, requestId);
+			ps.setInt(4, nodeId);
+			ps.executeUpdate();
+			ps.close();
+			dbc.commit();
+		}
+	}
 	/* (non-Javadoc)
 	 * @see org.aktin.broker.db.BrokerBackend#markRequestDeletedForNode(int, int)
 	 */

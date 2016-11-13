@@ -4,10 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -154,6 +157,35 @@ public class BrokerClient extends AbstractBrokerClient{
 	}
 	public void postRequestStatus(String requestId, RequestStatus status) throws IOException{
 		HttpURLConnection c = openConnection("POST", getQueryBaseURI().resolve(requestId+"/status/"+status.name()));
+		c.getInputStream().close();
+	}
+	/**
+	 * Report that a request has been failed.
+	 * @param requestId failed request's id
+	 * @param message error message. Can be {@code null}.
+	 * @param throwable throwable. Can be {@code null}.
+	 * @throws IOException IO error
+	 */
+	public void postRequestFailed(String requestId, String message, Throwable throwable) throws IOException{
+		HttpURLConnection c = openConnection("POST", getQueryBaseURI().resolve(requestId+"/status/"+RequestStatus.failed.name()));
+		c.setDoOutput(true);
+		c.setRequestProperty("Content-Type", "text/plain;charset=UTF-8");
+		// write the error content
+		try( OutputStream post = c.getOutputStream();
+				PrintWriter writer = new PrintWriter(new OutputStreamWriter(post, StandardCharsets.UTF_8))){
+			if( message != null ){
+				writer.write(message);
+			}
+			if( throwable != null ){
+				if( message != null ){
+					// add newline to separate the message from the stacktrace
+					writer.println();
+				}
+				throwable.printStackTrace(writer);				
+			}
+		}
+		// there should be no content. reading/closing the input stream 
+		// will make sure the status code is in the 2xx group.
 		c.getInputStream().close();
 	}
 	public void postRequestStatus(String requestId, RequestStatus status, Instant date) throws IOException{
