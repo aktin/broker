@@ -36,7 +36,7 @@
 				<constraints nullable="false"/>
 			</column>
 		</createTable>
-		<!-- <addPrimaryKey tableName="request_definitions" columnNames="request_id, media_type"/> -->
+
 		<createIndex indexName="request_definition_pri" tableName="request_definitions" unique="true">
 			<column name="request_id"/>
 			<column name="media_type"/>
@@ -68,10 +68,10 @@
 			<column name="node_id" type="INTEGER" remarks="Foreign key to nodes">
 				<constraints nullable="false"/>
 			</column>
-			<column name="retrieved" type="TIMESTAMP" remarks="Timestamp when the client first retrieved a request definition. May be null, if the client deletes a request without retrieving it (e.g. after list))">
+			<column name="deleted" type="TIMESTAMP" remarks="Will be set, if the client requests the query to be deleted">
 				<constraints nullable="true"/>
 			</column>
-			<column name="deleted" type="TIMESTAMP" remarks="Will be set, if the client requests the query to be deleted">
+			<column name="retrieved" type="TIMESTAMP" remarks="Timestamp when the client first retrieved a request definition. May be null, if the client deletes a request without retrieving it (e.g. after list))">
 				<constraints nullable="true"/>
 			</column>
 			<column name="queued" type="TIMESTAMP" remarks="Timestamp when the client reported the request was accepted for execution. This is completely optional and may be omitted if the query is immediately executed">
@@ -96,8 +96,7 @@
 				<constraints nullable="true"/>
 			</column>
 		</createTable>
-<!-- 		<addPrimaryKey tableName="request_node_status" columnNames="request_id, node_id"/>
- -->
+
 		<createIndex tableName="request_node_status" unique="true" indexName="request_node_status_pri" >
 			<column name="request_id"/>
 			<column name="node_id"/>
@@ -127,13 +126,17 @@
 			</column>
 		</createTable>
 
-<!-- 		<addPrimaryKey tableName="request_node_results" columnNames="request_id, node_id"/>
- -->
 		<createIndex tableName="request_node_results" unique="true" indexName="request_node_results_pri" >
 			<column name="request_id"/>
 			<column name="node_id"/>
    		</createIndex>		
 
+	</changeSet>
+	<changeSet id="v0.2" author="rwm">
+		<!-- add primary keys missing from previous changeset -->
+		<addPrimaryKey tableName="request_definitions" columnNames="request_id, media_type"/>
+		<addPrimaryKey tableName="request_node_status" columnNames="request_id, node_id"/>
+		<addPrimaryKey tableName="request_node_results" columnNames="request_id, node_id"/>
 	</changeSet>
 
 </databaseChangeLog>
