@@ -14,11 +14,11 @@ import javax.ws.rs.core.Response;
 /**
  * Extend this class for API key authentication.
  * 
- *  <pre>
- *  @Authenticated
-@Provider
-@Priority(Priorities.AUTHENTICATION)
-
+ *<pre>
+ *  {@literal @}Authenticated
+ *  {@literal @}Provider
+ *  {@literal @}Priority(Priorities.AUTHENTICATION)
+ *</pre>
  * @author R.W.Majeed
  *
  */

@@ -75,9 +75,9 @@ public interface BrokerBackend {
 
 	/**
 	 * Retrieve list with node status for the specified request.
-	 * @param requestId
+	 * @param requestId request id
 	 * @return Status list or {@code null} if request is not found.
-	 * @throws SQLException
+	 * @throws SQLException SQL error
 	 */
 	List<RequestStatusInfo> listRequestNodeStatus(Integer requestId) throws SQLException;
 

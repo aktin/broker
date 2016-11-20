@@ -91,9 +91,9 @@ public class BrokerEndpoint {
 		}
 	}
 	/**
-	 * Retrieve a list of registered nodes with the
-	 * broker.
-	 * @return JSON list of nodes
+	 * Retrieve information about a single node.
+	 * @param nodeId node id
+	 * @return status {@code 200} with node info or status {@code 404} if not found. 
 	 */
 	@GET
 	@Path("node/{id}")
@@ -117,6 +117,7 @@ public class BrokerEndpoint {
 	/**
 	 * Report the local node status to the broker.
 	 * @param status JSON status
+	 * @param sec security context
 	 */
 	@Authenticated
 	@POST
@@ -154,7 +155,7 @@ public class BrokerEndpoint {
 	 * Status report by a node for it's request.
 	 * 
 	 * @param requestId request to which the status belongs
-	 * @param status reported status. A status of {@link RequestStatus#deleted} is equal to deleting
+	 * @param status reported status
 	 * a request via {@link #deleteNodesRequest(String, SecurityContext)}.
 	 * 
 	 * @param sec security context
@@ -164,9 +165,7 @@ public class BrokerEndpoint {
 	 * @param content
 	 *	status message. Use the {@code Content-Type} header to specify a media type.
 	 *	only character content is allowed (including XML/JSON).
-	 * @return
-	 * @throws SQLException
-	 * @throws IOException
+	 * @return no content on success. Server error otherwise.
 	 */
 	@Authenticated
 	@POST
@@ -333,8 +332,8 @@ public class BrokerEndpoint {
 	 * List status information for the specified request for each node
 	 * @param requestId request
 	 * @return status information list
-	 * @throws SQLException
-	 * @throws IOException
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
 	 */
 	@GET
 	@Path("request/{id}/status")

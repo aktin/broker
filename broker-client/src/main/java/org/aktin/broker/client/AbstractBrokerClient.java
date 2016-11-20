@@ -31,12 +31,7 @@ public abstract class AbstractBrokerClient extends AbstractClient{
 		return getQueryBaseURI().relativize(uri).getPath();
 	}
 
-	/**
-	 * Make sure that a valid list is returned. TODO better solution
-	 * @param list
-	 * @return list
-	 * @throws IOException error
-	 */
+	// Make sure that a valid list is returned. TODO better solution
 	protected List<RequestInfo> postprocessRequestList(RequestList list) throws IOException{
 		if( list == null ){
 			throw new IOException("Unmarshalling of request list failed");

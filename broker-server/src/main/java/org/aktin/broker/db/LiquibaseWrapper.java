@@ -27,8 +27,8 @@ public class LiquibaseWrapper implements AutoCloseable {
 	/**
 	 * Construct a liquibase wrapper for sql connection.
 	 * Closing the wrapper will not call {@link Connection#close()}.
-	 * @param connection
-	 * @throws LiquibaseException
+	 * @param connection database connection
+	 * @throws LiquibaseException error
 	 */
 	public LiquibaseWrapper(Connection connection) throws LiquibaseException{
 		database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));

@@ -18,7 +18,7 @@ public interface AggregatorBackend {
 	/**
 	 * Delete all files in the data directory.
 	 * This should be used only for testing.
-	 * @throws IOException 
+	 * @throws IOException IO error
 	 */
 	void clearDataDirectory() throws IOException;
 

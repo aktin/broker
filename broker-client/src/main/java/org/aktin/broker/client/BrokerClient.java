@@ -63,9 +63,9 @@ public class BrokerClient extends AbstractBrokerClient{
 	/**
 	 * Post status for the client node. Additional software modules can be specified.
 	 * 
-	 * @param startupEpochMillis
-	 * @param software
-	 * @throws IOException
+	 * @param startupEpochMillis startup time in epoch milliseconds
+	 * @param software software module versions
+	 * @throws IOException IO error
 	 */
 	public void postMyStatus(long startupEpochMillis, Iterable<SoftwareModule> software) throws IOException{
 		HttpURLConnection c = openConnection("POST", "my/status");
