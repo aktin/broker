@@ -357,6 +357,9 @@ public class BrokerImpl implements BrokerBackend {
 			status_found = true;
 			ri.retrieved = optionalTimestamp(rs, 1);
 			ri.deleted = optionalTimestamp(rs, 2);
+			// don't need other time stamps,
+			// this method is only used internally to find out if a status record exists 
+			// and if the query was deleted
 		}
 		rs.close();
 		st.close();
@@ -377,7 +380,7 @@ public class BrokerImpl implements BrokerBackend {
 			ps.setInt(3, nodeId);
 			rowCount = ps.executeUpdate();
 			ps.close();
-			// TODO update status message
+			// status message must be updated via a different method
 			if( rowCount == 0 ){
 				// row not there, insert row
 				ps = dbc.prepareStatement("INSERT INTO request_node_status(request_id, node_id, "+status.name()+") VALUES(?,?,?)");

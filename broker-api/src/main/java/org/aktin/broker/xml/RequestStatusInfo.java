@@ -7,8 +7,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Status information for a request as reported by a node
- * 
+ * Status information for a request as reported by a node.
+ * <p>
+ * All timestamps other than {@link #deleted} correspond to the
+ * respective enum values of {@link RequestStatus}.
+ * </p>
  * @author R.W.Majeed
  *
  */
@@ -16,8 +19,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RequestStatusInfo {
 	public int node;
-	public Instant retrieved;
 	public Instant deleted;
+
+	// following timestamps correlate to the RequestState
+	//
+	// it seems to make sense to use an array and access the timestamps using
+	// enum ordinals, but since this structure is used for JSON/XML serialisation,
+	// the resulting document would loose readability significantly.
+	public Instant retrieved;
 	public Instant queued;
 	public Instant processing;
 	public Instant completed;
