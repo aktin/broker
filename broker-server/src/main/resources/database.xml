@@ -74,7 +74,7 @@
 			<column name="deleted" type="TIMESTAMP" remarks="Will be set, if the client requests the query to be deleted">
 				<constraints nullable="true"/>
 			</column>
-			<column name="accepted" type="TIMESTAMP" remarks="Timestamp when the client reported the request was accepted for execution. This is completely optional and may be omitted if the query is immediately executed">
+			<column name="queued" type="TIMESTAMP" remarks="Timestamp when the client reported the request was accepted for execution. This is completely optional and may be omitted if the query is immediately executed">
 				<constraints nullable="true"/>
 			</column>
 			<column name="processing" type="TIMESTAMP" remarks="Timestamp when the client reported that it started the execution">

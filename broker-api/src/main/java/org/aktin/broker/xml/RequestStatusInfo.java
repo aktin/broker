@@ -18,7 +18,7 @@ public class RequestStatusInfo {
 	public int node;
 	public Instant retrieved;
 	public Instant deleted;
-	public Instant accepted;
+	public Instant queued;
 	public Instant processing;
 	public Instant completed;
 	public Instant rejected;
@@ -42,8 +42,8 @@ public class RequestStatusInfo {
 			return RequestStatus.completed;
 		}else if( processing != null ){
 			return RequestStatus.processing;
-		}else if( accepted != null ){
-			return RequestStatus.accepted;
+		}else if( queued != null ){
+			return RequestStatus.queued;
 		}else if( retrieved != null ){
 			return RequestStatus.retrieved;
 		}

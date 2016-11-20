@@ -447,12 +447,12 @@ public class BrokerImpl implements BrokerBackend {
 		List<RequestStatusInfo> list = new ArrayList<>();
 		try( Connection dbc = brokerDB.getConnection() ){
 			Statement st = dbc.createStatement();
-			ResultSet rs = st.executeQuery("SELECT node_id, retrieved, deleted, accepted, processing, completed, rejected, failed, message_type  FROM request_node_status WHERE request_id="+requestId);
+			ResultSet rs = st.executeQuery("SELECT node_id, retrieved, deleted, queued, processing, completed, rejected, failed, message_type  FROM request_node_status WHERE request_id="+requestId);
 			while( rs.next() ){
 				RequestStatusInfo info = new RequestStatusInfo(rs.getInt(1));
 				info.retrieved = optionalTimestamp(rs, 2);
 				info.deleted = optionalTimestamp(rs, 3);
-				info.accepted = optionalTimestamp(rs, 4);
+				info.queued = optionalTimestamp(rs, 4);
 				info.processing = optionalTimestamp(rs, 5);
 				info.completed = optionalTimestamp(rs, 6);
 				info.rejected = optionalTimestamp(rs, 7);

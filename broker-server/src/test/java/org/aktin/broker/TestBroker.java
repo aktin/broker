@@ -102,11 +102,11 @@ public class TestBroker {
 		String def = c.getMyRequestDefinitionString("0", "text/vnd.test1");
 		Assert.assertEquals("test",  def);
 		// report status
-		c.postRequestStatus("0", RequestStatus.accepted);
+		c.postRequestStatus("0", RequestStatus.queued);
 		// request status
 		List<RequestStatusInfo> list = a.listRequestStatus("0");
 		Assert.assertEquals(1, list.size());
-		Assert.assertNotNull(list.get(0).accepted);
+		Assert.assertNotNull(list.get(0).queued);
 		Assert.assertNull(list.get(0).rejected);
 		Assert.assertNull(list.get(0).type); // should be no message type		
 		// update status (e.g. failed)
