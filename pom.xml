@@ -39,8 +39,10 @@
 	</developers>
 
 	<scm>
+		<connection>scm:git:git@github.com:aktin/broker.git</connection>
 		<developerConnection>scm:git:git@github.com:aktin/broker.git</developerConnection>
 		<tag>HEAD</tag>
+		<url>https://github.com/aktin/broker</url>
 	</scm>
 	<distributionManagement>
 		<repository>
