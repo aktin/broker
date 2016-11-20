@@ -4,7 +4,7 @@
 	
 	<groupId>org.aktin</groupId>
 	<artifactId>broker</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.1</version>
 
 	<name>AKTIN : Broker</name>
 	<description>AKTIN Search Broker</description>
@@ -40,7 +40,7 @@
 
 	<scm>
 		<developerConnection>scm:git:git@github.com:aktin/broker.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>v0.1</tag>
 	</scm>
 	<distributionManagement>
 		<repository>
