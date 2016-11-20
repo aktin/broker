@@ -5,7 +5,7 @@
 	<groupId>org.aktin</groupId>
 	<artifactId>broker</artifactId>
 	<version>0.1-SNAPSHOT</version>
-  
+
 	<name>AKTIN : Broker</name>
 	<description>AKTIN Search Broker</description>
 	<!--
@@ -22,10 +22,40 @@
 		<module>broker-client-websocket</module>
 		<module>broker-server</module>
 	</modules>
+
+	<url>https://github.com/aktin/broker</url>
+
+	<inceptionYear>2014</inceptionYear>
+	<organization>
+		<name>University of Oldenburg</name>
+		<url>https://www.uni-oldenburg.de/medizininformatik/</url>
+	</organization>
+	<developers>
+		<developer>
+			<name>R.W.Majeed</name>
+			<email>raphael.majeed (a) uni-oldenburg.de</email>
+		</developer>
+		<!-- ... -->
+	</developers>
+
 	<scm>
-		<developerConnection>scm:git:git@gitlab.uni-oldenburg.de:AKTIN/broker-query.git</developerConnection>
+		<developerConnection>scm:git:git@github.com:aktin/broker.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
+	<distributionManagement>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+		</repository>
+	</distributionManagement>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+	</licenses>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -61,10 +91,80 @@
 					<artifactId>jaxb2-maven-plugin</artifactId>
 					<version>2.2</version>
 				</plugin>
+				<!-- more plugins for ossrh distribution -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>3.0.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<!-- forces newer version, old 2.3.2 contains bugs -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.5.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>1.6</version>
+				</plugin>
 			</plugins>
 
 		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+			</plugin>
+		</plugins>
 	</build>
+	<!-- profile which signs artifacts only during release -->
+	<profiles>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+			</plugin>
+		</plugins>
+	</reporting>
+
 	<dependencyManagement>
 		<!-- dependency version+scope inherited by child projects -->
 		<dependencies>
