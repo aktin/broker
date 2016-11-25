@@ -22,4 +22,6 @@ public class SoftwareModule {
 		this.version = version;
 		this.id = id;
 	}
+	public String getId(){return id;}
+	public String getVersion(){return version;}
 }

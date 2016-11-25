@@ -13,6 +13,7 @@ import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
+import org.aktin.broker.xml.SoftwareModule;
 
 public interface BrokerBackend {
 
@@ -92,4 +93,6 @@ public interface BrokerBackend {
 	 * @throws SQLException SQL error
 	 */
 	Principal accessPrincipal(String nodeKey, String clientDn) throws SQLException;
+
+	void updateNodeModules(int nodeId, List<SoftwareModule> modules) throws SQLException;
 }

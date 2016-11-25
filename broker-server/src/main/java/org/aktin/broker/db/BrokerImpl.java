@@ -25,6 +25,7 @@ import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
+import org.aktin.broker.xml.SoftwareModule;
 import org.aktin.broker.xml.util.Util;
 
 @Singleton
@@ -503,5 +504,24 @@ public class BrokerImpl implements BrokerBackend {
 			dbc.commit();
 		}
 		return p;
+	}
+	@Override
+	public void updateNodeModules(int nodeId, List<SoftwareModule> modules) throws SQLException {
+		try( Connection dbc = brokerDB.getConnection() ){
+			// delete previous data
+			Statement st = dbc.createStatement();
+			st.executeUpdate("DELETE FROM node_modules WHERE node_id="+nodeId);
+			st.close();
+			// write new data
+			PreparedStatement ps = dbc.prepareStatement("INSERT INTO node_modules(node_id, module, version)VALUES(?,?,?)");
+			ps.setInt(1, nodeId);
+			for( SoftwareModule m : modules ){
+				ps.setString(2, m.getId());
+				ps.setString(3, m.getVersion());
+				ps.executeUpdate();
+			}
+			ps.close();
+			dbc.commit();
+		}		
 	}
 }

@@ -54,4 +54,8 @@ public class NodeStatus {
 		this(startup);
 		softwareVersions.forEach( (s,v) -> modules.add(new SoftwareModule(s,v)) );
 	}
+
+	public List<SoftwareModule> getModules(){
+		return modules;
+	}
 }

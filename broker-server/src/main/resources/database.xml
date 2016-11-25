@@ -137,6 +137,24 @@
 		<addPrimaryKey tableName="request_definitions" columnNames="request_id, media_type"/>
 		<addPrimaryKey tableName="request_node_status" columnNames="request_id, node_id"/>
 		<addPrimaryKey tableName="request_node_results" columnNames="request_id, node_id"/>
+		
+		<createTable tableName="node_modules">
+			<column name="node_id" autoIncrement="true" type="INTEGER">
+				<constraints nullable="false"/>
+			</column>
+			<column name="module" type="VARCHAR(64)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="version" type="VARCHAR(64)">
+				<constraints nullable="true"/>
+			</column>
+		</createTable>
+		<addPrimaryKey tableName="node_modules" columnNames="node_id, module"/>
+		<createIndex tableName="node_modules" indexName="node_modules_node_id" >
+			<column name="node_id"/>
+   		</createIndex>		
+
+
 	</changeSet>
 
 </databaseChangeLog>

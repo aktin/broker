@@ -118,15 +118,18 @@ public class BrokerEndpoint {
 	 * Report the local node status to the broker.
 	 * @param status JSON status
 	 * @param sec security context
+	 * @throws SQLException 
 	 */
 	@Authenticated
 	@POST
 	@Path("my/status")
 	@Consumes(MediaType.APPLICATION_XML)
-	public void reportNodesStatus(NodeStatus status, @Context SecurityContext sec){
+	public void reportNodesStatus(NodeStatus status, @Context SecurityContext sec) throws SQLException{
+		Principal user = (Principal)sec.getUserPrincipal();
 		log.info("Node status retrieved");
 		// TODO calculate network delay via local and remote timestamps
-		// TODO store software module versions
+		// store software module versions
+		db.updateNodeModules(user.getNodeId(), status.getModules());
 	}
 	@Authenticated
 	@GET
