@@ -494,7 +494,10 @@ public class BrokerImpl implements BrokerBackend {
 				select_node.clearParameters();
 				p = loadPrincipalByCertId(select_node, clientKey);
 			}else{
-				// TODO update last contact
+				// update last contact
+				Statement st = dbc.createStatement();
+				st.executeUpdate("UPDATE nodes SET last_contact=NOW() WHERE id="+p.getNodeId());
+				st.close();
 			}
 			select_node.close();
 			dbc.commit();
