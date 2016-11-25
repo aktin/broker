@@ -125,6 +125,8 @@ public class BrokerEndpoint {
 	@Consumes(MediaType.APPLICATION_XML)
 	public void reportNodesStatus(NodeStatus status, @Context SecurityContext sec){
 		log.info("Node status retrieved");
+		// TODO calculate network delay via local and remote timestamps
+		// TODO store software module versions
 	}
 	@Authenticated
 	@GET
