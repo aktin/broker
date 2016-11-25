@@ -43,6 +43,17 @@ public class TestBroker {
 		server.destroy();
 	}
 	@Test
+	public void expectClientModulesInDatabase() throws IOException{
+		// TODO test update of software modules: overwrite modules, read back modules
+		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen";
+		String testId = "01";
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
+		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test1"));
+		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test2"));
+		// TODO should be only TEST -> test2 in database
+	}
+	
+	@Test
 	public void expectNewClientAdded() throws IOException{
 		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen";
 		String testId = "01";
