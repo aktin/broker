@@ -19,7 +19,6 @@ import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
 import org.aktin.broker.xml.ResultInfo;
-import org.aktin.broker.xml.SoftwareModule;
 import org.aktin.broker.xml.util.Util;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
@@ -31,7 +30,6 @@ import org.junit.Test;
 
 public class TestBroker {
 	private TestServer server;
-	private SoftwareModule testModule = new SoftwareModule("TEST", "1");
 	@Before
 	public void setupServer() throws Exception{
 		server = new TestServer();
@@ -54,7 +52,7 @@ public class TestBroker {
 		System.out.println(s);
 
 		// posting status will trigger authentication
-		c.postMyStatus(System.currentTimeMillis(), Collections.singletonList(testModule));
+		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "1"));
 
 		TestAdmin a = new TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		// verify client list

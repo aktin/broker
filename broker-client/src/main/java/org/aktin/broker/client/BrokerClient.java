@@ -13,9 +13,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -25,7 +25,6 @@ import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatus;
-import org.aktin.broker.xml.SoftwareModule;
 import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Document;
 
@@ -64,22 +63,19 @@ public class BrokerClient extends AbstractBrokerClient{
 	 * Post status for the client node. Additional software modules can be specified.
 	 * 
 	 * @param startupEpochMillis startup time in epoch milliseconds
-	 * @param software software module versions
+	 * @param softwareVersions software module versions
 	 * @throws IOException IO error
 	 */
-	public void postMyStatus(long startupEpochMillis, Iterable<SoftwareModule> software) throws IOException{
+	public void postMyStatus(long startupEpochMillis, Map<String,String> softwareVersions) throws IOException{
 		HttpURLConnection c = openConnection("POST", "my/status");
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", "application/xml");
-		NodeStatus status = new NodeStatus(new Date(startupEpochMillis), software);
+		NodeStatus status = new NodeStatus(new Date(startupEpochMillis), softwareVersions);
 		try( OutputStream post = c.getOutputStream() ){
 			JAXB.marshal(status, post);
 		}
 		// this will throw an IOException if the status is not successful
 		c.getInputStream().close();
-	}
-	public void postMyStatus(long startupEpochMillis, SoftwareModule ...modules) throws IOException{
-		postMyStatus(startupEpochMillis, Arrays.asList(modules));
 	}
 	public List<RequestInfo> listMyRequests() throws IOException{
 		HttpURLConnection c = openConnection("GET", "my/request");

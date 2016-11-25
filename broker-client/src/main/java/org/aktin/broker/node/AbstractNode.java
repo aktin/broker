@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,7 +19,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.auth.ClientAuthenticator;
-import org.aktin.broker.xml.SoftwareModule;
 import org.w3c.dom.Document;
 
 public abstract class AbstractNode {
@@ -36,13 +37,23 @@ public abstract class AbstractNode {
 		}
 		broker.setClientAuthenticator(auth);
 		// optional status exchange
+		// retrieve server status
 		broker.getBrokerStatus();
-		broker.postMyStatus(startup, 
-				new SoftwareModule("org.aktin.broker.node", AbstractNode.class.getPackage().getImplementationVersion()),
-				new SoftwareModule(getModuleName(), getModuleVersion())
-		);
+		// submit node status with software module versions
+		Map<String,String> versions = new LinkedHashMap<>();
+		// more modules
+		fillSoftwareModulesVersions(versions);
+		broker.postMyStatus(startup, versions);
 	}
 
+	/**
+	 * Fill software modules
+	 * @param modules
+	 */
+	protected void fillSoftwareModulesVersions(Map<String,String> versions){
+		versions.put("org.aktin.broker.node", AbstractNode.class.getPackage().getImplementationVersion());
+		versions.put(getModuleName(), getModuleVersion());
+	}
 	/**
 	 * Override this method to specify a name for your module.
 	 * Default implementation uses {@code getClass().getName()}.

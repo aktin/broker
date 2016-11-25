@@ -3,6 +3,7 @@ package org.aktin.broker.xml;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -48,5 +49,9 @@ public class NodeStatus {
 		for( SoftwareModule m : additionalModules ){
 			modules.add(m);
 		}
+	}
+	public NodeStatus(Date startup, Map<String, String> softwareVersions){
+		this(startup);
+		softwareVersions.forEach( (s,v) -> modules.add(new SoftwareModule(s,v)) );
 	}
 }
