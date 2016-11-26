@@ -11,8 +11,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Status for a data warehouse node.
- * The first 
+ * Status for a data warehouse node, as reported by the node.
  * 
  * @author R.W.Majeed
  *

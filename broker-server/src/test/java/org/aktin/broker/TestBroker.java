@@ -48,8 +48,11 @@ public class TestBroker {
 		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen";
 		String testId = "01";
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test1"));
+		Assert.assertEquals("test1", a.getNode(0).modules.get("TEST"));
 		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test2"));
+		Assert.assertEquals("test2", a.getNode(0).modules.get("TEST"));
 		// TODO should be only TEST -> test2 in database
 	}
 	
@@ -75,6 +78,7 @@ public class TestBroker {
 		int nodeId = node.id;
 		// retrieve info only for the single node
 		node = a.getNode(nodeId);
+//		TestJAXRS.printXML(node);
 		Assert.assertEquals(testCn, node.clientDN);
 		Assert.assertEquals("Test Nachname", node.getCommonName());
 	}

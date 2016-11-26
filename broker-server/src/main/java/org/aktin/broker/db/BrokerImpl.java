@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -90,6 +91,17 @@ public class BrokerImpl implements BrokerBackend {
 			}
 			rs.close();
 			st.close();
+			if( n != null ){
+				// load module versions
+				st = dbc.createStatement();
+				rs = st.executeQuery("SELECT module, version FROM node_modules WHERE node_id="+nodeId);
+				n.modules = new HashMap<>();
+				while( rs.next() ){
+					n.modules.put(rs.getString(1), rs.getString(2));
+				}
+				rs.close();
+				st.close();
+			}
 		}		
 		return n;
 	}
