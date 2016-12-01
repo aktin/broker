@@ -202,6 +202,7 @@ public class BrokerEndpoint {
 		} catch (IOException e) {
 			log.log(Level.WARNING, "Unable to close content reader", e);
 		}
+		BrokerWebsocket.broadcastRequestNodeStatus(requestId, user.getNodeId(), status.name());
 		return Response.noContent().build();
 	}
 	

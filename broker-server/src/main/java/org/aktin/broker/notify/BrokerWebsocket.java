@@ -28,6 +28,7 @@ public class BrokerWebsocket {
 		} catch (IOException e) {
 			log.log(Level.WARNING,"Unable to send welcome message", e);
 		}
+		// TODO check privileges and close connection if invalid
 	}
 	@OnClose
 	public void close(Session session){
@@ -39,28 +40,36 @@ public class BrokerWebsocket {
 		log.info("Session message: "+session.getId()+": "+message);
 	}
 
-	public static int broadcast(String message){
+	private static int broadcast(String message, boolean adminOnly){
 		if( clients.isEmpty() ){
 			return 0;
 		}
 		int count = 0;
 		for( Session session : clients ){
+			if( adminOnly ){
+				// skip if not admin privileges
+			}
 			if( session.isOpen() ){
-				try {
-					session.getBasicRemote().sendText(message);
-					count ++;
-				} catch (IOException e) {
-					log.log(Level.WARNING, "Unable to send to websocket "+session.getId(), e);
-				}
+				session.getAsyncRemote().sendText(message);
+				count ++;
 			}
 		}
 		return count;
 	}
 
+	
 	public static void broadcastRequestPublished(int requestId){
-		broadcast("published "+requestId);
+		// transmitted to all clients and administrators
+		broadcast("published "+requestId, false);
 	}
 	public static void broadcastRequestClosed(int requestId){
-		broadcast("closed "+requestId);
+		// transmitted to all clients and administrators		
+		broadcast("closed "+requestId, false);
 	}
+	public static void broadcastRequestNodeStatus(int requestId, int nodeId, String status){
+		// transmitted only to administrators
+		broadcast("status "+requestId+" "+nodeId+" "+status, true);	
+	}
+
+	// TODO broadcast result update
 }
