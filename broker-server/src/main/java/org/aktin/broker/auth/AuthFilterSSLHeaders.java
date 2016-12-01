@@ -25,12 +25,19 @@ import org.aktin.broker.auth.Principal;
  * a special role "admin" is used for that purpose.
  * </p>
  * 
+ * Extend this class for TLS client certificate authentication 
+ *<pre>
+ *  {@literal @}Authenticated
+ *  {@literal @}Provider
+ *  {@literal @}Priority(Priorities.AUTHENTICATION)
+ *</pre>
+ *
  * @author R.W.Majeed
  *
  */
-@Authenticated
-@Provider
-@Priority(Priorities.AUTHENTICATION)
+//@Authenticated
+//@Provider
+//@Priority(Priorities.AUTHENTICATION)
 public class AuthFilterSSLHeaders implements ContainerRequestFilter{
 	private static final Logger log = Logger.getLogger(AuthFilterSSLHeaders.class.getName());
 	/**
