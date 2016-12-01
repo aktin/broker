@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.websocket.api.WebSocketListener;
 
@@ -13,7 +14,13 @@ public class ClientWebsocket implements WebSocketListener {
 	
 	public ClientWebsocket() {
 		messages = new ArrayList<>();
-		expectedMessages = new CountDownLatch(1);
+	}
+
+	public void prepareForMessages(int count){
+		expectedMessages = new CountDownLatch(count);
+	}
+	public void waitForMessages(long delay, TimeUnit unit) throws InterruptedException{
+		expectedMessages.await(delay, unit);
 	}
 	@Override
 	public void onWebSocketBinary(byte[] payload, int offset, int len) {
@@ -43,6 +50,8 @@ public class ClientWebsocket implements WebSocketListener {
 	public void onWebSocketText(String message) {
 		System.out.println("Client received message: "+message);
 		messages.add(message);
-		expectedMessages.countDown();
+		if( expectedMessages != null ){
+			expectedMessages.countDown();
+		}
 	}
 }

@@ -48,7 +48,7 @@ public interface BrokerBackend {
 	 */
 	Reader getRequestDefinition(int requestId, String mediaType) throws SQLException, IOException;
 
-	// TODO published and not closed??
+	// TODO allow flags to retrieve unpublished and/or closed requests
 	List<RequestInfo> listRequestsForNode(int nodeId) throws SQLException;
 
 	void setRequestNodeStatus(int requestId, int nodeId, RequestStatus status, Instant timestamp) throws SQLException;

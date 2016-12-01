@@ -141,6 +141,8 @@ public class TestBroker {
 		Assert.assertTrue(l.isEmpty());
 		// add request
 		URI loc = a.createRequest("text/x-test", "test");
+		a.publishRequest(a.getQueryId(loc));
+		
 		// retrieve
 		c.getMyRequestDefinitionString("0", "text/x-test");
 		System.out.println("New request: "+loc);
@@ -186,7 +188,8 @@ public class TestBroker {
 		String testId = "01";
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		URI loc = a.createRequest("text/x-test-1", "test1");
-		loc.toString();
+		a.publishRequest(a.getQueryId(loc));
+
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
@@ -203,13 +206,43 @@ public class TestBroker {
 	public void testWebsocket() throws Exception{
 		WebSocketClient client = new WebSocketClient();
 		ClientWebsocket websocket = new ClientWebsocket();
+		websocket.prepareForMessages(1);
 		client.start();
 		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker-notify"), new ClientUpgradeRequest());
 		System.out.println("Connecting..");
 		Session s = f.get(5, TimeUnit.SECONDS);
 		s.getClass(); // don't need the session
 		// connected, wait for messages
-		websocket.expectedMessages.await(5, TimeUnit.SECONDS);
+		websocket.waitForMessages(5, TimeUnit.SECONDS);
+		Assert.assertEquals("Welcome message expected from after websocket connect", 1, websocket.messages.size());
+
+
+		// add request
+		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
+		String testId = "01";
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		URI loc = a.createRequest("text/x-test-1", "test1");
+		// expect notification for published request
+		websocket.messages.clear();
+		websocket.prepareForMessages(1);
+		// publish request
+		a.publishRequest(a.getQueryId(loc));
+		// wait for notification
+		websocket.waitForMessages(5, TimeUnit.SECONDS);
+		Assert.assertEquals("request notification expected", 1, websocket.messages.size());
+		Assert.assertEquals("published 0", websocket.messages.get(0));
+
+		// expect notification for closed request
+		websocket.messages.clear();
+		websocket.prepareForMessages(1);
+		// close request
+		a.closeRequest(a.getQueryId(loc));
+		// wait for notification
+		websocket.waitForMessages(5, TimeUnit.SECONDS);
+		Assert.assertEquals("request notification expected", 1, websocket.messages.size());
+		Assert.assertEquals("closed 0", websocket.messages.get(0));
+
+		// terminate websocket client
 		client.stop();
 	}
 }
