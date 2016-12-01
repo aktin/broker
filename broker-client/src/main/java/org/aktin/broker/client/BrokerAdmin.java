@@ -44,12 +44,19 @@ public class BrokerAdmin extends AbstractBrokerClient {
 	public Reader getRequestDefinition(String id, String mediaType) throws IOException{
 		return getRequestDefinition(getQueryURI(id), mediaType);
 	}
-	public Reader getRequestDefinition(URI location, String mediaType) throws IOException{
+	private Reader getRequestDefinition(URI location, String mediaType) throws IOException{
 		HttpURLConnection c = openConnection("GET", location);
 		return contentReader(c, mediaType);	
 		
 	}
-	public URI createRequest(String contentType, OutputWriter writer) throws IOException{
+	/**
+	 * Create a request with specified content type and content
+	 * @param contentType content type
+	 * @param writer writer for the content
+	 * @return request id
+	 * @throws IOException IO error
+	 */
+	public String createRequest(String contentType, OutputWriter writer) throws IOException{
 		HttpURLConnection c = openConnection("POST", "request");
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", contentType);
@@ -62,13 +69,13 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			throw new IOException("No location in response headers");
 		}
 		try {
-			return new URI(location);
+			return getQueryId(new URI(location));
 		} catch (URISyntaxException e) {
 			throw new IOException("Response header location no valid URI", e);
 		}
 	}
 	
-	public URI createRequest(String contentType, final InputStream content) throws IOException{
+	public String createRequest(String contentType, final InputStream content) throws IOException{
 		return createRequest(contentType,  new OutputWriter(){
 			@Override
 			public void write(OutputStream dest) throws IOException {
@@ -76,7 +83,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			}	
 		});
 	}
-	public URI createRequest(String contentType, final Node content) throws IOException{
+	public String createRequest(String contentType, final Node content) throws IOException{
 		return createRequest(contentType+";charset=UTF-8", new OutputWriter(){
 			@Override
 			public void write(OutputStream dest) throws IOException {
@@ -84,10 +91,13 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			}	
 		});
 	}
-	public URI createRequest(String contentType, String content) throws IOException{
+	public String createRequest(String contentType, String content) throws IOException{
 		return createRequest(contentType+";charset=UTF-8", new OutputWriter.ForString(content, "UTF-8"));
 	}
-	public void putRequestDefinition(URI requestURI, String contentType, OutputWriter writer) throws IOException{
+	public void deleteRequest(String requestId) throws IOException{
+		delete(getQueryURI(requestId));
+	}
+	private void putRequestDefinition(URI requestURI, String contentType, OutputWriter writer) throws IOException{
 		HttpURLConnection c = openConnection("PUT", requestURI);
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", contentType);
@@ -109,8 +119,8 @@ public class BrokerAdmin extends AbstractBrokerClient {
 	public void putRequestDefinition(String requestId, String contentType, OutputWriter writer) throws IOException{
 		putRequestDefinition(getQueryURI(requestId), contentType, writer);
 	}
-	public void putRequestDefinition(URI requestURI, String contentType, String content) throws IOException{
-		putRequestDefinition(requestURI, contentType+";charset=UTF-8", new OutputWriter.ForString(content, "UTF-8"));
+	public void putRequestDefinition(String requestId, String contentType, String content) throws IOException{
+		putRequestDefinition(getQueryURI(requestId), contentType+";charset=UTF-8", new OutputWriter.ForString(content, "UTF-8"));
 	}
 
 	public List<org.aktin.broker.xml.Node> listNodes() throws IOException{

@@ -92,14 +92,14 @@ public class TestBroker {
 		Assert.assertTrue(l.isEmpty());
 		// add request
 		// TODO use large file
-		URI loc = c.createRequest("text/x-test", "test");
-		System.out.println("New request: "+loc);
+		String qid = c.createRequest("text/x-test", "test");
+		System.out.println("New request: "+qid);
 		l = c.listAllRequests();
 		Assert.assertEquals(1, l.size());
 		// try to read the query
 		Reader def = c.getRequestDefinition(l.get(0).getId(),  "text/x-test");
 		// delete query
-		c.delete(loc);
+		c.deleteRequest(qid);
 
 		Assert.assertEquals("test", Util.readContent(def));
 	}
@@ -140,12 +140,12 @@ public class TestBroker {
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertTrue(l.isEmpty());
 		// add request
-		URI loc = a.createRequest("text/x-test", "test");
-		a.publishRequest(a.getQueryId(loc));
+		String qid = a.createRequest("text/x-test", "test");
+		a.publishRequest(qid);
 		
 		// retrieve
 		c.getMyRequestDefinitionString("0", "text/x-test");
-		System.out.println("New request: "+loc);
+		System.out.println("New request: "+qid);
 		l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
 		// retrieve
@@ -156,7 +156,7 @@ public class TestBroker {
 		TestJAXRS.printXML(ri);
 		c.deleteMyRequest(ri.getId());
 		// delete query
-		a.delete(loc);
+		a.deleteRequest(qid);
 	}
 	@Test
 	public void testRequestWithMultipleDefinitions() throws IOException{
@@ -164,12 +164,11 @@ public class TestBroker {
 		String testId = "01";
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		Assert.assertEquals(0, a.listAllRequests().size());
-		URI loc = a.createRequest("text/x-test-1", "test1");
-		System.out.println("Location: "+loc);
-		a.putRequestDefinition(loc, "text/x-test-2", "test2");			
+		String qid = a.createRequest("text/x-test-1", "test1");
+		a.putRequestDefinition(qid, "text/x-test-2", "test2");			
 		RequestInfo ri = a.getRequestInfo("0");
 		List<RequestInfo> l = a.listAllRequests();
-		a.delete(loc);
+		a.deleteRequest(qid); // ????
 		l.forEach(r -> System.out.println("Request:"+r.getId()));
 		Assert.assertEquals(1, l.size());
 		Assert.assertEquals(ri, l.get(0));
@@ -178,8 +177,8 @@ public class TestBroker {
 		// check request info for single request
 		Assert.assertEquals(2, ri.types.length);
 		// replace definition
-		a.putRequestDefinition(loc, "text/x-test-2", "test2-2");
-		Reader r = a.getRequestDefinition(loc, "text/x-test-2");
+		a.putRequestDefinition(qid, "text/x-test-2", "test2-2");
+		Reader r = a.getRequestDefinition(qid, "text/x-test-2");
 		Assert.assertEquals("test2-2", Util.readContent(r));		
 	}
 	@Test
@@ -187,8 +186,8 @@ public class TestBroker {
 		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
 		String testId = "01";
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
-		URI loc = a.createRequest("text/x-test-1", "test1");
-		a.publishRequest(a.getQueryId(loc));
+		String qid = a.createRequest("text/x-test-1", "test1");
+		a.publishRequest(qid);
 
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
 		List<RequestInfo> l = c.listMyRequests();
@@ -197,7 +196,7 @@ public class TestBroker {
 		c.putRequestResult(l.get(0).getId(), "test/vnd.test.result", new ByteArrayInputStream("test-result-data".getBytes()));
 		// list results with aggregatorAdmin
 		List<ResultInfo> r = a.listResults(l.get(0).getId());
-		a.delete(loc);
+		a.deleteRequest(qid);
 		Assert.assertTrue( c.listMyRequests().isEmpty() );
 		Assert.assertEquals(1, r.size());
 		Assert.assertEquals("test/vnd.test.result", r.get(0).type);
@@ -221,12 +220,12 @@ public class TestBroker {
 		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
 		String testId = "01";
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
-		URI loc = a.createRequest("text/x-test-1", "test1");
+		String qid = a.createRequest("text/x-test-1", "test1");
 		// expect notification for published request
 		websocket.messages.clear();
 		websocket.prepareForMessages(1);
 		// publish request
-		a.publishRequest(a.getQueryId(loc));
+		a.publishRequest(qid);
 		// wait for notification
 		websocket.waitForMessages(5, TimeUnit.SECONDS);
 		Assert.assertEquals("request notification expected", 1, websocket.messages.size());
@@ -236,7 +235,7 @@ public class TestBroker {
 		websocket.messages.clear();
 		websocket.prepareForMessages(1);
 		// close request
-		a.closeRequest(a.getQueryId(loc));
+		a.closeRequest(qid);
 		// wait for notification
 		websocket.waitForMessages(5, TimeUnit.SECONDS);
 		Assert.assertEquals("request notification expected", 1, websocket.messages.size());

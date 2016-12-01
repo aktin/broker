@@ -66,7 +66,7 @@ public abstract class AbstractClient {
 		c.setRequestMethod(method);
 		return c;
 	}	
-	public void delete(URI resource) throws IOException{
+	protected void delete(URI resource) throws IOException{
 		HttpURLConnection c = openConnection("DELETE", resource);
 		c.getInputStream().close();
 	}
