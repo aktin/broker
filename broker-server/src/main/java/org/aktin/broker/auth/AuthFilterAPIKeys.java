@@ -38,7 +38,6 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter {
 
 	@Override
 	public final void filter(ContainerRequestContext ctx) throws IOException {
-		
 		String auth = ctx.getHeaderString(HttpHeaders.AUTHORIZATION);
 		String key = null;
 		if( auth != null && auth.startsWith("Bearer ") ){

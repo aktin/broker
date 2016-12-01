@@ -20,12 +20,12 @@ public class AuthCache {
 	public AuthCache(){
 		cache = new HashMap<>();
 	}
+	@Inject
 	public AuthCache(BrokerBackend backend){
 		this();
 		setBackend(backend);
 	}
-	@Inject
-	public void setBackend(BrokerBackend backend){
+	private void setBackend(BrokerBackend backend){
 		this.backend = backend;
 	}
 	

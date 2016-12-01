@@ -70,6 +70,5 @@ public class BrokerWebsocket {
 		// transmitted only to administrators
 		broadcast("status "+requestId+" "+nodeId+" "+status, true);	
 	}
-
-	// TODO broadcast result update
+	// TODO method to retrieve connected client nodes (for more accurate information about last seen => active) 
 }
