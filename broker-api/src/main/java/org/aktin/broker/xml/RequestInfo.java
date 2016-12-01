@@ -24,7 +24,7 @@ public class RequestInfo {
 	 * timestamps are not permitted.
 	 */
 	@XmlElement
-	Instant published;
+	public Instant published;
 
 	/**
 	 * Timestamp of global closing of request. Only admins
@@ -32,7 +32,7 @@ public class RequestInfo {
 	 * Future timestamps are permitted (e.g. to set a deadline)
 	 */
 	@XmlElement
-	Instant closed;
+	public Instant closed;
 
 	/**
 	 * Media types of available query definitions
