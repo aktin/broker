@@ -350,7 +350,7 @@ public class BrokerImpl implements BrokerBackend {
 		}
 		return list;		
 	}
-	private RequestInfo loadRequest(Connection dbc, int nodeId, int requestId) throws SQLException{
+	private RequestInfo loadRequest(Connection dbc, int requestId) throws SQLException{
 		Statement st = dbc.createStatement();
 		ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed FROM requests r WHERE r.id="+requestId);
 		RequestInfo ri = null;
@@ -427,7 +427,7 @@ public class BrokerImpl implements BrokerBackend {
 		boolean delete_ok = false;
 		try( Connection dbc = brokerDB.getConnection() ){
 			RequestStatusInfo si = new RequestStatusInfo();
-			RequestInfo ri = loadRequest(dbc, nodeId, requestId);
+			RequestInfo ri = loadRequest(dbc, requestId);
 			if( ri == null ){
 				// nothing to do, not found
 				//return false
