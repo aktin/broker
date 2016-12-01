@@ -146,6 +146,7 @@ public class BrokerEndpoint {
 	@Authenticated
 	@GET
 	@Path("my/request/{id}")
+	// response type depends on the data
 	public Response getNodesRequest(@PathParam("id") Integer requestId, @Context SecurityContext sec, @Context HttpHeaders headers) throws SQLException, IOException{
 		Principal user = (Principal)sec.getUserPrincipal();
 		Response resp = getRequest(requestId, headers);
@@ -265,6 +266,7 @@ public class BrokerEndpoint {
 	
 	@GET
 	@Path("request")
+	@Produces(MediaType.APPLICATION_XML)
 	public Response listAllRequests() {
 		try {
 			return Response.ok(new RequestList(db.listAllRequests())).build();
@@ -315,6 +317,7 @@ public class BrokerEndpoint {
 	}
 	@OPTIONS
 	@Path("request/{id}")
+	//@Produces(MediaType.APPLICATION_XML) will cause errors in this case. therefore the media type is set below
 	public Response getRequestInfo(@PathParam("id") String requestId, @Context HttpHeaders headers) throws SQLException, IOException{
 		// TODO return RequestInfo
 		List<RequestInfo> list = db.listAllRequests();
@@ -329,7 +332,7 @@ public class BrokerEndpoint {
 		if( info == null ){
 			response = Response.status(Status.NOT_FOUND);
 		}else{
-			response = Response.ok(info);
+			response = Response.ok(info, MediaType.APPLICATION_XML_TYPE);
 		}
 		return response.allow("GET","PUT","DELETE","OPTIONS").build();
 	}
@@ -342,6 +345,7 @@ public class BrokerEndpoint {
 	 */
 	@GET
 	@Path("request/{id}/status")
+	@Produces(MediaType.APPLICATION_XML)
 	public Response getRequestInfo(@PathParam("id") Integer requestId) throws SQLException, IOException{
 		// TODO return RequestInfo
 		List<RequestStatusInfo> list = db.listRequestNodeStatus(requestId);
