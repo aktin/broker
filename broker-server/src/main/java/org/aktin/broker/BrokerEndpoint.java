@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
+import org.aktin.broker.notify.BrokerWebsocket;
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.NodeList;
@@ -346,13 +348,13 @@ public class BrokerEndpoint {
 	@GET
 	@Path("request/{id}/status")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getRequestInfo(@PathParam("id") Integer requestId) throws SQLException, IOException{
+	public RequestStatusList getRequestInfo(@PathParam("id") Integer requestId) throws SQLException, IOException{
 		// TODO return RequestInfo
 		List<RequestStatusInfo> list = db.listRequestNodeStatus(requestId);
 		if( list == null ){
-			return Response.status(Status.NOT_FOUND).build();
+			throw new NotFoundException();
 		}else{
-			return Response.ok(new RequestStatusList(list)).build();
+			return new RequestStatusList(list);
 		}
 	}
 
@@ -368,11 +370,44 @@ public class BrokerEndpoint {
 	// TODO @RequireAdminCert
 	@POST
 	@Path("request/{id}/publish")
-	public Response publishRequest(@PathParam("id") String requestId, String timestamp){
-		// TODO find query
-		Instant.parse(timestamp);
-		// TODO update published timestamp
-		// TODO broadcast to connected websocket clients
-		return Response.noContent().build();
+	public void publishRequest(@PathParam("id") Integer requestId) throws SQLException{
+		// find query
+		RequestInfo info = db.getRequestInfo(requestId);
+		if( info == null ){
+			// 404 if not found
+			throw new NotFoundException();
+		}else if( info.published != null ){
+			// already published, nothing to do
+			
+		}else{
+			// TODO use timestamp from headers for future publishing
+
+			// update published timestamp
+			db.setRequestPublished(requestId, Instant.now());
+
+			// broadcast to connected websocket clients
+			BrokerWebsocket.broadcastRequestPublished(requestId);
+		}
 	}
+	// TODO @RequireAdminCert
+	@POST
+	@Path("request/{id}/close")
+	public void closeRequest(@PathParam("id") Integer requestId) throws SQLException{
+		// find query
+		RequestInfo info = db.getRequestInfo(requestId);
+		if( info == null ){
+			// 404 if not found
+			throw new NotFoundException();
+		}else if( info.closed != null ){
+			// already closed, nothing to do
+			
+		}else{
+			// update published timestamp
+			db.setRequestClosed(requestId, Instant.now());
+
+			// broadcast to connected websocket clients
+			BrokerWebsocket.broadcastRequestClosed(requestId);
+		}
+	}
+
 }

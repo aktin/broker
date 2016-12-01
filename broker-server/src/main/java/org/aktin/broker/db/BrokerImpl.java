@@ -350,6 +350,14 @@ public class BrokerImpl implements BrokerBackend {
 		}
 		return list;		
 	}
+	
+	@Override
+	public RequestInfo getRequestInfo(int requestId) throws SQLException{
+		try( Connection dbc = brokerDB.getConnection() ){
+			return loadRequest(dbc, requestId);
+		}
+	}
+	
 	private RequestInfo loadRequest(Connection dbc, int requestId) throws SQLException{
 		Statement st = dbc.createStatement();
 		ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed FROM requests r WHERE r.id="+requestId);
@@ -535,5 +543,31 @@ public class BrokerImpl implements BrokerBackend {
 			ps.close();
 			dbc.commit();
 		}		
+	}
+
+	private void updateRequestTimestamp(Connection dbc, int requestId, String timestampColumn, Instant value) throws SQLException{
+		PreparedStatement ps = dbc.prepareStatement("UPDATE requests SET "+timestampColumn+"=? WHERE id=?");
+		if( value != null ){
+			ps.setTimestamp(1, Timestamp.from(value));
+		}else{
+			ps.setTimestamp(1, null);
+		}
+		ps.setInt(2, requestId);
+		ps.executeUpdate();
+		ps.close();
+	}
+	@Override
+	public void setRequestPublished(int requestId, Instant timestamp) throws SQLException {
+		try( Connection dbc = brokerDB.getConnection() ){
+			updateRequestTimestamp(dbc, requestId, "published", timestamp);
+			dbc.commit();
+		}
+	}
+	@Override
+	public void setRequestClosed(int requestId, Instant timestamp) throws SQLException {
+		try( Connection dbc = brokerDB.getConnection() ){
+			updateRequestTimestamp(dbc, requestId, "closed", timestamp);
+			dbc.commit();
+		}
 	}
 }

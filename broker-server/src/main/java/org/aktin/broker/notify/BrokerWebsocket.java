@@ -1,7 +1,6 @@
 package org.aktin.broker.notify;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +13,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-@ServerEndpoint("/broker-notify")
+
+@ServerEndpoint(value="/broker-notify", configurator=SessionConfigurator.class)
 public class BrokerWebsocket {
 	private static final Logger log = Logger.getLogger(BrokerWebsocket.class.getName());
 	private static Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
@@ -24,7 +24,7 @@ public class BrokerWebsocket {
 		log.info("Session created: "+session.getId());
 		clients.add(session);
 		try {
-			session.getBasicRemote().sendText("welcome "+Instant.now().toString());
+			session.getBasicRemote().sendText("welcome "+session.getUserPrincipal());
 		} catch (IOException e) {
 			log.log(Level.WARNING,"Unable to send welcome message", e);
 		}
@@ -55,5 +55,12 @@ public class BrokerWebsocket {
 			}
 		}
 		return count;
+	}
+
+	public static void broadcastRequestPublished(int requestId){
+		broadcast("published "+requestId);
+	}
+	public static void broadcastRequestClosed(int requestId){
+		broadcast("closed "+requestId);
 	}
 }

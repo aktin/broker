@@ -96,6 +96,11 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 		c.getInputStream().close();		
 	}
+	public void publishRequest(String requestId) throws IOException{
+		URI uri = getQueryURI(requestId);
+		HttpURLConnection c = openConnection("POST", uri.resolve(uri.getPath()+"/publish"));
+		c.getInputStream().close();
+	}
 	public void putRequestDefinition(String requestId, String contentType, OutputWriter writer) throws IOException{
 		putRequestDefinition(getQueryURI(requestId), contentType, writer);
 	}

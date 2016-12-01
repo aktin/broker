@@ -48,6 +48,7 @@ public interface BrokerBackend {
 	 */
 	Reader getRequestDefinition(int requestId, String mediaType) throws SQLException, IOException;
 
+	// TODO published and not closed??
 	List<RequestInfo> listRequestsForNode(int nodeId) throws SQLException;
 
 	void setRequestNodeStatus(int requestId, int nodeId, RequestStatus status, Instant timestamp) throws SQLException;
@@ -95,4 +96,15 @@ public interface BrokerBackend {
 	Principal accessPrincipal(String nodeKey, String clientDn) throws SQLException;
 
 	void updateNodeModules(int nodeId, List<SoftwareModule> modules) throws SQLException;
+
+	/**
+	 * Get basic status info for the given request id.
+	 * @param requestId request id
+	 * @return request info or {@code null} if not found
+	 * @throws SQLException SQL error
+	 */
+	RequestInfo getRequestInfo(int requestId) throws SQLException;
+	
+	void setRequestPublished(int requestId, Instant timestamp) throws SQLException;
+	void setRequestClosed(int requestId, Instant timestamp) throws SQLException;
 }

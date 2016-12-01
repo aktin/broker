@@ -1,14 +1,18 @@
 package org.aktin.broker.client;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.jetty.websocket.api.WebSocketListener;
 
 public class ClientWebsocket implements WebSocketListener {
 	public CountDownLatch expectedMessages;
+	public List<String> messages;
 	
 	public ClientWebsocket() {
+		messages = new ArrayList<>();
 		expectedMessages = new CountDownLatch(1);
 	}
 	@Override
@@ -38,6 +42,7 @@ public class ClientWebsocket implements WebSocketListener {
 	@Override
 	public void onWebSocketText(String message) {
 		System.out.println("Client received message: "+message);
+		messages.add(message);
 		expectedMessages.countDown();
 	}
 }
