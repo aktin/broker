@@ -324,7 +324,7 @@ public class BrokerImpl implements BrokerBackend {
 		try( Connection dbc = brokerDB.getConnection() ){
 			PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
 			Statement st = dbc.createStatement();
-			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL ORDER BY r.id");
+			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL ORDER BY r.id");
 			while( rs.next() ){
 				RequestInfo ri = new RequestInfo(Integer.toString(rs.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs,3));
 				RequestStatusInfo status = new RequestStatusInfo();
