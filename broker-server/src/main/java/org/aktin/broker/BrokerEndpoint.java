@@ -87,6 +87,7 @@ public class BrokerEndpoint {
 	public Response allNodes(){
 		try {
 			return Response.ok(new NodeList(db.getAllNodes())).build();
+			// TODO look up last contact in AuthCache
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "unable to retrieve node list", e);
 			return Response.serverError().build();
@@ -104,6 +105,7 @@ public class BrokerEndpoint {
 		Node node;
 		try {
 			node = db.getNode(nodeId);
+			// TODO look up last contact in AuthCache
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "unable to retrieve node list", e);
 			return Response.serverError().build();

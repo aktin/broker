@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -568,6 +570,18 @@ public class BrokerImpl implements BrokerBackend {
 		try( Connection dbc = brokerDB.getConnection() ){
 			updateRequestTimestamp(dbc, requestId, "closed", timestamp);
 			dbc.commit();
+		}
+	}
+	@Override
+	public void updateNodeLastSeen(int[] nodeIds, long[] timestamps) throws SQLException{
+		try( Connection dbc = brokerDB.getConnection() ){
+			PreparedStatement ps = dbc.prepareStatement("UPDATE nodes SET last_contact=? WHERE id=?");
+			for( int i=0; i<nodeIds.length; i++ ){
+				ps.setInt(1, nodeIds[i]);
+				ps.setTimestamp(2, new Timestamp(timestamps[i]));
+				ps.executeUpdate();
+			}
+			ps.close();
 		}
 	}
 }

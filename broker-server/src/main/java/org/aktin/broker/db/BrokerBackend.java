@@ -107,4 +107,6 @@ public interface BrokerBackend {
 	
 	void setRequestPublished(int requestId, Instant timestamp) throws SQLException;
 	void setRequestClosed(int requestId, Instant timestamp) throws SQLException;
+
+	void updateNodeLastSeen(int[] nodeIds, long[] timestamps) throws SQLException;
 }

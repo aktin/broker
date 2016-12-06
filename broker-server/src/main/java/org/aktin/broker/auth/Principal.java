@@ -6,6 +6,7 @@ public class Principal implements java.security.Principal, SecurityContext{
 
 	private int nodeId;
 	private String commonName;
+	private long lastAccessed;
 	
 	public Principal(int nodeId, String clientDn){
 		this.nodeId = nodeId;
@@ -50,4 +51,10 @@ public class Principal implements java.security.Principal, SecurityContext{
 		return SecurityContext.CLIENT_CERT_AUTH;
 	}
 
+	public void updateLastAccessed(){
+		this.lastAccessed = System.currentTimeMillis();
+	}
+	public long getLastAccessed(){
+		return this.lastAccessed;
+	}
 }
