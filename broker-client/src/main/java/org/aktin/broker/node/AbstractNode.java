@@ -29,6 +29,16 @@ public abstract class AbstractNode {
 	public AbstractNode(){
 		this.startup = System.currentTimeMillis();
 	}
+	/**
+	 * Connect to the broker and exchange status information. After retrieving the remote
+	 * status, the client status with modules and software versions are submitted.
+	 * <p>
+	 * To report additional software versions, override {@link #fillSoftwareModulesVersions(Map)}.
+	 * </p>
+	 * @param broker_endpoint endpoint URL
+	 * @param auth authenticator
+	 * @throws IOException IO error
+	 */
 	public final void connectBroker(String broker_endpoint, ClientAuthenticator auth) throws IOException{
 		try {
 			this.broker = new BrokerClient(new URI(broker_endpoint));
@@ -47,8 +57,8 @@ public abstract class AbstractNode {
 	}
 
 	/**
-	 * Fill software modules
-	 * @param modules
+	 * Fill software modules. Override this method to add additional versions.
+	 * @param modules destination string map to store the versions
 	 */
 	protected void fillSoftwareModulesVersions(Map<String,String> versions){
 		versions.put("org.aktin.broker.node", AbstractNode.class.getPackage().getImplementationVersion());
