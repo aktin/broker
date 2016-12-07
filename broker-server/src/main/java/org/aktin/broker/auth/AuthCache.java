@@ -3,6 +3,7 @@ package org.aktin.broker.auth;
 import java.io.Flushable;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.aktin.broker.db.BrokerBackend;
+import org.aktin.broker.xml.Node;
 
 
 @Singleton
@@ -42,6 +44,23 @@ public class AuthCache implements Flushable{
 		return p;
 	}
 
+	/**
+	 * Get the cached last contact timestamp. If the node did not have contact 
+	 * since server startup, the node's timestamp will not be modified.
+	 * @param nodes nodes to update the timestamp
+	 */
+	public void fillCachedAccessTimestamps(Iterable<Node> nodes){
+		Map<Integer,Long> timestamps = new HashMap<>();
+		for( Principal p : cache.values() ){
+			timestamps.put(p.getNodeId(), p.getLastAccessed());
+		}
+		for( Node node : nodes ){
+			Long ts = timestamps.get(node.id);
+			if( ts != null ){
+				node.lastContact = Instant.ofEpochMilli(ts);
+			}
+		}
+	}
 	// TODO also flush sometimes before close
 
 	@PreDestroy

@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -200,6 +201,27 @@ public class TestBroker {
 		Assert.assertTrue( c.listMyRequests().isEmpty() );
 		Assert.assertEquals(1, r.size());
 		Assert.assertEquals("test/vnd.test.result", r.get(0).type);
+	}
+	@Test
+	public void verifyLastContactUpdated() throws IOException{
+		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
+		String testId = "01";
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		String qid = a.createRequest("text/x-test-1", "test1");
+		a.publishRequest(qid);
+
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
+		List<RequestInfo> l = c.listMyRequests();
+		Assert.assertEquals(1, l.size());
+		// we should have a timestamp for last contact of the client
+		Node node = a.getNode(0);
+		Assert.assertNotNull(node);
+		Instant t1 = node.lastContact;
+		Assert.assertNotNull(t1);
+		// do any interaction with the server and check whether the timestamp was updated
+		c.getBrokerStatus();
+		node = a.getNode(0);
+		Assert.assertTrue(t1.isBefore(node.lastContact));
 	}
 	@Test
 	public void testWebsocket() throws Exception{

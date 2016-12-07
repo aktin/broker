@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,6 +33,7 @@ import javax.ws.rs.core.Variant;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import org.aktin.broker.auth.AuthCache;
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.notify.BrokerWebsocket;
@@ -62,6 +64,9 @@ public class BrokerEndpoint {
 	private BrokerBackend db;
 
 	@Inject
+	private AuthCache auth; // for cached last contact timestamp
+
+	@Inject
 	RequestTypeManager typeManager;
 
 	/**
@@ -86,8 +91,10 @@ public class BrokerEndpoint {
 	@Produces(MediaType.APPLICATION_XML)
 	public Response allNodes(){
 		try {
-			return Response.ok(new NodeList(db.getAllNodes())).build();
-			// TODO look up last contact in AuthCache
+			List<Node> nodes = db.getAllNodes();
+			auth.fillCachedAccessTimestamps(nodes);
+			return Response.ok(new NodeList(nodes)).build();
+			// look up cached last contact in AuthCache
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "unable to retrieve node list", e);
 			return Response.serverError().build();
@@ -105,7 +112,8 @@ public class BrokerEndpoint {
 		Node node;
 		try {
 			node = db.getNode(nodeId);
-			// TODO look up last contact in AuthCache
+			// look up cached last contact in AuthCache
+			auth.fillCachedAccessTimestamps(Collections.singletonList(node));
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "unable to retrieve node list", e);
 			return Response.serverError().build();
