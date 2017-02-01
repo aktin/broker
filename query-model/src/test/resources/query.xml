@@ -29,6 +29,7 @@
 			<column header="modified" xpath="eav:source/@timestamp" />
 		</patient-table>
 		<visit-table>
+			<column header="pid" xpath="../@id" />
 			<column header="vid" xpath="@id" />
 			<column header="start" xpath="eav:start" />
 			<column header="f_start" xpath="eav:fact[@concept='T:full']/@start" />
@@ -39,7 +40,35 @@
 	</export>
 	<!-- also possible: xsi:type="psm:query_definition" -->
 	<!-- also possible: xsi:type="dwh:eclectic_query", see http://methods.schattauer.de/en/contents/archivestandard/issue/2168/manuscript/21349/show.html -->
-	<dwh:sql xsi:type="dwh:sqlt">
-		SELECT a, b;
+	<dwh:sql xsi:type="dwh:sqlt" datasource="java:/WorkplaceDemoDS">
+		<source type="application/sql" date-format="..." command-separator=";\n"><![CDATA[
+			CREATE TEMPORARY TABLE temp_patients(id, sex);
+			CREATE TEMPORARY TABLE temp_encounters(id, patient, start);
+			CREATE TEMPORARY TABLE temp_diag(patient, encounter, diag);
+			-- TODO ddl with placeholders
+			INSERT INTO temp_patients SELECT x,y FROM t WHERE z > '${data.start}' AND z < '${data.end}';
+			
+			]]>
+		</source>
+		<anonymize>
+			<key table="temp_patients" column="id"/>
+			<ref table="temp_encounters" column="patient"/>
+			<ref table="temp_diag" column="patient"/>
+			<!-- PRODUCES:
+			CREATE TEMPORARY TABLE anon_map AS SELECT id FROM temp_patients WHERE FALSE;
+			ALTER TABLE anon_map ADD COLUMN target(INTEGER NOT NULL AUTO_INCREMENT);
+			INSERT INTO anon_map(id) (SELECT DISTINCT id FROM temp_patients);
+			ALTER TABLE temp_patients ADD COLUMN a_id(INTEGER NOT NULL);
+			UPDATE temp_patients SET a_id=map.target WHERE id=map.id (FROM anon_Map map);
+			ALTER TABLE temp_patients DROP COLUMN id;
+			... also for ref tables -->
+		</anonymize>
+		<anonymize>
+			<key table="temp_encounters" column="id"/>
+			<ref table="temp_diag" column="encounter"/>
+		</anonymize>		
+		<export table="temp_patients" destination="patients.txt"/>
+		<export table="temp_encounters" destination="encounters.txt"/>
+		<export table="temp_diag" destination="diag.txt"/>
 	</dwh:sql>
 </query>
