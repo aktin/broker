@@ -72,6 +72,10 @@ public class BrokerImpl implements BrokerBackend {
 //			Statement st = dbc.createStatement();
 //			ResultSet rs = st.executeQuery("SELECT id, subject_dn, last_contact FROM nodes");
 			while( rs.next() ){
+				// admins are not returned unless explicitly asked for
+				if( Principal.isAdminDN(rs.getString(2)) ){
+					continue;
+				}
 				nl.add(new Node(rs.getInt(1), rs.getString(2), rs.getTimestamp(3).toInstant()));
 			}
 			rs.close();

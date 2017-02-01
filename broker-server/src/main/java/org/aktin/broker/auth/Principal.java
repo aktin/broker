@@ -6,10 +6,12 @@ public class Principal implements java.security.Principal, SecurityContext{
 
 	private int nodeId;
 	private String commonName;
+	private String clientDn;
 	private long lastAccessed;
 	
 	public Principal(int nodeId, String clientDn){
 		this.nodeId = nodeId;
+		this.clientDn = clientDn;
 		// TODO load client DN correctly
 		if( clientDn != null && clientDn.startsWith("CN=") ){
 			int e = clientDn.indexOf(',');
@@ -19,6 +21,7 @@ public class Principal implements java.security.Principal, SecurityContext{
 			}
 			commonName = clientDn.substring(3, e);
 		}
+		
 	}
 	@Override
 	public String getName() {
@@ -39,8 +42,7 @@ public class Principal implements java.security.Principal, SecurityContext{
 	}
 	@Override
 	public boolean isUserInRole(String role) {
-		// TODO Auto-generated method stub
-		return false;
+		return role.equals("admini");
 	}
 	@Override
 	public boolean isSecure() {
@@ -49,6 +51,13 @@ public class Principal implements java.security.Principal, SecurityContext{
 	@Override
 	public String getAuthenticationScheme() {
 		return SecurityContext.CLIENT_CERT_AUTH;
+	}
+	public boolean isAdmin(){
+		return isAdminDN(clientDn);
+	}
+	public static final boolean isAdminDN(String clientDn){
+		// TODO correct parsing/handling of DN
+		return clientDn != null && clientDn.contains("OU=admin");		
 	}
 
 	public void updateLastAccessed(){

@@ -30,7 +30,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestBroker {
+	private static final String CLIENT_01_CN = "CN=Test Nachname,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
+	String ADMIN_00_CN = "CN=Test Adm,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
+	String CLIENT_01_SERIAL = "01";
+	String ADMIN_00_SERIAL = "00";
 	private TestServer server;
+
 	@Before
 	public void setupServer() throws Exception{
 		server = new TestServer();
@@ -85,7 +90,7 @@ public class TestBroker {
 	}
 	@Test
 	public void testAddDeleteQuery() throws IOException{
-		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
+		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen,OU=admin";
 		String testId = "01";
 		TestAdmin c = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		// assume list is empty
@@ -106,10 +111,8 @@ public class TestBroker {
 	}
 	@Test
 	public void reportAndReadRequestStatus() throws IOException{
-		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
-		String testId = "01";
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
 		// create request
 		a.createRequest("text/vnd.test1", "test");
 		// retrieve request
@@ -133,10 +136,8 @@ public class TestBroker {
 
 	@Test
 	public void testAddRequestDeleteMyQuery() throws IOException{
-		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
-		String testId = "01";
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
 		// assume list is empty
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertTrue(l.isEmpty());
@@ -161,9 +162,7 @@ public class TestBroker {
 	}
 	@Test
 	public void testRequestWithMultipleDefinitions() throws IOException{
-		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
-		String testId = "01";
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		Assert.assertEquals(0, a.listAllRequests().size());
 		String qid = a.createRequest("text/x-test-1", "test1");
 		a.putRequestDefinition(qid, "text/x-test-2", "test2");			
@@ -184,13 +183,11 @@ public class TestBroker {
 	}
 	@Test
 	public void testRequestSubmitResult() throws IOException{
-		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
-		String testId = "01";
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		String qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
 		// submit result with aggregatorClient
@@ -204,23 +201,22 @@ public class TestBroker {
 	}
 	@Test
 	public void verifyLastContactUpdated() throws IOException{
-		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
-		String testId = "01";
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		String qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
 		// we should have a timestamp for last contact of the client
-		Node node = a.getNode(0);
+		Node node = a.getNode(1);
+		Assert.assertEquals(CLIENT_01_CN, node.clientDN);
 		Assert.assertNotNull(node);
 		Instant t1 = node.lastContact;
 		Assert.assertNotNull(t1);
-		// do any interaction with the server and check whether the timestamp was updated
-		c.getBrokerStatus();
-		node = a.getNode(0);
+		// do any *authenticated* interaction with the server and check whether the timestamp was updated
+		c.listMyRequests();
+		node = a.getNode(1);
 		Assert.assertTrue(t1.isBefore(node.lastContact));
 	}
 	@Test
@@ -239,7 +235,7 @@ public class TestBroker {
 
 
 		// add request
-		String testCn = "/CN=Test Nachname/ST=Hessen/C=DE/O=DZL/OU=Uni Giessen";
+		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
 		String testId = "01";
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		String qid = a.createRequest("text/x-test-1", "test1");

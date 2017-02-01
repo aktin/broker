@@ -11,6 +11,7 @@ import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
 
 import org.aktin.broker.BrokerEndpoint;
+import org.aktin.broker.auth.AuthFilterAdmin;
 import org.aktin.broker.auth.AuthFilterSSLHeaders;
 import org.aktin.broker.db.TestDataSource;
 import org.aktin.broker.db.TestDatabaseHSQL;
@@ -39,7 +40,8 @@ public class TestServer {
 	public TestServer() throws SQLException{
 		ds = new TestDataSource(new TestDatabaseHSQL());
 		rc = new ResourceConfig();
-		rc.register(AuthFilterSSLHeaders.class);
+		rc.register(SSLHeaderAuth.class);
+		rc.register(AuthFilterAdmin.class);
 		rc.register(BrokerEndpoint.class);
 		rc.register(AggregatorEndpoint.class);
 		rc.register(new MyBinder(ds));		
