@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -67,6 +65,7 @@ public class BrokerImpl implements BrokerBackend {
 	public List<Node> getAllNodes() throws SQLException{
 		List<Node> nl = new ArrayList<>();
 		try( Connection dbc = brokerDB.getConnection() ){
+			// XXX maybe better to add an is_admin column
 			PreparedStatement st = dbc.prepareStatement("SELECT id, subject_dn, last_contact FROM nodes");
 			ResultSet rs = st.executeQuery();
 //			Statement st = dbc.createStatement();

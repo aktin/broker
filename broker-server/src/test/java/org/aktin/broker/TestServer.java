@@ -12,7 +12,6 @@ import javax.websocket.server.ServerContainer;
 
 import org.aktin.broker.BrokerEndpoint;
 import org.aktin.broker.auth.AuthFilterAdmin;
-import org.aktin.broker.auth.AuthFilterSSLHeaders;
 import org.aktin.broker.db.TestDataSource;
 import org.aktin.broker.db.TestDatabaseHSQL;
 import org.aktin.broker.notify.BrokerWebsocket;
