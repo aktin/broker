@@ -47,6 +47,10 @@ public abstract class AbstractClient {
 	public void setEndpoint(URI endpointURI){
 		this.endpointURI = endpointURI;
 	}
+
+	public URI getEndpoint(){
+		return this.endpointURI;
+	}
 	public void setClientAuthenticator(ClientAuthenticator clientAuth){
 		this.auth = clientAuth;
 	}
