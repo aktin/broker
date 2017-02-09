@@ -146,13 +146,14 @@ public class BrokerEndpoint {
 	@Authenticated
 	@GET
 	@Path("my/request")
-	public Response listNodesRequests(@Context SecurityContext sec){
+	@Produces(MediaType.APPLICATION_XML)
+	public RequestList listNodesRequests(@Context SecurityContext sec){
 		Principal user = (Principal)sec.getUserPrincipal();
 		try {
-			return Response.ok(new RequestList(db.listRequestsForNode(user.getNodeId()))).build();
+			return new RequestList(db.listRequestsForNode(user.getNodeId()));
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to read requests for nodeId="+user.getNodeId(), e);
-			return Response.serverError().build();
+			throw new InternalServerErrorException(e);
 		}
 	}
 	@Authenticated
