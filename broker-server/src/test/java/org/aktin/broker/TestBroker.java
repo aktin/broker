@@ -209,14 +209,14 @@ public class TestBroker {
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
 		// we should have a timestamp for last contact of the client
-		Node node = a.getNode(1);
+		Node node = a.getNode(0);
 		Assert.assertEquals(CLIENT_01_CN, node.clientDN);
 		Assert.assertNotNull(node);
 		Instant t1 = node.lastContact;
 		Assert.assertNotNull(t1);
 		// do any *authenticated* interaction with the server and check whether the timestamp was updated
 		c.listMyRequests();
-		node = a.getNode(1);
+		node = a.getNode(0);
 		Assert.assertTrue(t1.isBefore(node.lastContact));
 	}
 	@Test

@@ -61,8 +61,8 @@ public class AggregatorEndpoint {
 		return Response.noContent().build();
 	}
 	
-	@Authenticated
-	@RequireAdmin
+//	@Authenticated
+//	@RequireAdmin
 	@GET
 	@Path("request/{id}/result")
 	@Produces(MediaType.APPLICATION_XML)
@@ -80,8 +80,8 @@ public class AggregatorEndpoint {
 		return Response.ok(new ResultList(results)).build();
 	}
 
-	@Authenticated
-	@RequireAdmin
+//	@Authenticated
+//	@RequireAdmin
 	@GET
 	@Path("request/{id}/result/{nodeId}")
 	public Response listResultsForRequest(@PathParam("id") String requestId, @PathParam("nodeId") String nodeId){

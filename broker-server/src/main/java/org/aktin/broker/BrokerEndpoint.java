@@ -242,8 +242,8 @@ public class BrokerEndpoint {
 		// TODO other media type parameters are not preserved (e.g. ;version=1.2, do we need these?
 		return new MediaType(type.getType(), type.getSubtype());
 	}
-	@Authenticated
-	@RequireAdmin
+//	@Authenticated
+//	@RequireAdmin
 	@POST
 	@Path("request")
 	public Response createRequest(Reader content, @Context HttpHeaders headers) throws URISyntaxException{
@@ -258,8 +258,8 @@ public class BrokerEndpoint {
 			return Response.serverError().build();
 		}
 	}
-	@Authenticated
-	@RequireAdmin
+//	@Authenticated
+//	@RequireAdmin
 	@PUT
 	@Path("request/{id}")
 	public Response createRequest(@PathParam("id") String requestId, Reader content, @Context HttpHeaders headers) throws URISyntaxException{
@@ -290,8 +290,8 @@ public class BrokerEndpoint {
 			return Response.serverError().build();			
 		}
 	}
-	@Authenticated
-	@RequireAdmin
+//	@Authenticated
+//	@RequireAdmin
 	@DELETE
 	@Path("request/{id}")
 	public Response deleteRequest(@PathParam("id") String id){
@@ -381,8 +381,8 @@ public class BrokerEndpoint {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 	
-	@Authenticated
-	@RequireAdmin
+//	@Authenticated
+//	@RequireAdmin
 	@POST
 	@Path("request/{id}/publish")
 	public void publishRequest(@PathParam("id") Integer requestId) throws SQLException{
@@ -404,8 +404,8 @@ public class BrokerEndpoint {
 			BrokerWebsocket.broadcastRequestPublished(requestId);
 		}
 	}
-	@Authenticated
-	@RequireAdmin
+//	@Authenticated
+//	@RequireAdmin
 	@POST
 	@Path("request/{id}/close")
 	public void closeRequest(@PathParam("id") Integer requestId) throws SQLException{
