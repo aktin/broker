@@ -22,6 +22,7 @@ import javax.inject.Singleton;
 import javax.sql.DataSource;
 
 import org.aktin.broker.auth.Principal;
+import org.aktin.broker.server.Broker;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
@@ -30,7 +31,7 @@ import org.aktin.broker.xml.SoftwareModule;
 import org.aktin.broker.xml.util.Util;
 
 @Singleton
-public class BrokerImpl implements BrokerBackend {
+public class BrokerImpl implements BrokerBackend, Broker {
 	private static final Logger log = Logger.getLogger(BrokerImpl.class.getName());
 	private DataSource brokerDB;
 	/**
@@ -39,7 +40,7 @@ public class BrokerImpl implements BrokerBackend {
 	 * might be written to a temporary file which will
 	 * be deleted automatically.
 	 */
-	private int inMemoryTreshold = 4096;
+	private int inMemoryTreshold = 65536;
 	
 	private static final String SELECT_MEDIATYPE_BY_REQUESTID = "SELECT media_type FROM request_definitions WHERE request_id=?";
 
