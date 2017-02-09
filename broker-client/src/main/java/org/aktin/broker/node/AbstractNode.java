@@ -122,7 +122,7 @@ public abstract class AbstractNode {
 
 	/**
 	 * Fill software modules. Override this method to add additional versions.
-	 * @param modules destination string map to store the versions
+	 * @param versions destination string map to store the versions
 	 */
 	protected void fillSoftwareModulesVersions(Map<String,String> versions){
 		versions.put("org.aktin.broker.node", AbstractNode.class.getPackage().getImplementationVersion());

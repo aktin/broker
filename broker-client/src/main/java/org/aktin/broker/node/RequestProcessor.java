@@ -11,7 +11,7 @@ public interface RequestProcessor extends AutoCloseable{
 	/**
 	 * Checks whether the request can be handled by this processor.
 	 * This method can be used before a call to  
-	 * @param request request information
+	 * @param info request information
 	 * @return {@code true} if the request can be processed. {@code false} otherwise.
 	 */
 	public boolean canHandleRequest(RequestInfo info);
@@ -30,5 +30,5 @@ public interface RequestProcessor extends AutoCloseable{
 	 * @param broker broker
 	 * @throws IOException error
 	 */
-	public void processRequests(List<RequestInfo> request, BrokerClient broker) throws IOException;
+	public void processRequests(List<RequestInfo> requests, BrokerClient broker) throws IOException;
 }
