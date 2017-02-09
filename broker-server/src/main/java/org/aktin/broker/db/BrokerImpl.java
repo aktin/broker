@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -41,7 +39,7 @@ public class BrokerImpl implements BrokerBackend {
 	 * might be written to a temporary file which will
 	 * be deleted automatically.
 	 */
-	private int inMemoryTreshold = 4096;
+	private int inMemoryTreshold = 65536;
 	
 	private static final String SELECT_MEDIATYPE_BY_REQUESTID = "SELECT media_type FROM request_definitions WHERE request_id=?";
 
