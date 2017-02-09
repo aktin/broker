@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +18,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -108,22 +110,20 @@ public class BrokerEndpoint {
 	@GET
 	@Path("node/{id}")
 	@Produces(MediaType.APPLICATION_XML)
-	public Response getNodeInfo(@PathParam("id") int nodeId){
+	public Node getNodeInfo(@PathParam("id") int nodeId){
 		Node node;
 		try {
 			node = db.getNode(nodeId);
+			if( node == null ){
+				throw new NotFoundException();
+			}
 			// look up cached last contact in AuthCache
 			auth.fillCachedAccessTimestamps(Collections.singletonList(node));
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "unable to retrieve node list", e);
-			return Response.serverError().build();
+			throw new InternalServerErrorException(e);
 		}
-		if( node == null ){
-			// not found
-			return Response.status(404).build();
-		}else{
-			return Response.ok(node).build();			
-		}
+		return node;
 	}
 	
 	/**
