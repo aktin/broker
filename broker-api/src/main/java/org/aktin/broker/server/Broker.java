@@ -89,4 +89,14 @@ public interface Broker {
 	
 	void setRequestPublished(int requestId, Instant timestamp) throws SQLException;
 	void setRequestClosed(int requestId, Instant timestamp) throws SQLException;
+
+
+	/**
+	 * Retrieve the status message reported by the specified node for the specified request.
+	 * TODO also return media type.
+	 * @param requestId request id
+	 * @param nodeId node id
+	 * @return reader for the status message
+	 */
+	Reader getRequestNodeStatusMessage(int requestId, int nodeId) throws SQLException, IOException;
 }

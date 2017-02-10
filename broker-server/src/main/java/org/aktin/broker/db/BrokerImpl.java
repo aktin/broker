@@ -433,6 +433,25 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			dbc.commit();
 		}
 	}
+
+	// TODO unit test
+	@Override
+	public Reader getRequestNodeStatusMessage(int requestId, int nodeId) throws SQLException, IOException{
+		try( Connection dbc = brokerDB.getConnection() ){
+			PreparedStatement ps = dbc.prepareStatement("SELECT message_type, message FROM request_node_status WHERE request_id=? AND node_id=?");
+			ps.setInt(1, requestId);
+			ps.setInt(2, nodeId);
+			ResultSet rs = ps.executeQuery();
+			if( !rs.next() ){
+				return null;
+			}
+			Clob clob = rs.getClob(2);
+			if( clob == null ){
+				return null;
+			}
+			return createTemporaryClobReader(clob);
+		}
+	}
 	/* (non-Javadoc)
 	 * @see org.aktin.broker.db.BrokerBackend#markRequestDeletedForNode(int, int)
 	 */

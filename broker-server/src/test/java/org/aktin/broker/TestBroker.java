@@ -1,5 +1,6 @@
 package org.aktin.broker;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Reader;
@@ -180,6 +181,28 @@ public class TestBroker {
 		a.putRequestDefinition(qid, "text/x-test-2", "test2-2");
 		Reader r = a.getRequestDefinition(qid, "text/x-test-2");
 		Assert.assertEquals("test2-2", Util.readContent(r));		
+	}
+	@Test
+	public void failQueryVerifyErrorMessage() throws IOException{
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
+		// assume list is empty
+		List<RequestInfo> l = c.listMyRequests();
+		Assert.assertTrue(l.isEmpty());
+		// add request
+		String qid = a.createRequest("text/x-test", "test");
+		a.publishRequest(qid);
+		
+		// report failure
+		c.getMyRequestDefinitionString("0", "text/x-test");
+		c.postRequestFailed("0", "message", new AssertionError());
+
+		// retrieve failure
+		try( BufferedReader b = new BufferedReader(a.getRequestNodeMessage(qid, 0)) ){
+			Assert.assertEquals(b.readLine(), "message");
+			Assert.assertEquals(AssertionError.class.getName(), b.readLine());
+		}
+		// TODO unit test for null request node message
 	}
 	@Test
 	public void testRequestSubmitResult() throws IOException{

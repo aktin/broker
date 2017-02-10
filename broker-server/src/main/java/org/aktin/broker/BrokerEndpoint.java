@@ -376,10 +376,14 @@ public class BrokerEndpoint {
 	// TODO add method to retrieve request node status message (e.g. error messages)
 	@GET
 	@Path("request/{id}/status/{nodeId}")
-	public Response getRequestNodeStatusMessage(@PathParam("id") String requestId, @PathParam("nodeId") String nodeId){
+	public Response getRequestNodeStatusMessage(@PathParam("id") Integer requestId, @PathParam("nodeId") Integer nodeId) throws SQLException, IOException{
 		// TODO set header: timestamp, custom header with status code
-		// TODO implement
-		throw new UnsupportedOperationException("Not implemented yet");
+		Reader r = db.getRequestNodeStatusMessage(requestId, nodeId);
+		if( r == null ){
+			throw new NotFoundException();
+		}
+		// TODO retrieve and return exact media type
+		return Response.ok(r, MediaType.TEXT_PLAIN).build();
 	}
 	
 //	@Authenticated

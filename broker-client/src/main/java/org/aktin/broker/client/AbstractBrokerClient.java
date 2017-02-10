@@ -53,8 +53,21 @@ public abstract class AbstractBrokerClient extends AbstractClient{
 			return JAXB.unmarshal(response, BrokerStatus.class);
 		}
 	}
+	/**
+	 * Retrieve reader to receive the content
+	 * @param c URL connection
+	 * @param mediaType media type, which will be specified in the {@code Accept} request header. If {@code null} this header is omitted.
+	 * @return reader or {@code null} for status 404 not found
+	 * @throws UnsupportedEncodingException if the response content type specified an unsupported encoding
+	 * @throws IOException io error
+	 */
 	protected Reader contentReader(HttpURLConnection c, String mediaType) throws UnsupportedEncodingException, IOException{
-		c.addRequestProperty("Accept", mediaType);
+		if( mediaType != null ){
+			c.addRequestProperty("Accept", mediaType);
+		}
+		if( c.getResponseCode() == 404 ){
+			return null;
+		}
 		String contentType = c.getContentType();
 		// use charset from content-type header
 		int csi = contentType.indexOf("charset=");

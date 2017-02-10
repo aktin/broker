@@ -49,6 +49,12 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		return contentReader(c, mediaType);	
 		
 	}
+	// TODO return actual media type
+	public Reader getRequestNodeMessage(String requestId, int nodeId) throws IOException{
+		URI uri = getQueryURI(requestId);
+		HttpURLConnection c = openConnection("GET", uri.resolve(uri.getPath()+"/status/"+nodeId));
+		return contentReader(c, null);	
+	}
 	/**
 	 * Create a request with specified content type and content
 	 * @param contentType content type
