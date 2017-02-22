@@ -124,6 +124,27 @@ public class BrokerEndpoint {
 		}
 		return node;
 	}
+	/**
+	 * Retrieve information about a single node.
+	 * @param nodeId node id
+	 * @return status {@code 200} with node info or status {@code 404} if not found. 
+	 */
+	@GET
+	@Path("node/{id}/status")
+	@Produces(MediaType.APPLICATION_XML)
+	public String getNodeStatus(@PathParam("id") int nodeId){
+		String content;
+		try {
+			content = db.getNodeStatusContent(nodeId);
+		} catch (SQLException e) {
+			log.log(Level.SEVERE, "unable to retrieve node status", e);
+			throw new InternalServerErrorException(e);
+		}
+		if( content == null ){
+			throw new NotFoundException();
+		}
+		return content;
+	}
 	
 	/**
 	 * Report the local node status to the broker.

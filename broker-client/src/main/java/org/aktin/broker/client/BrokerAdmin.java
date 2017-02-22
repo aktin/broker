@@ -55,6 +55,10 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		HttpURLConnection c = openConnection("GET", uri.resolve(uri.getPath()+"/status/"+nodeId));
 		return contentReader(c, null);	
 	}
+	public Reader getNodeStatus(int nodeId) throws IOException{
+		HttpURLConnection c = openConnection("GET", "node/"+nodeId+"/status");
+		return contentReader(c, null);	
+	}
 	/**
 	 * Create a request with specified content type and content
 	 * @param contentType content type

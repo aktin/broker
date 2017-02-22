@@ -11,11 +11,11 @@ import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
-import org.aktin.broker.xml.SoftwareModule;
 
 public interface Broker {
 	List<Node> getAllNodes() throws SQLException;
 	Node getNode(int nodeId) throws SQLException;
+	String getNodeStatusContent(int nodeId) throws SQLException;
 
 	int createRequest(String mediaType, Reader content) throws SQLException;
 

@@ -8,6 +8,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Node information from server point of view.
+ *
+ * @author R.W.Majeed
+ *
+ */
 @XmlRootElement(name="node")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Node {

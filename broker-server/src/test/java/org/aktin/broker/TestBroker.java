@@ -60,9 +60,13 @@ public class TestBroker {
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test1"));
 		Assert.assertEquals("test1", a.getNode(0).modules.get("TEST"));
-		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test2"));
+		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test2"), new XmlPayload("elval","atval"));
 		Assert.assertEquals("test2", a.getNode(0).modules.get("TEST"));
 		// TODO should be only TEST -> test2 in database
+		Reader r = a.getNodeStatus(0);
+		assertNotNull(r);
+		System.out.println(Util.readContent(r));
+		r.close();
 	}
 	
 	@Test

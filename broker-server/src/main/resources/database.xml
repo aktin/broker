@@ -155,7 +155,9 @@
    		</createIndex>
 	</changeSet>
 	<changeSet id="v0.3" author="rwm">
-		<!--  TODO add column nodes.status_content(TEXT) -->
+		<addColumn tableName="nodes">
+			<column name="status_content" type="TEXT"/>
+		</addColumn>
 	</changeSet>
 
 </databaseChangeLog>

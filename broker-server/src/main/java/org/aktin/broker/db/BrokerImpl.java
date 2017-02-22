@@ -595,8 +595,11 @@ public class BrokerImpl implements BrokerBackend, Broker {
 				String xml;
 				try {
 					xml = convertNodeToString((org.w3c.dom.Node)status.getPayload());
-					// TODO set status content
-					log.warning("TODO write status payload: "+xml);
+					ps = dbc.prepareStatement("UPDATE nodes SET status_content=? WHERE id=?");
+					ps.setInt(2, nodeId);
+					ps.setString(1, xml);
+					ps.executeUpdate();
+					ps.close();
 				} catch (TransformerException e) {
 					log.log(Level.SEVERE, "Unable to generate XML string for payload", e);
 				}
@@ -641,5 +644,19 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			}
 			ps.close();
 		}
+	}
+	@Override
+	public String getNodeStatusContent(int nodeId) throws SQLException {
+		String status = null;
+		try( Connection dbc = brokerDB.getConnection() ){
+			Statement st = dbc.createStatement();
+			ResultSet rs = st.executeQuery("SELECT status_content FROM nodes WHERE id="+nodeId);
+			if( rs.next() ){
+				status = rs.getString(1);
+			}
+			rs.close();
+			st.close();
+		}
+		return status;
 	}
 }
