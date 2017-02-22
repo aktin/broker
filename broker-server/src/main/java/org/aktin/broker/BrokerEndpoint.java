@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -310,15 +309,16 @@ public class BrokerEndpoint {
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to delete request "+id, e);
 			return Response.serverError().build();
-		} catch( NumberFormatException e ){
-			return Response.status(404).build();
 		}
 	}
 	@GET
 	@Path("request/{id}")
-	public Response getRequest(@PathParam("id") Integer requestId, @Context HttpHeaders headers) throws SQLException, IOException{
+	public Response getRequest(@PathParam("id") Integer requestId, @Context HttpHeaders headers) throws SQLException, IOException, NotFoundException{
 			List<MediaType> accept = headers.getAcceptableMediaTypes();
 		MediaType[] available = typeManager.createMediaTypes(db.getRequestTypes(requestId));
+		if( available.length == 0 ){
+			throw new NotFoundException();
+		}
 		// find acceptable request definition
 		RequestConverter rc = typeManager.buildConverterChain(accept, Arrays.asList(available));
 

@@ -112,6 +112,16 @@ public class TestBroker {
 
 		Assert.assertEquals("test", Util.readContent(def));
 	}
+
+	@Test
+	public void expect404ForNonExistentRequests() throws IOException{
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
+		assertNull(a.getRequestDefinition("0", "text/plain"));
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
+		assertNull(c.getMyRequestDefinitionString("0", "text/plain"));
+		assertNull(c.getMyRequestDefinitionXml("0", "text/plain"));
+		assertNull(c.getMyRequestDefinitionLines("0", "text/plain"));
+	}
 	@Test
 	public void reportAndReadRequestStatus() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);

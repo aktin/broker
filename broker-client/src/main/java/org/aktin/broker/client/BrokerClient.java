@@ -108,13 +108,25 @@ public class BrokerClient extends AbstractBrokerClient{
 		return contentReader(c, mediaType);
 	}
 	public Document getMyRequestDefinitionXml(String id, String mediaType) throws IOException{
-		try( Reader reader = getMyRequestDefinitionReader(id, mediaType) ){
+		Reader reader = getMyRequestDefinitionReader(id, mediaType);
+		if( reader == null ){
+			// not found
+			return null;
+		}
+		try{
 			return Util.parseDocument(reader);
+		}finally{
+			reader.close();
 		}
 	}
 	public String[] getMyRequestDefinitionLines(String id, String mediaType) throws IOException{
 		ArrayList<String> lines = new ArrayList<>();
-		try( BufferedReader reader = new BufferedReader(getMyRequestDefinitionReader(id, mediaType)) ){
+		Reader def = getMyRequestDefinitionReader(id, mediaType);
+		if( def == null ){
+			// not found
+			return null;
+		}
+		try( BufferedReader reader = new BufferedReader(def) ){
 			for( String line=reader.readLine(); line!=null; line = reader.readLine() ){
 				lines.add(line);
 			}
@@ -123,7 +135,12 @@ public class BrokerClient extends AbstractBrokerClient{
 	}
 	public String getMyRequestDefinitionString(String id, String mediaType) throws IOException{
 		StringBuilder builder = new StringBuilder();
-		try( BufferedReader reader = new BufferedReader(getMyRequestDefinitionReader(id, mediaType)) ){
+		Reader def = getMyRequestDefinitionReader(id, mediaType);
+		if( def == null ){
+			// not found
+			return null;
+		}
+		try( BufferedReader reader = new BufferedReader(def) ){
 			char[] buf = new char[2048];
 			while( true ){
 				int len = reader.read(buf, 0, buf.length);
