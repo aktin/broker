@@ -157,6 +157,13 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 		return postprocessRequestList(list);
 	}
+	/**
+	 * Retrieve request info. This info does not include the node status.
+	 * 
+	 * @param requestId request id
+	 * @return request info
+	 * @throws IOException communications error
+	 */
 	public RequestInfo getRequestInfo(String requestId) throws IOException{
 		HttpURLConnection c = openConnection("OPTIONS", "request/"+requestId);
 		if( c.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND ){

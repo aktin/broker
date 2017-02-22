@@ -30,6 +30,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
 public class TestBroker {
 	private static final String CLIENT_01_CN = "CN=Test Nachname,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
 	String ADMIN_00_CN = "CN=Test Adm,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
@@ -73,7 +75,7 @@ public class TestBroker {
 		System.out.println(s);
 
 		// posting status will trigger authentication
-		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "1"));
+		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "1"), new XmlPayload("el-val", "attr-val") );
 
 		TestAdmin a = new TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		// verify client list
@@ -115,18 +117,32 @@ public class TestBroker {
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
 		// create request
-		a.createRequest("text/vnd.test1", "test");
+		String rid = a.createRequest("text/vnd.test1", "test");
+		a.publishRequest(rid);
+		// listing requests should not update the request status for the nodes
+		List<RequestInfo> ril = c.listMyRequests();
+		assertEquals(1, ril.size());
+		List<RequestStatusInfo> list = a.listRequestStatus(rid);
+		// no status info expected
+		assertEquals(0, list.size());
+		
 		// retrieve request
 		String def = c.getMyRequestDefinitionString("0", "text/vnd.test1");
-		Assert.assertEquals("test",  def);
+		assertEquals("test",  def);
+		// request status should be automatically set to retrieved
+		list = a.listRequestStatus("0");
+		assertEquals(1, list.size());
+		assertNotNull(list.get(0).retrieved);
+
 		// report status
 		c.postRequestStatus("0", RequestStatus.queued);
 		// request status
-		List<RequestStatusInfo> list = a.listRequestStatus("0");
-		Assert.assertEquals(1, list.size());
-		Assert.assertNotNull(list.get(0).queued);
-		Assert.assertNull(list.get(0).rejected);
-		Assert.assertNull(list.get(0).type); // should be no message type		
+		list = a.listRequestStatus("0");
+		assertEquals(1, list.size());
+		assertNotNull(list.get(0).queued);
+		assertTrue(list.get(0).queued.isAfter(list.get(0).retrieved));
+		assertNull(list.get(0).rejected);
+		assertNull(list.get(0).type); // should be no message type		
 		// update status (e.g. failed)
 		c.postRequestFailed("0", "Only test", new UnsupportedOperationException());
 		list = a.listRequestStatus("0");

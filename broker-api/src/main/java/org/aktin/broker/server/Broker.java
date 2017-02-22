@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.aktin.broker.xml.Node;
+import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
@@ -77,7 +78,7 @@ public interface Broker {
 	 */
 	List<RequestStatusInfo> listRequestNodeStatus(Integer requestId) throws SQLException;
 
-	void updateNodeModules(int nodeId, List<SoftwareModule> modules) throws SQLException;
+	void updateNodeStatus(int nodeId, NodeStatus status) throws SQLException;
 
 	/**
 	 * Get basic status info for the given request id.

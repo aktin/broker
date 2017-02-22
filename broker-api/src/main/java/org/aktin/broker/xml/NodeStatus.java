@@ -7,8 +7,10 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
 
 /**
  * Status for a data warehouse node, as reported by the node.
@@ -33,6 +35,10 @@ public class NodeStatus {
 	 */
 	@XmlElement(name="module")
 	List<SoftwareModule> modules;
+
+	/** Status information payload */
+	@XmlAnyElement(lax=true)
+	Object payload;
 	
 	protected NodeStatus(){
 	}
@@ -53,8 +59,16 @@ public class NodeStatus {
 		this(startup);
 		softwareVersions.forEach( (s,v) -> modules.add(new SoftwareModule(s,v)) );
 	}
+	public NodeStatus(Date startup, Map<String, String> softwareVersions, Object payload){
+		this(startup, softwareVersions);
+		this.payload = payload;
+	}
 
 	public List<SoftwareModule> getModules(){
 		return modules;
+	}
+
+	public Object getPayload(){
+		return payload;
 	}
 }

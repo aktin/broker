@@ -152,9 +152,10 @@
 		<addPrimaryKey tableName="node_modules" columnNames="node_id, module"/>
 		<createIndex tableName="node_modules" indexName="node_modules_node_id" >
 			<column name="node_id"/>
-   		</createIndex>		
-
-
+   		</createIndex>
+	</changeSet>
+	<changeSet id="v0.3" author="rwm">
+		<!--  TODO add column nodes.status_content(TEXT) -->
 	</changeSet>
 
 </databaseChangeLog>

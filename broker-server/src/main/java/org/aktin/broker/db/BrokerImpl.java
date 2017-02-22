@@ -3,6 +3,7 @@ package org.aktin.broker.db;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,15 +16,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.server.Broker;
 import org.aktin.broker.xml.Node;
+import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
@@ -550,8 +559,23 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		}
 		return p;
 	}
+
+
+	private static final String convertNodeToString(org.w3c.dom.Node node) throws TransformerException{
+	    TransformerFactory tf = TransformerFactory.newInstance();
+	    Transformer transformer = tf.newTransformer();
+
+	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+	    transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+	    transformer.setOutputProperty(OutputKeys.INDENT, "no");
+	    StringWriter w = new StringWriter();
+	    transformer.transform(new DOMSource(node), new StreamResult(w));
+
+	    return w.toString();
+	}
 	@Override
-	public void updateNodeModules(int nodeId, List<SoftwareModule> modules) throws SQLException {
+	public void updateNodeStatus(int nodeId, NodeStatus status) throws SQLException {
+		// TODO store module versions and status in memory. flush on close or at intervals
 		try( Connection dbc = brokerDB.getConnection() ){
 			// delete previous data
 			Statement st = dbc.createStatement();
@@ -560,12 +584,23 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			// write new data
 			PreparedStatement ps = dbc.prepareStatement("INSERT INTO node_modules(node_id, module, version)VALUES(?,?,?)");
 			ps.setInt(1, nodeId);
-			for( SoftwareModule m : modules ){
+			for( SoftwareModule m : status.getModules() ){
 				ps.setString(2, m.getId());
 				ps.setString(3, m.getVersion());
 				ps.executeUpdate();
 			}
 			ps.close();
+
+			if( status.getPayload() != null ){
+				String xml;
+				try {
+					xml = convertNodeToString((org.w3c.dom.Node)status.getPayload());
+					// TODO set status content
+					log.warning("TODO write status payload: "+xml);
+				} catch (TransformerException e) {
+					log.log(Level.SEVERE, "Unable to generate XML string for payload", e);
+				}
+			}
 			dbc.commit();
 		}		
 	}

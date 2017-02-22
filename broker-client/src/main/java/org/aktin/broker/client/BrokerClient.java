@@ -20,6 +20,8 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 
 import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
@@ -27,6 +29,7 @@ import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class BrokerClient extends AbstractBrokerClient{	
 	public BrokerClient(URI brokerEndpoint) {
@@ -64,18 +67,30 @@ public class BrokerClient extends AbstractBrokerClient{
 	 * 
 	 * @param startupEpochMillis startup time in epoch milliseconds
 	 * @param softwareVersions software module versions
+	 * @param payload Status content / payload. Can be any JAXB compatible object ({@code @XMLRootElement} or {@link Element})
 	 * @throws IOException IO error
 	 */
-	public void postMyStatus(long startupEpochMillis, Map<String,String> softwareVersions) throws IOException{
+	public void postMyStatus(long startupEpochMillis, Map<String,String> softwareVersions, Object payload) throws IOException{
 		HttpURLConnection c = openConnection("POST", "my/status");
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", "application/xml");
-		NodeStatus status = new NodeStatus(new Date(startupEpochMillis), softwareVersions);
+		NodeStatus status = new NodeStatus(new Date(startupEpochMillis), softwareVersions, payload);
+		JAXBContext jaxb;
 		try( OutputStream post = c.getOutputStream() ){
-			JAXB.marshal(status, post);
+			if( payload != null ){
+				jaxb = JAXBContext.newInstance(NodeStatus.class, payload.getClass());
+			}else{
+				jaxb = JAXBContext.newInstance(NodeStatus.class);
+			}
+			jaxb.createMarshaller().marshal(status, post);
+		} catch (JAXBException e) {
+			throw new IOException(e);
 		}
 		// this will throw an IOException if the status is not successful
 		c.getInputStream().close();
+	}
+	public void postMyStatus(long startupEpochMillis, Map<String,String> softwareVersions) throws IOException{
+		postMyStatus(startupEpochMillis, softwareVersions, null);
 	}
 	public List<RequestInfo> listMyRequests() throws IOException{
 		HttpURLConnection c = openConnection("GET", "my/request");

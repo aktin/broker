@@ -141,7 +141,7 @@ public class BrokerEndpoint {
 		log.info("Node status retrieved");
 		// TODO calculate network delay via local and remote timestamps
 		// store software module versions
-		db.updateNodeModules(user.getNodeId(), status.getModules());
+		db.updateNodeStatus(user.getNodeId(), status);
 	}
 	@Authenticated
 	@GET
