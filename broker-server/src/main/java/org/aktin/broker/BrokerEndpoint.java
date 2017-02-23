@@ -47,6 +47,7 @@ import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
 import org.aktin.broker.xml.RequestStatusList;
+import org.aktin.broker.xml.RequestTargetNodes;
 
 /**
  * Broker service.
@@ -168,6 +169,7 @@ public class BrokerEndpoint {
 	@GET
 	@Path("my/node")
 	@Produces(MediaType.APPLICATION_XML)
+	// TODO add unit test
 	public Node getOwnNodeInfo(@Context SecurityContext sec){
 		Principal user = (Principal)sec.getUserPrincipal();
 		try {
@@ -406,6 +408,36 @@ public class BrokerEndpoint {
 		}else{
 			return new RequestStatusList(list);
 		}
+	}
+	/**
+	 * Get the targeted nodes for this request. A resource is only returned, if 
+	 * the request is limited to / targeted at specifig nodes.
+	 * @param requestId request
+	 * @return target node list
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
+	 * @throws NotFoundException if the request is not targeted at specific nodes
+	 */
+	@GET
+	@Path("request/{id}/nodes")
+	@Produces(MediaType.APPLICATION_XML)
+	public RequestTargetNodes getRequestTargetNodes(@PathParam("id") Integer requestId) throws SQLException, IOException, NotFoundException{
+		int[] nodes = db.getRequestTargets(requestId);
+		if( nodes == null ){
+			throw new NotFoundException();
+		}
+		return new RequestTargetNodes(nodes);
+	}
+	@DELETE
+	@Path("request/{id}/nodes")
+	public void clearRequestTargetNodes(@PathParam("id") Integer requestId) throws SQLException, IOException, NotFoundException{
+		db.clearRequestTargets(requestId);
+	}
+	@PUT
+	@Path("request/{id}/nodes")
+	@Consumes(MediaType.APPLICATION_XML)
+	public void setRequestTargetNodes(@PathParam("id") Integer requestId, RequestTargetNodes nodes) throws SQLException, IOException, NotFoundException{
+		db.setRequestTargets(requestId, nodes.getNodes());
 	}
 
 	// TODO add method to retrieve request node status message (e.g. error messages)

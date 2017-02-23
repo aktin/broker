@@ -22,6 +22,7 @@ import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatusInfo;
 import org.aktin.broker.xml.RequestStatusList;
+import org.aktin.broker.xml.RequestTargetNodes;
 import org.aktin.broker.xml.ResultInfo;
 import org.aktin.broker.xml.ResultList;
 import org.w3c.dom.Node;
@@ -243,5 +244,36 @@ public class BrokerAdmin extends AbstractBrokerClient {
 				}
 			}
 		});
+	}
+
+	public int[] getRequestTargetNodes(String requestId) throws IOException{
+		URI uri = getQueryURI(requestId);
+		HttpURLConnection c = openConnection("GET", uri.resolve(uri.getPath()+"/nodes"));
+		RequestTargetNodes nodes;
+		try( InputStream response = c.getInputStream() ){
+			nodes = JAXB.unmarshal(response, RequestTargetNodes.class);
+		}// TODO catch file not found error
+		if( nodes == null ){
+			return null;
+		}else{
+			return nodes.getNodes();
+		}
+	}
+	public void setRequestTargetNodes(String requestId, int[] nodes) throws IOException{
+		URI uri = getQueryURI(requestId);
+		HttpURLConnection c = openConnection("PUT", uri.resolve(uri.getPath()+"/nodes"));
+		c.setDoOutput(true);
+		RequestTargetNodes tn = new RequestTargetNodes(nodes);
+		c.setRequestProperty("Content-Type", "application/xml");
+		try( OutputStream out = c.getOutputStream() ){
+			JAXB.marshal(tn, out);
+		}
+		c.getInputStream().close();		
+	}
+	public void clearRequestTargetNodes(String requestId) throws IOException{
+		URI uri = getQueryURI(requestId);
+		HttpURLConnection c = openConnection("DELETE", uri.resolve(uri.getPath()+"/nodes"));
+		c.setDoOutput(false);
+		c.getInputStream().close();		
 	}
 }

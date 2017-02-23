@@ -23,6 +23,7 @@ import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
@@ -106,6 +107,12 @@ public class BrokerClient extends AbstractBrokerClient{
 	public Reader getMyRequestDefinitionReader(String id, String mediaType) throws IOException{
 		HttpURLConnection c = openConnection("GET", getQueryURI(id));
 		return contentReader(c, mediaType);
+	}
+	public Node getMyNode() throws IOException{
+		HttpURLConnection c = openConnection("GET", "my/node");
+		try( InputStream response = c.getInputStream() ){
+			return JAXB.unmarshal(response, Node.class);
+		}
 	}
 	public Document getMyRequestDefinitionXml(String id, String mediaType) throws IOException{
 		Reader reader = getMyRequestDefinitionReader(id, mediaType);

@@ -33,10 +33,12 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TestBroker {
-	private static final String CLIENT_01_CN = "CN=Test Nachname,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
-	String ADMIN_00_CN = "CN=Test Adm,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
-	String CLIENT_01_SERIAL = "01";
-	String ADMIN_00_SERIAL = "00";
+	private static final String CLIENT_01_CN = "CN=Test 1,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
+	private static final String CLIENT_02_CN = "CN=Test 2,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
+	private static final String ADMIN_00_CN = "CN=Test Adm,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
+	private static final String CLIENT_01_SERIAL = "01";
+	private static final String CLIENT_02_SERIAL = "02";
+	private static final String ADMIN_00_SERIAL = "00";
 	private TestServer server;
 
 	@Before
@@ -234,6 +236,36 @@ public class TestBroker {
 		}
 		// TODO unit test for null request node message
 	}
+	@Test
+	public void targetedRequestsInvisibleToOtherNodes() throws IOException{
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
+		TestClient c1 = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
+		TestClient c2 = new  TestClient(server.getBrokerServiceURI(), CLIENT_02_SERIAL, CLIENT_02_CN);
+		// assume list is empty
+		assertEquals(0, c1.listMyRequests().size());
+		assertEquals(0, c2.listMyRequests().size());
+		// make sure we have the correct node id
+		assertEquals(1, c2.getMyNode().id);
+
+		// create request and limit to second node
+		String qid = a.createRequest("text/x-test-1", "test1");
+		a.setRequestTargetNodes(qid, new int[]{1});
+		int[] nodes = a.getRequestTargetNodes(qid);
+		assertEquals(1, nodes.length);
+		assertEquals(1, nodes[0]);
+		a.publishRequest(qid);
+
+		// assume list is still empty
+		assertEquals(0, c1.listMyRequests().size());
+		assertEquals(1, c2.listMyRequests().size());
+
+		// clear targets
+		a.clearRequestTargetNodes(qid);
+		// should now be visible to all nodes
+		assertEquals(1, c1.listMyRequests().size());
+		assertEquals(1, c2.listMyRequests().size());
+	}
+
 	@Test
 	public void testRequestSubmitResult() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);

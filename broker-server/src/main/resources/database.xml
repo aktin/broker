@@ -159,5 +159,12 @@
 			<column name="status_content" type="TEXT"/>
 		</addColumn>
 	</changeSet>
+	<changeSet id="v0.4" author="rwm">
+		<addColumn tableName="requests">
+			<column name="targeted" type="BOOLEAN" defaultValueBoolean="false">
+				<constraints nullable="false"/>
+			</column>
+		</addColumn>
+	</changeSet>
 
 </databaseChangeLog>

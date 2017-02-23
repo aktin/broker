@@ -339,7 +339,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		try( Connection dbc = brokerDB.getConnection() ){
 			PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
 			Statement st = dbc.createStatement();
-			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL ORDER BY r.id");
+			// targeted requests are ONLY supplied to selected nodes: .. AND (r.targeted = FALSE OR s.request_id IS NOT NULL)
+			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL AND (r.targeted = FALSE OR s.request_id IS NOT NULL) ORDER BY r.id");
+//			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL ORDER BY r.id");
 			while( rs.next() ){
 				RequestInfo ri = new RequestInfo(Integer.toString(rs.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs,3));
 				RequestStatusInfo status = new RequestStatusInfo();
@@ -658,5 +660,72 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			st.close();
 		}
 		return status;
+	}
+	@Override
+	public void setRequestTargets(int requestId, int[] nodes) throws SQLException {
+		try( Connection dbc = brokerDB.getConnection() ){
+			// set targeted
+			Statement st = dbc.createStatement();
+			st.executeUpdate("UPDATE requests SET targeted=TRUE WHERE id="+requestId);
+			st.close();
+
+			// clear nodes
+			st = dbc.createStatement();
+			// TODO issue warning, if the request was already retrieved by a node
+			st.executeUpdate("DELETE FROM request_node_status WHERE request_id="+requestId);
+			st.close();
+
+			// insert target nodes
+			PreparedStatement ps = dbc.prepareStatement("INSERT INTO request_node_status(request_id,node_id)VALUES(?,?)");
+			ps.setInt(1, requestId);
+			for( int i=0; i<nodes.length; i++ ){
+				ps.setInt(2, nodes[i]);
+				ps.executeUpdate();
+			}
+			ps.close();
+
+			// commit transaction
+			dbc.commit();
+		}
+	}
+	@Override
+	public int[] getRequestTargets(int requestId) throws SQLException {
+		int[] nodes = null;
+		try( Connection dbc = brokerDB.getConnection() ){
+			// first find out, if the query is targeted at all
+			boolean isTargeted = false;
+			Statement st = dbc.createStatement();
+			ResultSet rs = st.executeQuery("SELECT targeted FROM requests WHERE id="+requestId);
+			if( rs.next() ){
+				isTargeted = rs.getBoolean(1);
+			}
+			st.close();
+
+			if( isTargeted == true ){
+				// retrieve nodes
+				ArrayList<Integer> list = new ArrayList<>();
+				st = dbc.createStatement();
+				rs = st.executeQuery("SELECT node_id FROM request_node_status WHERE request_id="+requestId);
+				while( rs.next() ){
+					list.add(rs.getInt(1));
+				}
+				rs.close();
+				st.close();
+				// fill array
+				nodes = new int[list.size()];
+				for( int i=0; i<list.size(); i++ ){
+					nodes[i] = list.get(i);
+				}
+			}
+		}
+		return nodes;
+	}
+	@Override
+	public void clearRequestTargets(int requestId) throws SQLException {
+		try( Connection dbc = brokerDB.getConnection() ){
+			Statement st = dbc.createStatement();
+			st.executeUpdate("UPDATE requests SET targeted=FALSE WHERE id="+requestId);
+			st.close();
+		}
 	}
 }

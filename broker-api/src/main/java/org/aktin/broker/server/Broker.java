@@ -90,6 +90,9 @@ public interface Broker {
 	
 	void setRequestPublished(int requestId, Instant timestamp) throws SQLException;
 	void setRequestClosed(int requestId, Instant timestamp) throws SQLException;
+	void setRequestTargets(int requestId, int[] nodes) throws SQLException;
+	int[] getRequestTargets(int requestId) throws SQLException;
+	void clearRequestTargets(int requestId) throws SQLException;
 
 
 	/**
