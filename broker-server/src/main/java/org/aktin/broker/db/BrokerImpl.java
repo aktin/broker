@@ -267,9 +267,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		List<RequestInfo> list;
 		try( Connection dbc = brokerDB.getConnection() ){
 			Statement st = dbc.createStatement();
-			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, d.media_type FROM requests r JOIN request_definitions d ON r.id=d.request_id ORDER BY r.id");
+			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, d.media_type, r.targeted FROM requests r JOIN request_definitions d ON r.id=d.request_id ORDER BY r.id");
 			list = loadRequestList(rs, 4,  
-					r -> new RequestInfo(Integer.toString(r.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3))
+					r -> new RequestInfo(Integer.toString(r.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(5))
 			);
 			rs.close();
 			st.close();
@@ -340,12 +340,12 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
 			Statement st = dbc.createStatement();
 			// targeted requests are ONLY supplied to selected nodes: .. AND (r.targeted = FALSE OR s.request_id IS NOT NULL)
-			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL AND (r.targeted = FALSE OR s.request_id IS NOT NULL) ORDER BY r.id");
+			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL AND (r.targeted = FALSE OR s.request_id IS NOT NULL) ORDER BY r.id");
 //			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL ORDER BY r.id");
 			while( rs.next() ){
-				RequestInfo ri = new RequestInfo(Integer.toString(rs.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs,3));
+				RequestInfo ri = new RequestInfo(Integer.toString(rs.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs,3), rs.getBoolean(4));
 				RequestStatusInfo status = new RequestStatusInfo();
-				status.retrieved = optionalTimestamp(rs, 4);
+				status.retrieved = optionalTimestamp(rs, 5);
 				// TODO more status
 				ri.nodeStatus = Collections.singletonList(status);
 				// deleted timestamp will always be null here, because of the where clause
@@ -377,10 +377,10 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	
 	private RequestInfo loadRequest(Connection dbc, int requestId) throws SQLException{
 		Statement st = dbc.createStatement();
-		ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed FROM requests r WHERE r.id="+requestId);
+		ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted FROM requests r WHERE r.id="+requestId);
 		RequestInfo ri = null;
 		if( rs.next() ){
-			ri = new RequestInfo(Integer.toString(rs.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3));
+			ri = new RequestInfo(Integer.toString(rs.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(4));
 		}
 		rs.close();
 		st.close();

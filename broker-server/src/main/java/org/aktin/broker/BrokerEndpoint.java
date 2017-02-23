@@ -375,7 +375,7 @@ public class BrokerEndpoint {
 	public Response getRequestInfo(@PathParam("id") String requestId, @Context HttpHeaders headers) throws SQLException, IOException{
 		// TODO return RequestInfo
 		List<RequestInfo> list = db.listAllRequests();
-		RequestInfo info = null;
+		RequestInfo info = null; // TODO = db.getRequestInfo(requestId)
 		for( RequestInfo ri : list ){
 			if( ri.getId().equals(requestId) ){
 				info = ri;

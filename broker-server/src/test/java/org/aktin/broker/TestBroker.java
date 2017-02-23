@@ -254,6 +254,7 @@ public class TestBroker {
 		assertEquals(1, nodes.length);
 		assertEquals(1, nodes[0]);
 		a.publishRequest(qid);
+		assertEquals(true, a.getRequestInfo(qid).targeted);
 
 		// assume list is still empty
 		assertEquals(0, c1.listMyRequests().size());
@@ -261,6 +262,7 @@ public class TestBroker {
 
 		// clear targets
 		a.clearRequestTargetNodes(qid);
+		assertEquals(false, a.getRequestInfo(qid).targeted);
 		// should now be visible to all nodes
 		assertEquals(1, c1.listMyRequests().size());
 		assertEquals(1, c2.listMyRequests().size());

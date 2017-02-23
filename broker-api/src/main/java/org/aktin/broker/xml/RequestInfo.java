@@ -35,6 +35,13 @@ public class RequestInfo {
 	public Instant closed;
 
 	/**
+	 * If {@code true} the request is targeted only at specific nodes.
+	 * {@code false} means that all nodes (even new/unknown nodes) will retrieve this request.
+	 */
+	@XmlElement
+	public boolean targeted;
+
+	/**
 	 * Media types of available query definitions
 	 */
 	@XmlElement(name="type")
@@ -45,10 +52,11 @@ public class RequestInfo {
 	
 	protected RequestInfo(){
 	}
-	public RequestInfo(String id, Instant published, Instant closed){
+	public RequestInfo(String id, Instant published, Instant closed, boolean targeted){
 		this.id = id;
 		this.published = published;
 		this.closed = closed;
+		this.targeted = targeted;
 	}
 	public void setTypes(String[] types){
 		this.types = types;
