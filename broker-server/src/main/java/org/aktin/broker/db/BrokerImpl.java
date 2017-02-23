@@ -371,11 +371,11 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public RequestInfo getRequestInfo(int requestId) throws SQLException{
 		try( Connection dbc = brokerDB.getConnection() ){
-			return loadRequest(dbc, requestId);
+			return loadRequest(dbc, requestId, true);
 		}
 	}
 	
-	private RequestInfo loadRequest(Connection dbc, int requestId) throws SQLException{
+	private RequestInfo loadRequest(Connection dbc, int requestId, boolean fillTypes) throws SQLException{
 		Statement st = dbc.createStatement();
 		ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted FROM requests r WHERE r.id="+requestId);
 		RequestInfo ri = null;
@@ -384,6 +384,20 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		}
 		rs.close();
 		st.close();
+
+		if( fillTypes ){
+			// load request types
+			PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
+			ps.setInt(1, requestId);
+			ArrayList<String> types = new ArrayList<>();
+			rs = ps.executeQuery();
+			while( rs.next() ){
+				types.add(rs.getString(1));
+			}
+			if( !types.isEmpty() ){
+				ri.setTypes(types.toArray(new String[types.size()]));
+			}
+		}
 		return ri;
 	}
 	private boolean loadRequestNodeStatus(Connection dbc, int nodeId, int requestId, RequestStatusInfo ri) throws SQLException{
@@ -471,7 +485,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		boolean delete_ok = false;
 		try( Connection dbc = brokerDB.getConnection() ){
 			RequestStatusInfo si = new RequestStatusInfo();
-			RequestInfo ri = loadRequest(dbc, requestId);
+			RequestInfo ri = loadRequest(dbc, requestId, false);
 			if( ri == null ){
 				// nothing to do, not found
 				//return false

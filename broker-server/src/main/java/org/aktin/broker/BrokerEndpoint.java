@@ -372,16 +372,9 @@ public class BrokerEndpoint {
 	@OPTIONS
 	@Path("request/{id}")
 	//@Produces(MediaType.APPLICATION_XML) will cause errors in this case. therefore the media type is set below
-	public Response getRequestInfo(@PathParam("id") String requestId, @Context HttpHeaders headers) throws SQLException, IOException{
+	public Response getRequestInfo(@PathParam("id") int requestId, @Context HttpHeaders headers) throws SQLException, IOException{
 		// TODO return RequestInfo
-		List<RequestInfo> list = db.listAllRequests();
-		RequestInfo info = null; // TODO = db.getRequestInfo(requestId)
-		for( RequestInfo ri : list ){
-			if( ri.getId().equals(requestId) ){
-				info = ri;
-				break;
-			}
-		}
+		RequestInfo info = db.getRequestInfo(requestId);
 		ResponseBuilder response;
 		if( info == null ){
 			response = Response.status(Status.NOT_FOUND);
