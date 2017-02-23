@@ -163,6 +163,20 @@ public class BrokerEndpoint {
 		// store software module versions
 		db.updateNodeStatus(user.getNodeId(), status);
 	}
+	
+	@Authenticated
+	@GET
+	@Path("my/node")
+	@Produces(MediaType.APPLICATION_XML)
+	public Node getOwnNodeInfo(@Context SecurityContext sec){
+		Principal user = (Principal)sec.getUserPrincipal();
+		try {
+			return db.getNode(user.getNodeId());
+		} catch (SQLException e) {
+			log.log(Level.SEVERE, "Unable to read node info for nodeId="+user.getNodeId(), e);
+			throw new InternalServerErrorException(e);
+		}
+	}
 	@Authenticated
 	@GET
 	@Path("my/request")
