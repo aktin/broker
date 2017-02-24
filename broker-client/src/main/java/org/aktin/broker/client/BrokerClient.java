@@ -10,18 +10,18 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.NodeStatus;
@@ -63,6 +63,11 @@ public class BrokerClient extends AbstractBrokerClient{
 		return resolveBrokerURI("my/request/");
 	}
 
+	public void postSoftwareVersions(Map<String,String> softwareVersions) throws IOException{
+		Properties map = new Properties();
+		map.putAll(softwareVersions);
+		putMyResourceProperties("versions", map);
+	}
 	/**
 	 * Post status for the client node. Additional software modules can be specified.
 	 * 
@@ -71,27 +76,20 @@ public class BrokerClient extends AbstractBrokerClient{
 	 * @param payload Status content / payload. Can be any JAXB compatible object ({@code @XMLRootElement} or {@link Element})
 	 * @throws IOException IO error
 	 */
-	public void postMyStatus(long startupEpochMillis, Map<String,String> softwareVersions, Object payload) throws IOException{
+	public void postMyStatus(long startupEpochMillis) throws IOException{
 		HttpURLConnection c = openConnection("POST", "my/status");
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", "application/xml");
-		NodeStatus status = new NodeStatus(new Date(startupEpochMillis), softwareVersions, payload);
-		JAXBContext jaxb;
+		NodeStatus status = new NodeStatus(new Date(startupEpochMillis));
 		try( OutputStream post = c.getOutputStream() ){
-			if( payload != null ){
-				jaxb = JAXBContext.newInstance(NodeStatus.class, payload.getClass());
-			}else{
-				jaxb = JAXBContext.newInstance(NodeStatus.class);
-			}
-			jaxb.createMarshaller().marshal(status, post);
-		} catch (JAXBException e) {
-			throw new IOException(e);
+			JAXB.marshal(status, post);
 		}
 		// this will throw an IOException if the status is not successful
 		c.getInputStream().close();
 	}
 	public void postMyStatus(long startupEpochMillis, Map<String,String> softwareVersions) throws IOException{
-		postMyStatus(startupEpochMillis, softwareVersions, null);
+		postMyStatus(startupEpochMillis);
+		postSoftwareVersions(softwareVersions);
 	}
 	public List<RequestInfo> listMyRequests() throws IOException{
 		HttpURLConnection c = openConnection("GET", "my/request");
@@ -167,17 +165,67 @@ public class BrokerClient extends AbstractBrokerClient{
 //			throw new IllegalArgumentException("Unsupported type "+type);
 //		}
 //	}
-
+	public void putMyResource(String name, String contentType, final InputStream content) throws IOException{
+		putResource(resolveBrokerURI("my/node/").resolve(name), contentType, new OutputWriter(){
+			@Override
+			public void write(OutputStream dest) throws IOException {
+				writeContent(dest, content);
+			}
+		});
+	}
+	public void putMyResourceXml(String name, Object jaxbObject) throws IOException{
+		putResource(resolveBrokerURI("my/node/").resolve(name), "application/xml", new OutputWriter(){
+			@Override
+			public void write(OutputStream dest) throws IOException {
+				JAXB.marshal(jaxbObject, dest);
+			}
+		});
+	}
+	public void putMyResourceProperties(String name, Properties properties) throws IOException{
+		putResource(resolveBrokerURI("my/node/").resolve(name), "application/xml; charset=utf-8", new OutputWriter(){
+			@Override
+			public void write(OutputStream dest) throws IOException {
+				properties.storeToXML(dest, name, "UTF-8");
+			}
+		});
+	}
+	public Properties getMyResourceProperties(String name) throws IOException{
+		Properties props;
+		try( InputStream response = getMyResource(name) ){
+			props = new Properties();
+			props.loadFromXML(response);
+		}
+		return props;
+	}
+	public InputStream getMyResource(String name) throws IOException{
+		HttpURLConnection c = openConnection("GET", resolveBrokerURI("my/node/").resolve(URLEncoder.encode(name, "UTF-8")));
+		return c.getInputStream();
+	}
+	public void putMyResource(String name, String contentType, String content) throws IOException{
+		putResource(resolveBrokerURI("my/node/").resolve(name), contentType, new OutputWriter(){
+			@Override
+			public void write(OutputStream dest) throws IOException {
+				writeContent(content, dest, "UTF-8");
+			}
+		});
+	}
+	public void deleteMyResource(String name) throws IOException{
+		delete(resolveBrokerURI("my/node/").resolve(name));
+	}
+	
 	// aggregator functions
-	public void putRequestResult(String requestId, String contentType, OutputWriter writer) throws IOException{
-		URI putResult = resolveAggregatorURI("my/request/"+requestId+"/result");
-		HttpURLConnection c = openConnection("PUT", putResult);
+	private void putResource(URI uri, String contentType, OutputWriter writer) throws IOException{
+		HttpURLConnection c = openConnection("PUT", uri);
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", contentType);
 		try( OutputStream out = c.getOutputStream() ){
 			writer.write(out);
 		}
 		c.getInputStream().close();
+	}
+	public void putRequestResult(String requestId, String contentType, OutputWriter writer) throws IOException{
+		URI putResult = resolveAggregatorURI("my/request/"+requestId+"/result");
+		putResource(putResult, contentType, writer);
 	}
 	public void putRequestResult(String requestId, String contentType, final InputStream content) throws IOException{
 		putRequestResult(requestId, contentType, new OutputWriter(){

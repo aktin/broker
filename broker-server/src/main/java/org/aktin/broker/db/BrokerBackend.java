@@ -1,8 +1,11 @@
 package org.aktin.broker.db;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
+import javax.ws.rs.core.MediaType;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.server.Broker;
@@ -27,4 +30,10 @@ public interface BrokerBackend extends Broker{
 
 
 	void updateNodeLastSeen(int[] nodeIds, long[] timestamps) throws SQLException;
+
+
+	void updateNodeResource(int nodeId, String resourceId, MediaType mediaType, InputStream content) throws SQLException, IOException;
+
+
+	void clearDataDirectory() throws IOException;
 }

@@ -9,8 +9,10 @@ import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Function;
 
 import javax.activation.DataSource;
@@ -56,9 +58,24 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		HttpURLConnection c = openConnection("GET", uri.resolve(uri.getPath()+"/status/"+nodeId));
 		return contentReader(c, null);	
 	}
-	public Reader getNodeStatus(int nodeId) throws IOException{
-		HttpURLConnection c = openConnection("GET", "node/"+nodeId+"/status");
-		return contentReader(c, null);	
+	// TODO also return media type, e.g. via Datasource wrapping HttpURLConnection
+	public InputStream getNodeResource(int nodeId, String resourceId) throws IOException{
+		HttpURLConnection c = openConnection("GET", "node/"+nodeId+"/"+URLEncoder.encode(resourceId,"UTF-8"));
+		return c.getInputStream();
+	}
+	public <T> T getNodeResourceJAXB(int nodeId, String resourceId, Class<T> type) throws IOException{
+		try( InputStream in = getNodeResource(nodeId, resourceId) ){
+			// TODO verify content type xml
+			return JAXB.unmarshal(in, type);
+		}
+	}
+	public Properties getNodeResourceProperties(int nodeId, String resourceId) throws IOException{
+		Properties props;
+		try( InputStream in = getNodeResource(nodeId, resourceId) ){
+			props = new Properties();
+			props.loadFromXML(in);
+		}
+		return props;
 	}
 	/**
 	 * Create a request with specified content type and content

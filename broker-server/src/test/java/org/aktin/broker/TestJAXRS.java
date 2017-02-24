@@ -33,4 +33,10 @@ public class TestJAXRS {
 	public static <T> void printXML(T object){
 		JAXB.marshal(object, System.out);
 	}
+	// Cannot marshall Map or Properties directly with JAXB. Need wrapper class.
+//	@Test
+//	public void marshallUnmarshallHashMap(){
+//		Properties m = new Properties();
+//		m.put("TEST", "test1");
+//	}
 }

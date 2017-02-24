@@ -20,7 +20,6 @@ public class TestMarshallUnmarshall {
 		Assert.assertNotNull(n.uptime);
 		System.out.println(n.timestamp);
 		System.out.println(n.uptime);
-		Assert.assertNull(n.payload);
 	}
 	@Test
 	public void unmarshall_node_status_payload(){
@@ -29,8 +28,6 @@ public class TestMarshallUnmarshall {
 		Assert.assertNotNull(n.uptime);
 		System.out.println(n.timestamp);
 		System.out.println(n.uptime);
-		Assert.assertNotNull(n.payload);
-		Assert.assertTrue(n.payload instanceof Element);
 	}
 	public Source getResource(URL url){
 		SAXSource xml = new SAXSource(new InputSource(url.toString()));

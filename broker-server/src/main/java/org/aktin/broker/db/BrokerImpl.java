@@ -1,9 +1,15 @@
 package org.aktin.broker.db;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,12 +22,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import javax.annotation.Resource;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
+import javax.ws.rs.core.MediaType;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -29,6 +36,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.aktin.broker.PathDataSource;
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.server.Broker;
 import org.aktin.broker.xml.Node;
@@ -36,13 +44,13 @@ import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
-import org.aktin.broker.xml.SoftwareModule;
 import org.aktin.broker.xml.util.Util;
 
 @Singleton
 public class BrokerImpl implements BrokerBackend, Broker {
 	private static final Logger log = Logger.getLogger(BrokerImpl.class.getName());
 	private DataSource brokerDB;
+	private Path dataDir; // for node resource data
 	/**
 	 * Character streams up to this size should be kept
 	 * in memory for data transfers. Larger streams
@@ -55,9 +63,11 @@ public class BrokerImpl implements BrokerBackend, Broker {
 
 	public BrokerImpl(){
 	}
-	public BrokerImpl(DataSource brokerDB){
+	public BrokerImpl(DataSource brokerDB, Path dataDirectory) throws IOException{
 		this();
 		setBrokerDB(brokerDB);
+		setDataDirectory(dataDirectory);
+		Files.createDirectories(dataDirectory);
 	}
 	/* (non-Javadoc)
 	 * @see org.aktin.broker.db.BrokerBackend#setBrokerDB(javax.sql.DataSource)
@@ -66,6 +76,25 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Resource(name="brokerDB")
 	public void setBrokerDB(DataSource brokerDB){
 		this.brokerDB = brokerDB;
+	}
+
+	public void setDataDirectory(Path dataDir){
+		this.dataDir = dataDir;
+	}
+	/* (non-Javadoc)
+	 * @see org.aktin.broker.db.AggregatorBackend#clearDataDirectory()
+	 */
+	@Override
+	public void clearDataDirectory() throws IOException{
+		try( Stream<Path> files = Files.list(dataDir) ){
+			files.forEach( t -> {
+				try {
+					Files.delete(t);
+				} catch (IOException e) {
+					throw new UncheckedIOException(e);
+				}
+			} );
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -592,6 +621,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public void updateNodeStatus(int nodeId, NodeStatus status) throws SQLException {
 		// TODO store module versions and status in memory. flush on close or at intervals
+		/* TODO not needed anymore, replaced by node resources 
 		try( Connection dbc = brokerDB.getConnection() ){
 			// delete previous data
 			Statement st = dbc.createStatement();
@@ -621,7 +651,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 				}
 			}
 			dbc.commit();
-		}		
+		}		*/
 	}
 
 	private void updateRequestTimestamp(Connection dbc, int requestId, String timestampColumn, Instant value) throws SQLException{
@@ -741,5 +771,85 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			st.executeUpdate("UPDATE requests SET targeted=FALSE WHERE id="+requestId);
 			st.close();
 		}
+	}
+	private String nodeResourceName(int nodeId, String resourceId, MediaType mediaType){
+		// TODO use media type to generate file extension (e.g. .txt, .xml)
+		try {
+			StringBuilder builder = new StringBuilder();
+			builder.append(nodeId).append('_').append(URLEncoder.encode(resourceId, "UTF-8"));
+			if( mediaType.isCompatible(MediaType.TEXT_PLAIN_TYPE) ){
+				builder.append(".txt");
+			}else if( mediaType.getSubtype().endsWith("+xml") ){
+				builder.append(".xml");
+			}
+			return builder.toString();
+			
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+	@Override
+	// TODO add last modified timestamp
+	public void updateNodeResource(int nodeId, String resourceId, MediaType mediaType, InputStream content) throws IOException, SQLException {
+		// TODO find if resource already exists
+		String oldFile = null;
+		String newFile = nodeResourceName(nodeId, resourceId, mediaType);
+		try( Connection dbc = brokerDB.getConnection() ){
+			PreparedStatement ps = dbc.prepareStatement("SELECT data_file FROM node_resources WHERE node_id=? AND name=?");
+			ps.setInt(1, nodeId);
+			ps.setString(2, resourceId);
+			ResultSet rs = ps.executeQuery();
+			if( rs.next() ){
+				oldFile = rs.getString(1);
+			}
+			ps.close();
+			ps = null;
+			if( oldFile != null ){
+				// previous entry, replace existing
+				ps = dbc.prepareStatement("UPDATE node_resources SET media_type=?, last_modified=?, data_file=? WHERE node_id=? AND name=?");
+			}else{
+				// no previous entry, create new one
+				ps = dbc.prepareStatement("INSERT INTO node_resources(media_type, last_modified, data_file, node_id, name)VALUES(?,?,?,?,?)");
+			}
+			ps.setString(1, mediaType.toString());
+			ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+			ps.setString(3, newFile);
+			ps.setInt(4, nodeId);
+			ps.setString(5, resourceId);
+			ps.executeUpdate();
+			ps.close();
+			// replace file
+			if( oldFile != null ){
+				// delete old file
+				Files.delete(dataDir.resolve(oldFile));
+			}
+			// create the new file, shouldn't replace anything
+			Files.copy(content, dataDir.resolve(newFile));
+			// done
+			dbc.commit();
+		}
+	}
+	@Override
+	public javax.activation.DataSource getNodeResource(int nodeId, String resourceId) throws SQLException{
+		String mediaType;
+		Instant lastModified;
+		Path file;
+		try( Connection dbc = brokerDB.getConnection() ){
+			PreparedStatement ps = dbc.prepareStatement("SELECT media_type, last_modified, data_file FROM node_resources WHERE node_id=? AND name=?");
+			ps.setInt(1, nodeId);
+			ps.setString(2, resourceId);
+			ResultSet rs = ps.executeQuery();
+			if( !rs.next() ){
+				// not found
+				return null;
+			}
+			mediaType = rs.getString(1);
+			lastModified = rs.getTimestamp(2).toInstant();
+			file = dataDir.resolve(rs.getString(3));
+			rs.close();
+			ps.close();
+		}
+		
+		return new PathDataSource(file, mediaType, lastModified);
 	}
 }

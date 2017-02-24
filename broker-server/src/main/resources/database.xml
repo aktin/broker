@@ -165,6 +165,25 @@
 				<constraints nullable="false"/>
 			</column>
 		</addColumn>
+		<!-- allow nodes to upload arbitrary non-request data. e.g. status, logfiles, metadata-ontology -->
+		<createTable tableName="node_resources">
+			<column name="node_id" autoIncrement="true" type="INTEGER">
+				<constraints nullable="false"/>
+			</column>
+			<column name="name" type="VARCHAR(32)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="media_type" type="VARCHAR(64)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="last_modified" type="TIMESTAMP">
+				<constraints nullable="false"/>
+			</column>
+			<column name="data_file" type="VARCHAR(64)">
+				<constraints nullable="false"/>
+			</column>
+		</createTable>
+		<addPrimaryKey tableName="node_resources" columnNames="node_id, name"/>
 	</changeSet>
 
 </databaseChangeLog>

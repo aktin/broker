@@ -25,10 +25,13 @@ public class MyBinder extends AbstractBinder{
 //		bind(Impl.class).to(Inter.class);
 		// singleton
 
-		BrokerBackend backend = new BrokerImpl(ds);
-		bind(backend).to(BrokerBackend.class);
-		bind(new AuthCache(backend)).to(AuthCache.class);
 		try {
+			// broker
+			BrokerBackend backend = new BrokerImpl(ds, Paths.get("target/broker-data"));
+			backend.clearDataDirectory();
+			bind(backend).to(BrokerBackend.class);
+			bind(new AuthCache(backend)).to(AuthCache.class);
+			// aggregator
 			AggregatorImpl adb = new AggregatorImpl(ds, Paths.get("target/aggregator-data"));
 			// clear uploaded files
 			adb.clearDataDirectory();

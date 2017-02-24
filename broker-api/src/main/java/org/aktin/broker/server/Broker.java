@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 
+import javax.activation.DataSource;
+
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
@@ -103,4 +105,5 @@ public interface Broker {
 	 * @return reader for the status message
 	 */
 	Reader getRequestNodeStatusMessage(int requestId, int nodeId) throws SQLException, IOException;
+	DataSource getNodeResource(int nodeId, String resourceId) throws SQLException;
 }

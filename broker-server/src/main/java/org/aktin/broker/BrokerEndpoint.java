@@ -1,6 +1,7 @@
 package org.aktin.broker;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.activation.DataSource;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -126,26 +128,34 @@ public class BrokerEndpoint {
 		return node;
 	}
 	/**
-	 * Retrieve information about a single node.
+	 * Retrieve a named resource uploaded previously by the specified node
 	 * @param nodeId node id
 	 * @return status {@code 200} with node info or status {@code 404} if not found. 
+	 * @throws SQLException sql error
 	 */
 	@GET
-	@Path("node/{id}/status")
-	@Produces(MediaType.APPLICATION_XML)
-	public String getNodeStatus(@PathParam("id") int nodeId){
-		String content;
-		try {
-			content = db.getNodeStatusContent(nodeId);
-		} catch (SQLException e) {
-			log.log(Level.SEVERE, "unable to retrieve node status", e);
-			throw new InternalServerErrorException(e);
-		}
-		if( content == null ){
-			throw new NotFoundException();
-		}
-		return content;
+	@Path("node/{node}/{resource}")
+	public DataSource getNodeResource(@PathParam("node") int nodeId, @PathParam("resource") String resourceId) throws SQLException{
+		return db.getNodeResource(nodeId, resourceId);
 	}
+
+//	@GET
+//	@Deprecated // TODO getNodeResource
+//	@Path("node/{id}/status")
+//	@Produces(MediaType.APPLICATION_XML)
+//	public String getNodeStatus(@PathParam("id") int nodeId){
+//		String content;
+//		try {
+//			content = db.getNodeStatusContent(nodeId);
+//		} catch (SQLException e) {
+//			log.log(Level.SEVERE, "unable to retrieve node status", e);
+//			throw new InternalServerErrorException(e);
+//		}
+//		if( content == null ){
+//			throw new NotFoundException();
+//		}
+//		return content;
+//	}
 	
 	/**
 	 * Report the local node status to the broker.
@@ -155,6 +165,7 @@ public class BrokerEndpoint {
 	 */
 	@Authenticated
 	@POST
+	@Deprecated // TODO replace with my/node/versions
 	@Path("my/status")
 	@Consumes(MediaType.APPLICATION_XML)
 	public void reportNodesStatus(NodeStatus status, @Context SecurityContext sec) throws SQLException{
@@ -163,6 +174,25 @@ public class BrokerEndpoint {
 		// TODO calculate network delay via local and remote timestamps
 		// store software module versions
 		db.updateNodeStatus(user.getNodeId(), status);
+	}
+	/**
+	 * Upload node resources to the broker
+	 * @param status JSON status
+	 * @param sec security context
+	 * @throws SQLException 
+	 */
+	@Authenticated
+	@PUT
+	@Path("my/node/{resource}")
+	public void setNodesResource(@PathParam("resource") String resourceId, @Context HttpHeaders headers, @Context SecurityContext sec, InputStream content) {
+		Principal user = (Principal)sec.getUserPrincipal();
+		log.info("Resource uploaded by node "+user.getNodeId()+": "+resourceId);
+		try {
+			db.updateNodeResource(user.getNodeId(), resourceId, headers.getMediaType(), content);
+		} catch (IOException | SQLException e) {
+			log.log(Level.SEVERE, "Unable to write resource for node "+user.getNodeId()+": "+resourceId, e);
+			throw new InternalServerErrorException(e);
+		}
 	}
 	
 	@Authenticated

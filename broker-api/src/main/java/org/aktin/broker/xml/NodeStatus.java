@@ -29,16 +29,6 @@ public class NodeStatus {
 	 * Duration in epoch milliseconds, how long the node software application (e.g. J2EE deployment) is running (since startup)
 	 */
 	Long uptime;
-	/**
-	 * Relevant software modules running at the client. The first element must be "broker-api" with
-	 * the current version information.
-	 */
-	@XmlElement(name="module")
-	List<SoftwareModule> modules;
-
-	/** Status information payload */
-	@XmlAnyElement(lax=true)
-	Object payload;
 	
 	protected NodeStatus(){
 	}
@@ -46,29 +36,5 @@ public class NodeStatus {
 	public NodeStatus(Date startup){
 		this.timestamp = new Date();
 		this.uptime = System.currentTimeMillis() - timestamp.getTime();
-		this.modules = new ArrayList<>();
-		modules.add(SoftwareModule.BROKER_API);		
-	}
-	public NodeStatus(Date startup, Iterable<SoftwareModule> additionalModules){
-		this(startup);
-		for( SoftwareModule m : additionalModules ){
-			modules.add(m);
-		}
-	}
-	public NodeStatus(Date startup, Map<String, String> softwareVersions){
-		this(startup);
-		softwareVersions.forEach( (s,v) -> modules.add(new SoftwareModule(s,v)) );
-	}
-	public NodeStatus(Date startup, Map<String, String> softwareVersions, Object payload){
-		this(startup, softwareVersions);
-		this.payload = payload;
-	}
-
-	public List<SoftwareModule> getModules(){
-		return modules;
-	}
-
-	public Object getPayload(){
-		return payload;
 	}
 }

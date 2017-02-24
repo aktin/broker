@@ -3,12 +3,16 @@ package org.aktin.broker;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -61,14 +65,17 @@ public class TestBroker {
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test1"));
-		Assert.assertEquals("test1", a.getNode(0).modules.get("TEST"));
-		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test2"), new XmlPayload("elval","atval"));
-		Assert.assertEquals("test2", a.getNode(0).modules.get("TEST"));
+		Properties m = a.getNodeResourceProperties(0, "versions");
+		System.out.println(m);
+		Assert.assertEquals("test1", m.get("TEST"));
+		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test2"));
+		Assert.assertEquals("test2", a.getNodeResourceProperties(0, "versions").get("TEST"));
 		// TODO should be only TEST -> test2 in database
-		Reader r = a.getNodeStatus(0);
-		assertNotNull(r);
-		System.out.println(Util.readContent(r));
-		r.close();
+		// TODO verify node status via status resource
+//		Reader r = a.getNodeStatus(0);
+//		assertNotNull(r);
+//		System.out.println(Util.readContent(r));
+//		r.close();
 	}
 	
 	@Test
@@ -81,7 +88,7 @@ public class TestBroker {
 		System.out.println(s);
 
 		// posting status will trigger authentication
-		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "1"), new XmlPayload("el-val", "attr-val") );
+		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "1"));
 
 		TestAdmin a = new TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		// verify client list
@@ -305,6 +312,19 @@ public class TestBroker {
 		c.listMyRequests();
 		node = a.getNode(0);
 		Assert.assertTrue(t1.isBefore(node.lastContact));
+	}
+	@Test
+	public void addDeleteNodeResource() throws IOException{
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
+		String qid = a.createRequest("text/x-test-1", "test1");
+		a.publishRequest(qid);
+
+		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
+		c.putMyResource("stats", "text/plain", "123");
+		try( Reader reader = new InputStreamReader(a.getNodeResource(0, "stats")) ){
+			assertEquals("123", Util.readContent(reader));
+		}
+		
 	}
 	@Test
 	public void testWebsocket() throws Exception{
