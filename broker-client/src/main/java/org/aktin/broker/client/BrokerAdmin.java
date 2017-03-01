@@ -27,6 +27,7 @@ import org.aktin.broker.xml.RequestStatusList;
 import org.aktin.broker.xml.RequestTargetNodes;
 import org.aktin.broker.xml.ResultInfo;
 import org.aktin.broker.xml.ResultList;
+import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Node;
 
 public class BrokerAdmin extends AbstractBrokerClient {
@@ -59,23 +60,32 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		return contentReader(c, null);	
 	}
 	// TODO also return media type, e.g. via Datasource wrapping HttpURLConnection
-	public InputStream getNodeResource(int nodeId, String resourceId) throws IOException{
+	public NodeResource getNodeResource(int nodeId, String resourceId) throws IOException{
 		HttpURLConnection c = openConnection("GET", "node/"+nodeId+"/"+URLEncoder.encode(resourceId,"UTF-8"));
-		return c.getInputStream();
+		return wrapResource(c, resourceId);
 	}
 	public <T> T getNodeResourceJAXB(int nodeId, String resourceId, Class<T> type) throws IOException{
-		try( InputStream in = getNodeResource(nodeId, resourceId) ){
+		NodeResource r = getNodeResource(nodeId, resourceId);
+		try( InputStream in = r.getInputStream() ){
 			// TODO verify content type xml
 			return JAXB.unmarshal(in, type);
 		}
 	}
-	public Properties getNodeResourceProperties(int nodeId, String resourceId) throws IOException{
+	public Properties getNodeProperties(int nodeId, String resourceId) throws IOException{
 		Properties props;
-		try( InputStream in = getNodeResource(nodeId, resourceId) ){
+		NodeResource r = getNodeResource(nodeId, resourceId);
+		try( InputStream in = r.getInputStream() ){
 			props = new Properties();
 			props.loadFromXML(in);
 		}
 		return props;
+	}
+	public String getNodeString(int nodeId, String resourceId) throws IOException{
+		NodeResource r = getNodeResource(nodeId, resourceId);
+		// TODO parse and use charset from concent type
+		try( Reader reader = new InputStreamReader(r.getInputStream()) ){
+			return Util.readContent(reader);
+		}
 	}
 	/**
 	 * Create a request with specified content type and content

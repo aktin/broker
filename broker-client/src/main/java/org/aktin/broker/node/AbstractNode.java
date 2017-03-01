@@ -55,7 +55,7 @@ public abstract class AbstractNode {
 		Map<String,String> versions = new LinkedHashMap<>();
 		// more modules
 		fillSoftwareModulesVersions(versions);
-		broker.postMyStatus(startup, versions);
+		broker.postSoftwareVersions(versions);
 	}
 
 	protected void issueWarning(String warning){

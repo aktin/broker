@@ -182,6 +182,12 @@
 			<column name="data_file" type="VARCHAR(64)">
 				<constraints nullable="false"/>
 			</column>
+			<column name="data_md5" type="BINARY(16)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="data_sha2" type="BINARY(32)">
+				<constraints nullable="false"/>
+			</column>
 		</createTable>
 		<addPrimaryKey tableName="node_resources" columnNames="node_id, name"/>
 	</changeSet>

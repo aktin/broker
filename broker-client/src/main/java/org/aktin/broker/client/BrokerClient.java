@@ -14,7 +14,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -24,13 +23,11 @@ import javax.net.ssl.SSLContext;
 import javax.xml.bind.JAXB;
 
 import org.aktin.broker.xml.Node;
-import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class BrokerClient extends AbstractBrokerClient{	
 	public BrokerClient(URI brokerEndpoint) {
@@ -76,21 +73,15 @@ public class BrokerClient extends AbstractBrokerClient{
 	 * @param payload Status content / payload. Can be any JAXB compatible object ({@code @XMLRootElement} or {@link Element})
 	 * @throws IOException IO error
 	 */
-	public void postMyStatus(long startupEpochMillis) throws IOException{
-		HttpURLConnection c = openConnection("POST", "my/status");
-		c.setDoOutput(true);
-		c.setRequestProperty("Content-Type", "application/xml");
-		NodeStatus status = new NodeStatus(new Date(startupEpochMillis));
-		try( OutputStream post = c.getOutputStream() ){
-			JAXB.marshal(status, post);
-		}
-		// this will throw an IOException if the status is not successful
-		c.getInputStream().close();
-	}
-	public void postMyStatus(long startupEpochMillis, Map<String,String> softwareVersions) throws IOException{
-		postMyStatus(startupEpochMillis);
-		postSoftwareVersions(softwareVersions);
-	}
+//	@Deprecated
+//	public void postMyStatus(long startupEpochMillis, Map<String,String> softwareVersions) throws IOException{
+//		postSoftwareVersions(softwareVersions);
+//	}
+	/**
+	 * Get list of requests
+	 * @return request list
+	 * @throws IOException error
+	 */
 	public List<RequestInfo> listMyRequests() throws IOException{
 		HttpURLConnection c = openConnection("GET", "my/request");
 		RequestList list = null;
@@ -191,15 +182,20 @@ public class BrokerClient extends AbstractBrokerClient{
 	}
 	public Properties getMyResourceProperties(String name) throws IOException{
 		Properties props;
-		try( InputStream response = getMyResource(name) ){
+		NodeResource res = getMyResource(name);
+		// verify content type
+		if( !res.getContentType().startsWith("application/xml") ){
+			throw new IOException("Unexpected content type: "+res.getContentType());
+		}
+		try( InputStream response = res.getInputStream() ){
 			props = new Properties();
 			props.loadFromXML(response);
 		}
 		return props;
 	}
-	public InputStream getMyResource(String name) throws IOException{
+	public NodeResource getMyResource(String name) throws IOException{
 		HttpURLConnection c = openConnection("GET", resolveBrokerURI("my/node/").resolve(URLEncoder.encode(name, "UTF-8")));
-		return c.getInputStream();
+		return wrapResource(c, name);
 	}
 	public void putMyResource(String name, String contentType, String content) throws IOException{
 		putResource(resolveBrokerURI("my/node/").resolve(name), contentType, new OutputWriter(){

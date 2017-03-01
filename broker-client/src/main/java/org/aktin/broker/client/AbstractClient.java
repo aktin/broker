@@ -110,5 +110,15 @@ public abstract class AbstractClient {
 		w.flush();
 		// don't close the print writer, because this would also close the output stream
 	}
+	protected static NodeResource wrapResource(HttpURLConnection c, String name) throws IOException{
+		if( c.getResponseCode() == 404 ){
+			return null;
+		}else if( c.getResponseCode() != 200 ){
+			c.getInputStream().close(); // should throw exception
+			// if not, throw own exception
+			throw new IOException("Unexpected HTTP response code "+c.getResponseMessage());
+		}
+		return new NodeResource(c, name);
+	}
 
 }

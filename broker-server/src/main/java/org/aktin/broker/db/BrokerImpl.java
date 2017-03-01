@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,18 +29,11 @@ import javax.annotation.Resource;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
-import org.aktin.broker.PathDataSource;
+import org.aktin.broker.DigestPathDataSource;
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.server.Broker;
 import org.aktin.broker.xml.Node;
-import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
@@ -49,6 +42,8 @@ import org.aktin.broker.xml.util.Util;
 @Singleton
 public class BrokerImpl implements BrokerBackend, Broker {
 	private static final Logger log = Logger.getLogger(BrokerImpl.class.getName());
+	private static final String[] RESOURCE_DIGESTS = new String[]{"MD5","SHA-256"};
+
 	private DataSource brokerDB;
 	private Path dataDir; // for node resource data
 	/**
@@ -606,54 +601,18 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	}
 
 
-	private static final String convertNodeToString(org.w3c.dom.Node node) throws TransformerException{
-	    TransformerFactory tf = TransformerFactory.newInstance();
-	    Transformer transformer = tf.newTransformer();
-
-	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-	    transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-	    transformer.setOutputProperty(OutputKeys.INDENT, "no");
-	    StringWriter w = new StringWriter();
-	    transformer.transform(new DOMSource(node), new StreamResult(w));
-
-	    return w.toString();
-	}
-	@Override
-	public void updateNodeStatus(int nodeId, NodeStatus status) throws SQLException {
-		// TODO store module versions and status in memory. flush on close or at intervals
-		/* TODO not needed anymore, replaced by node resources 
-		try( Connection dbc = brokerDB.getConnection() ){
-			// delete previous data
-			Statement st = dbc.createStatement();
-			st.executeUpdate("DELETE FROM node_modules WHERE node_id="+nodeId);
-			st.close();
-			// write new data
-			PreparedStatement ps = dbc.prepareStatement("INSERT INTO node_modules(node_id, module, version)VALUES(?,?,?)");
-			ps.setInt(1, nodeId);
-			for( SoftwareModule m : status.getModules() ){
-				ps.setString(2, m.getId());
-				ps.setString(3, m.getVersion());
-				ps.executeUpdate();
-			}
-			ps.close();
-
-			if( status.getPayload() != null ){
-				String xml;
-				try {
-					xml = convertNodeToString((org.w3c.dom.Node)status.getPayload());
-					ps = dbc.prepareStatement("UPDATE nodes SET status_content=? WHERE id=?");
-					ps.setInt(2, nodeId);
-					ps.setString(1, xml);
-					ps.executeUpdate();
-					ps.close();
-				} catch (TransformerException e) {
-					log.log(Level.SEVERE, "Unable to generate XML string for payload", e);
-				}
-			}
-			dbc.commit();
-		}		*/
-	}
-
+//	private static final String convertNodeToString(org.w3c.dom.Node node) throws TransformerException{
+//	    TransformerFactory tf = TransformerFactory.newInstance();
+//	    Transformer transformer = tf.newTransformer();
+//
+//	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+//	    transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+//	    transformer.setOutputProperty(OutputKeys.INDENT, "no");
+//	    StringWriter w = new StringWriter();
+//	    transformer.transform(new DOMSource(node), new StreamResult(w));
+//
+//	    return w.toString();
+//	}
 	private void updateRequestTimestamp(Connection dbc, int requestId, String timestampColumn, Instant value) throws SQLException{
 		PreparedStatement ps = dbc.prepareStatement("UPDATE requests SET "+timestampColumn+"=? WHERE id=?");
 		if( value != null ){
@@ -788,6 +747,25 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			throw new IllegalStateException(e);
 		}
 	}
+
+	
+	// replace file and generate checksum
+	private byte[][] replaceResourceFile(InputStream data, String oldFile, String newFile) throws IOException{
+		// replace file
+		if( oldFile != null ){
+			// delete old file
+			Files.delete(dataDir.resolve(oldFile));
+		}
+		// create the new file, shouldn't replace anything
+		DigestCalculatingInputStream di;
+		try {
+			di = new DigestCalculatingInputStream(data, RESOURCE_DIGESTS);
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException("message digest SHA-256 not available");
+		}
+		Files.copy(di, dataDir.resolve(newFile));
+		return di.getDigests();
+	}
 	@Override
 	// TODO add last modified timestamp
 	public void updateNodeResource(int nodeId, String resourceId, MediaType mediaType, InputStream content) throws IOException, SQLException {
@@ -804,38 +782,42 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			}
 			ps.close();
 			ps = null;
+
+			// replace file
+			byte[][] digests = replaceResourceFile(content, oldFile, newFile);
+			// XXX this is not 100% transaction safe, the file is still replaced if the next database operation fails. Would be better to backup the old file and restore it if the database operation fails
+
+			// update database entry
 			if( oldFile != null ){
 				// previous entry, replace existing
-				ps = dbc.prepareStatement("UPDATE node_resources SET media_type=?, last_modified=?, data_file=? WHERE node_id=? AND name=?");
+				ps = dbc.prepareStatement("UPDATE node_resources SET media_type=?, last_modified=?, data_file=?, data_md5=?, data_sha2=? WHERE node_id=? AND name=?");
 			}else{
 				// no previous entry, create new one
-				ps = dbc.prepareStatement("INSERT INTO node_resources(media_type, last_modified, data_file, node_id, name)VALUES(?,?,?,?,?)");
+				ps = dbc.prepareStatement("INSERT INTO node_resources(media_type, last_modified, data_file, data_md5, data_sha2, node_id, name)VALUES(?,?,?,?,?,?,?)");
 			}
+
 			ps.setString(1, mediaType.toString());
 			ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
 			ps.setString(3, newFile);
-			ps.setInt(4, nodeId);
-			ps.setString(5, resourceId);
+			ps.setBytes(4, digests[0]);
+			ps.setBytes(5, digests[1]);
+			ps.setInt(6, nodeId);
+			ps.setString(7, resourceId);
 			ps.executeUpdate();
 			ps.close();
-			// replace file
-			if( oldFile != null ){
-				// delete old file
-				Files.delete(dataDir.resolve(oldFile));
-			}
-			// create the new file, shouldn't replace anything
-			Files.copy(content, dataDir.resolve(newFile));
 			// done
 			dbc.commit();
 		}
 	}
 	@Override
-	public javax.activation.DataSource getNodeResource(int nodeId, String resourceId) throws SQLException{
+	public DigestPathDataSource getNodeResource(int nodeId, String resourceId) throws SQLException{
 		String mediaType;
 		Instant lastModified;
 		Path file;
+		byte[] md5;
+		byte[] sha2;
 		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement("SELECT media_type, last_modified, data_file FROM node_resources WHERE node_id=? AND name=?");
+			PreparedStatement ps = dbc.prepareStatement("SELECT media_type, last_modified, data_file, data_md5, data_sha2 FROM node_resources WHERE node_id=? AND name=?");
 			ps.setInt(1, nodeId);
 			ps.setString(2, resourceId);
 			ResultSet rs = ps.executeQuery();
@@ -846,10 +828,15 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			mediaType = rs.getString(1);
 			lastModified = rs.getTimestamp(2).toInstant();
 			file = dataDir.resolve(rs.getString(3));
+			md5 = rs.getBytes(4);
+			sha2 = rs.getBytes(5);
 			rs.close();
 			ps.close();
 		}
 		
-		return new PathDataSource(file, mediaType, lastModified);
+		DigestPathDataSource ds = new DigestPathDataSource(file, mediaType, lastModified);
+		ds.md5 = md5;
+		ds.sha256 = sha2;
+		return ds;
 	}
 }

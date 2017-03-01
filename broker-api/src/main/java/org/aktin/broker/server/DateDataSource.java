@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.server;
 
 import java.time.Instant;
 

@@ -3,15 +3,12 @@ package org.aktin.broker;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
 import org.aktin.broker.client.ClientWebsocket;
+import org.aktin.broker.client.NodeResource;
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
@@ -64,12 +62,12 @@ public class TestBroker {
 		String testId = "01";
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
-		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test1"));
-		Properties m = a.getNodeResourceProperties(0, "versions");
+		c.postSoftwareVersions(Collections.singletonMap("TEST", "test1"));
+		Properties m = a.getNodeProperties(0, "versions");
 		System.out.println(m);
 		Assert.assertEquals("test1", m.get("TEST"));
-		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "test2"));
-		Assert.assertEquals("test2", a.getNodeResourceProperties(0, "versions").get("TEST"));
+		c.postSoftwareVersions(Collections.singletonMap("TEST", "test2"));
+		Assert.assertEquals("test2", a.getNodeProperties(0, "versions").get("TEST"));
 		// TODO should be only TEST -> test2 in database
 		// TODO verify node status via status resource
 //		Reader r = a.getNodeStatus(0);
@@ -88,7 +86,7 @@ public class TestBroker {
 		System.out.println(s);
 
 		// posting status will trigger authentication
-		c.postMyStatus(System.currentTimeMillis(), Collections.singletonMap("TEST", "1"));
+		c.postSoftwareVersions(Collections.singletonMap("TEST", "1"));
 
 		TestAdmin a = new TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		// verify client list
@@ -318,12 +316,11 @@ public class TestBroker {
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		String qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
-
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
 		c.putMyResource("stats", "text/plain", "123");
-		try( Reader reader = new InputStreamReader(a.getNodeResource(0, "stats")) ){
-			assertEquals("123", Util.readContent(reader));
-		}
+		assertEquals("123", a.getNodeString(0, "stats"));
+		NodeResource r = a.getNodeResource(0, "stats");
+		assertEquals("202cb962ac59075b964b07152d234b70", r.getMD5String());
 		
 	}
 	@Test

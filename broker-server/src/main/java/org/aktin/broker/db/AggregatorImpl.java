@@ -21,8 +21,8 @@ import javax.inject.Singleton;
 import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
 
-import org.aktin.broker.DateDataSource;
 import org.aktin.broker.PathDataSource;
+import org.aktin.broker.server.DateDataSource;
 import org.aktin.broker.xml.ResultInfo;
 
 @Singleton

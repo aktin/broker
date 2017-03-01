@@ -8,13 +8,13 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.activation.DataSource;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -40,10 +40,10 @@ import org.aktin.broker.auth.AuthCache;
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.notify.BrokerWebsocket;
+import org.aktin.broker.server.DateDataSource;
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.NodeList;
-import org.aktin.broker.xml.NodeStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatus;
@@ -128,53 +128,33 @@ public class BrokerEndpoint {
 		return node;
 	}
 	/**
-	 * Retrieve a named resource uploaded previously by the specified node
+	 * Retrieve a named resource uploaded previously by the specified node.
+	 * <p>
+	 * Last modified and eTag headers will be set.
+	 * The eTag is calculated {@code url-safe-base64(sha-256(data))}.
+	 * </p>
 	 * @param nodeId node id
 	 * @return status {@code 200} with node info or status {@code 404} if not found. 
 	 * @throws SQLException sql error
 	 */
 	@GET
 	@Path("node/{node}/{resource}")
-	public DataSource getNodeResource(@PathParam("node") int nodeId, @PathParam("resource") String resourceId) throws SQLException{
-		return db.getNodeResource(nodeId, resourceId);
+	public Response getNodeResource(@PathParam("node") int nodeId, @PathParam("resource") String resourceId) throws SQLException{		
+		DateDataSource ds = db.getNodeResource(nodeId, resourceId);
+		if( ds == null ){
+			throw new NotFoundException();
+		}
+		ResponseBuilder resp = Response.ok(ds);
+		// set etag
+		if( ds instanceof DigestPathDataSource ){
+			resp.tag(Base64.getUrlEncoder().encodeToString(((DigestPathDataSource)ds).sha256));
+			resp.header("Content-MD5", Base64.getUrlEncoder().encodeToString(((DigestPathDataSource)ds).md5));
+		}
+		// set last modified
+		resp.lastModified(Date.from(ds.getLastModified()));
+		return resp.build();
 	}
-
-//	@GET
-//	@Deprecated // TODO getNodeResource
-//	@Path("node/{id}/status")
-//	@Produces(MediaType.APPLICATION_XML)
-//	public String getNodeStatus(@PathParam("id") int nodeId){
-//		String content;
-//		try {
-//			content = db.getNodeStatusContent(nodeId);
-//		} catch (SQLException e) {
-//			log.log(Level.SEVERE, "unable to retrieve node status", e);
-//			throw new InternalServerErrorException(e);
-//		}
-//		if( content == null ){
-//			throw new NotFoundException();
-//		}
-//		return content;
-//	}
 	
-	/**
-	 * Report the local node status to the broker.
-	 * @param status JSON status
-	 * @param sec security context
-	 * @throws SQLException 
-	 */
-	@Authenticated
-	@POST
-	@Deprecated // TODO replace with my/node/versions
-	@Path("my/status")
-	@Consumes(MediaType.APPLICATION_XML)
-	public void reportNodesStatus(NodeStatus status, @Context SecurityContext sec) throws SQLException{
-		Principal user = (Principal)sec.getUserPrincipal();
-		log.info("Node status retrieved");
-		// TODO calculate network delay via local and remote timestamps
-		// store software module versions
-		db.updateNodeStatus(user.getNodeId(), status);
-	}
 	/**
 	 * Upload node resources to the broker
 	 * @param status JSON status
