@@ -293,7 +293,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			Statement st = dbc.createStatement();
 			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, d.media_type, r.targeted FROM requests r JOIN request_definitions d ON r.id=d.request_id ORDER BY r.id");
 			list = loadRequestList(rs, 4,  
-					r -> new RequestInfo(Integer.toString(r.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(5))
+					r -> new RequestInfo(r.getInt(1), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(5))
 			);
 			rs.close();
 			st.close();
@@ -367,7 +367,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL AND (r.targeted = FALSE OR s.request_id IS NOT NULL) ORDER BY r.id");
 //			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL ORDER BY r.id");
 			while( rs.next() ){
-				RequestInfo ri = new RequestInfo(Integer.toString(rs.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs,3), rs.getBoolean(4));
+				RequestInfo ri = new RequestInfo(rs.getInt(1), optionalTimestamp(rs, 2), optionalTimestamp(rs,3), rs.getBoolean(4));
 				RequestStatusInfo status = new RequestStatusInfo();
 				status.retrieved = optionalTimestamp(rs, 5);
 				// TODO more status
@@ -404,7 +404,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted FROM requests r WHERE r.id="+requestId);
 		RequestInfo ri = null;
 		if( rs.next() ){
-			ri = new RequestInfo(Integer.toString(rs.getInt(1)), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(4));
+			ri = new RequestInfo(rs.getInt(1), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(4));
 		}
 		rs.close();
 		st.close();

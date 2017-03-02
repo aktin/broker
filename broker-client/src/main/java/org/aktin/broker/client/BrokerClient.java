@@ -90,10 +90,10 @@ public class BrokerClient extends AbstractBrokerClient{
 		}
 		return postprocessRequestList(list);
 	}
-	public void deleteMyRequest(String id) throws IOException{
+	public void deleteMyRequest(int id) throws IOException{
 		delete(getQueryURI(id));
 	}
-	public Reader getMyRequestDefinitionReader(String id, String mediaType) throws IOException{
+	public Reader getMyRequestDefinitionReader(int id, String mediaType) throws IOException{
 		HttpURLConnection c = openConnection("GET", getQueryURI(id));
 		return contentReader(c, mediaType);
 	}
@@ -103,7 +103,7 @@ public class BrokerClient extends AbstractBrokerClient{
 			return JAXB.unmarshal(response, Node.class);
 		}
 	}
-	public Document getMyRequestDefinitionXml(String id, String mediaType) throws IOException{
+	public Document getMyRequestDefinitionXml(int id, String mediaType) throws IOException{
 		Reader reader = getMyRequestDefinitionReader(id, mediaType);
 		if( reader == null ){
 			// not found
@@ -115,7 +115,7 @@ public class BrokerClient extends AbstractBrokerClient{
 			reader.close();
 		}
 	}
-	public String[] getMyRequestDefinitionLines(String id, String mediaType) throws IOException{
+	public String[] getMyRequestDefinitionLines(int id, String mediaType) throws IOException{
 		ArrayList<String> lines = new ArrayList<>();
 		Reader def = getMyRequestDefinitionReader(id, mediaType);
 		if( def == null ){
@@ -129,7 +129,7 @@ public class BrokerClient extends AbstractBrokerClient{
 		}
 		return lines.toArray(new String[lines.size()]);
 	}
-	public String getMyRequestDefinitionString(String id, String mediaType) throws IOException{
+	public String getMyRequestDefinitionString(int id, String mediaType) throws IOException{
 		StringBuilder builder = new StringBuilder();
 		Reader def = getMyRequestDefinitionReader(id, mediaType);
 		if( def == null ){
@@ -219,11 +219,11 @@ public class BrokerClient extends AbstractBrokerClient{
 		}
 		c.getInputStream().close();
 	}
-	public void putRequestResult(String requestId, String contentType, OutputWriter writer) throws IOException{
+	public void putRequestResult(int requestId, String contentType, OutputWriter writer) throws IOException{
 		URI putResult = resolveAggregatorURI("my/request/"+requestId+"/result");
 		putResource(putResult, contentType, writer);
 	}
-	public void putRequestResult(String requestId, String contentType, final InputStream content) throws IOException{
+	public void putRequestResult(int requestId, String contentType, final InputStream content) throws IOException{
 		putRequestResult(requestId, contentType, new OutputWriter(){
 			@Override
 			public void write(OutputStream dest) throws IOException {
@@ -231,10 +231,10 @@ public class BrokerClient extends AbstractBrokerClient{
 			}
 		});
 	}
-	public void putRequestResult(String requestId, String contentType, String content) throws IOException{
+	public void putRequestResult(int requestId, String contentType, String content) throws IOException{
 		putRequestResult(requestId, contentType+";charset=UTF-8", new OutputWriter.ForString(content, "UTF-8"));
 	}
-	public void postRequestStatus(String requestId, RequestStatus status) throws IOException{
+	public void postRequestStatus(int requestId, RequestStatus status) throws IOException{
 		HttpURLConnection c = openConnection("POST", getQueryBaseURI().resolve(requestId+"/status/"+status.name()));
 		c.getInputStream().close();
 	}
@@ -245,7 +245,7 @@ public class BrokerClient extends AbstractBrokerClient{
 	 * @param throwable throwable. Can be {@code null}.
 	 * @throws IOException IO error
 	 */
-	public void postRequestFailed(String requestId, String message, Throwable throwable) throws IOException{
+	public void postRequestFailed(int requestId, String message, Throwable throwable) throws IOException{
 		HttpURLConnection c = openConnection("POST", getQueryBaseURI().resolve(requestId+"/status/"+RequestStatus.failed.name()));
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", "text/plain;charset=UTF-8");
@@ -267,7 +267,7 @@ public class BrokerClient extends AbstractBrokerClient{
 		// will make sure the status code is in the 2xx group.
 		c.getInputStream().close();
 	}
-	public void postRequestStatus(String requestId, RequestStatus status, Instant date) throws IOException{
+	public void postRequestStatus(int requestId, RequestStatus status, Instant date) throws IOException{
 		HttpURLConnection c = openConnection("POST", getQueryBaseURI().resolve(requestId+"/status/"+status.name()));
 		c.setRequestProperty("Date", Util.formatHttpDate(date));
 		c.getInputStream().close();	

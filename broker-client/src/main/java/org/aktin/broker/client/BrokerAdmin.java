@@ -45,7 +45,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 	protected URI getQueryBaseURI() {
 		return resolveBrokerURI("request/");
 	}
-	public Reader getRequestDefinition(String id, String mediaType) throws IOException{
+	public Reader getRequestDefinition(int id, String mediaType) throws IOException{
 		return getRequestDefinition(getQueryURI(id), mediaType);
 	}
 	private Reader getRequestDefinition(URI location, String mediaType) throws IOException{
@@ -54,7 +54,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		
 	}
 	// TODO return actual media type
-	public Reader getRequestNodeMessage(String requestId, int nodeId) throws IOException{
+	public Reader getRequestNodeMessage(int requestId, int nodeId) throws IOException{
 		URI uri = getQueryURI(requestId);
 		HttpURLConnection c = openConnection("GET", uri.resolve(uri.getPath()+"/status/"+nodeId));
 		return contentReader(c, null);	
@@ -94,7 +94,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 	 * @return request id
 	 * @throws IOException IO error
 	 */
-	public String createRequest(String contentType, OutputWriter writer) throws IOException{
+	public int createRequest(String contentType, OutputWriter writer) throws IOException{
 		HttpURLConnection c = openConnection("POST", "request");
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", contentType);
@@ -113,7 +113,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 	}
 	
-	public String createRequest(String contentType, final InputStream content) throws IOException{
+	public int createRequest(String contentType, final InputStream content) throws IOException{
 		return createRequest(contentType,  new OutputWriter(){
 			@Override
 			public void write(OutputStream dest) throws IOException {
@@ -121,7 +121,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			}	
 		});
 	}
-	public String createRequest(String contentType, final Node content) throws IOException{
+	public int createRequest(String contentType, final Node content) throws IOException{
 		return createRequest(contentType+";charset=UTF-8", new OutputWriter(){
 			@Override
 			public void write(OutputStream dest) throws IOException {
@@ -129,10 +129,10 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			}	
 		});
 	}
-	public String createRequest(String contentType, String content) throws IOException{
+	public int createRequest(String contentType, String content) throws IOException{
 		return createRequest(contentType+";charset=UTF-8", new OutputWriter.ForString(content, "UTF-8"));
 	}
-	public void deleteRequest(String requestId) throws IOException{
+	public void deleteRequest(int requestId) throws IOException{
 		delete(getQueryURI(requestId));
 	}
 	private void putRequestDefinition(URI requestURI, String contentType, OutputWriter writer) throws IOException{
@@ -144,20 +144,20 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 		c.getInputStream().close();		
 	}
-	public void publishRequest(String requestId) throws IOException{
+	public void publishRequest(int requestId) throws IOException{
 		URI uri = getQueryURI(requestId);
 		HttpURLConnection c = openConnection("POST", uri.resolve(uri.getPath()+"/publish"));
 		c.getInputStream().close();
 	}
-	public void closeRequest(String requestId) throws IOException{
+	public void closeRequest(int requestId) throws IOException{
 		URI uri = getQueryURI(requestId);
 		HttpURLConnection c = openConnection("POST", uri.resolve(uri.getPath()+"/close"));
 		c.getInputStream().close();
 	}
-	public void putRequestDefinition(String requestId, String contentType, OutputWriter writer) throws IOException{
+	public void putRequestDefinition(int requestId, String contentType, OutputWriter writer) throws IOException{
 		putRequestDefinition(getQueryURI(requestId), contentType, writer);
 	}
-	public void putRequestDefinition(String requestId, String contentType, String content) throws IOException{
+	public void putRequestDefinition(int requestId, String contentType, String content) throws IOException{
 		putRequestDefinition(getQueryURI(requestId), contentType+";charset=UTF-8", new OutputWriter.ForString(content, "UTF-8"));
 	}
 
@@ -196,7 +196,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 	 * @return request info
 	 * @throws IOException communications error
 	 */
-	public RequestInfo getRequestInfo(String requestId) throws IOException{
+	public RequestInfo getRequestInfo(int requestId) throws IOException{
 		HttpURLConnection c = openConnection("OPTIONS", "request/"+requestId);
 		if( c.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND ){
 			return null;
@@ -204,7 +204,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			return JAXB.unmarshal(response, RequestInfo.class);
 		}
 	}
-	public List<RequestStatusInfo> listRequestStatus(String requestId) throws IOException{
+	public List<RequestStatusInfo> listRequestStatus(int requestId) throws IOException{
 		HttpURLConnection c = openConnection("GET", "request/"+requestId+"/status");
 		c.setRequestProperty("Content-Type", "application/xml");
 		RequestStatusList list = null;
@@ -218,7 +218,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 	}
 
-	public List<ResultInfo> listResults(String requestId) throws IOException{
+	public List<ResultInfo> listResults(int requestId) throws IOException{
 		HttpURLConnection c = openConnection("GET", resolveAggregatorURI("request/"+requestId+"/result"));
 		c.setRequestProperty("Content-Type", "application/xml");
 		ResultList list = null;
@@ -231,9 +231,9 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			return list.getResults();
 		}
 	}
-	// TODO ResultInfo getResultInfo(String requestId, String nodeId)
+	// TODO ResultInfo getResultInfo(int requestId, String nodeId)
 	// TODO remove Function<...> for Java 7 compatibility
-	public <T> T getResult(String requestId, int nodeId, String acceptMediaType, Function<DataSource,T> unmarshaller) throws IOException{
+	public <T> T getResult(int requestId, int nodeId, String acceptMediaType, Function<DataSource,T> unmarshaller) throws IOException{
 		HttpURLConnection c = openConnection("GET", resolveAggregatorURI("request/"+requestId+"/result/"+nodeId));
 		if( acceptMediaType != null ){
 			c.setRequestProperty("Accept", acceptMediaType);
@@ -250,7 +250,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 	}
 
-	public String getResultString(String requestId, int nodeId, String acceptMediaType) throws IOException{
+	public String getResultString(int requestId, int nodeId, String acceptMediaType) throws IOException{
 		// TODO can we use Function in Java7?
 		return getResult(requestId, nodeId, acceptMediaType, new Function<DataSource, String>() {
 
@@ -273,7 +273,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		});
 	}
 
-	public int[] getRequestTargetNodes(String requestId) throws IOException{
+	public int[] getRequestTargetNodes(int requestId) throws IOException{
 		URI uri = getQueryURI(requestId);
 		HttpURLConnection c = openConnection("GET", uri.resolve(uri.getPath()+"/nodes"));
 		RequestTargetNodes nodes;
@@ -286,7 +286,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 			return nodes.getNodes();
 		}
 	}
-	public void setRequestTargetNodes(String requestId, int[] nodes) throws IOException{
+	public void setRequestTargetNodes(int requestId, int[] nodes) throws IOException{
 		URI uri = getQueryURI(requestId);
 		HttpURLConnection c = openConnection("PUT", uri.resolve(uri.getPath()+"/nodes"));
 		c.setDoOutput(true);
@@ -297,7 +297,7 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 		c.getInputStream().close();		
 	}
-	public void clearRequestTargetNodes(String requestId) throws IOException{
+	public void clearRequestTargetNodes(int requestId) throws IOException{
 		URI uri = getQueryURI(requestId);
 		HttpURLConnection c = openConnection("DELETE", uri.resolve(uri.getPath()+"/nodes"));
 		c.setDoOutput(false);

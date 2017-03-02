@@ -112,7 +112,7 @@ public class TestBroker {
 		Assert.assertTrue(l.isEmpty());
 		// add request
 		// TODO use large file
-		String qid = c.createRequest("text/x-test", "test");
+		int qid = c.createRequest("text/x-test", "test");
 		System.out.println("New request: "+qid);
 		l = c.listAllRequests();
 		Assert.assertEquals(1, l.size());
@@ -127,18 +127,18 @@ public class TestBroker {
 	@Test
 	public void expect404ForNonExistentRequests() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
-		assertNull(a.getRequestDefinition("0", "text/plain"));
+		assertNull(a.getRequestDefinition(0, "text/plain"));
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
-		assertNull(c.getMyRequestDefinitionString("0", "text/plain"));
-		assertNull(c.getMyRequestDefinitionXml("0", "text/plain"));
-		assertNull(c.getMyRequestDefinitionLines("0", "text/plain"));
+		assertNull(c.getMyRequestDefinitionString(0, "text/plain"));
+		assertNull(c.getMyRequestDefinitionXml(0, "text/plain"));
+		assertNull(c.getMyRequestDefinitionLines(0, "text/plain"));
 	}
 	@Test
 	public void reportAndReadRequestStatus() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
 		// create request
-		String rid = a.createRequest("text/vnd.test1", "test");
+		int rid = a.createRequest("text/vnd.test1", "test");
 		a.publishRequest(rid);
 		// listing requests should not update the request status for the nodes
 		List<RequestInfo> ril = c.listMyRequests();
@@ -148,25 +148,25 @@ public class TestBroker {
 		assertEquals(0, list.size());
 		
 		// retrieve request
-		String def = c.getMyRequestDefinitionString("0", "text/vnd.test1");
+		String def = c.getMyRequestDefinitionString(0, "text/vnd.test1");
 		assertEquals("test",  def);
 		// request status should be automatically set to retrieved
-		list = a.listRequestStatus("0");
+		list = a.listRequestStatus(0);
 		assertEquals(1, list.size());
 		assertNotNull(list.get(0).retrieved);
 
 		// report status
-		c.postRequestStatus("0", RequestStatus.queued);
+		c.postRequestStatus(0, RequestStatus.queued);
 		// request status
-		list = a.listRequestStatus("0");
+		list = a.listRequestStatus(0);
 		assertEquals(1, list.size());
 		assertNotNull(list.get(0).queued);
 		assertTrue(list.get(0).queued.isAfter(list.get(0).retrieved));
 		assertNull(list.get(0).rejected);
 		assertNull(list.get(0).type); // should be no message type		
 		// update status (e.g. failed)
-		c.postRequestFailed("0", "Only test", new UnsupportedOperationException());
-		list = a.listRequestStatus("0");
+		c.postRequestFailed(0, "Only test", new UnsupportedOperationException());
+		list = a.listRequestStatus(0);
 		// now, there is a message
 		Assert.assertEquals("text/plain", list.get(0).type);
 		
@@ -180,11 +180,11 @@ public class TestBroker {
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertTrue(l.isEmpty());
 		// add request
-		String qid = a.createRequest("text/x-test", "test");
+		int qid = a.createRequest("text/x-test", "test");
 		a.publishRequest(qid);
 		
 		// retrieve
-		c.getMyRequestDefinitionString("0", "text/x-test");
+		c.getMyRequestDefinitionString(0, "text/x-test");
 		System.out.println("New request: "+qid);
 		l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
@@ -202,9 +202,9 @@ public class TestBroker {
 	public void testRequestWithMultipleDefinitions() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		Assert.assertEquals(0, a.listAllRequests().size());
-		String qid = a.createRequest("text/x-test-1", "test1");
+		int qid = a.createRequest("text/x-test-1", "test1");
 		a.putRequestDefinition(qid, "text/x-test-2", "test2");			
-		RequestInfo ri = a.getRequestInfo("0");
+		RequestInfo ri = a.getRequestInfo(0);
 		List<RequestInfo> l = a.listAllRequests();
 		a.deleteRequest(qid); // ????
 		l.forEach(r -> System.out.println("Request:"+r.getId()));
@@ -227,12 +227,12 @@ public class TestBroker {
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertTrue(l.isEmpty());
 		// add request
-		String qid = a.createRequest("text/x-test", "test");
+		int qid = a.createRequest("text/x-test", "test");
 		a.publishRequest(qid);
 		
 		// report failure
-		c.getMyRequestDefinitionString("0", "text/x-test");
-		c.postRequestFailed("0", "message", new AssertionError());
+		c.getMyRequestDefinitionString(0, "text/x-test");
+		c.postRequestFailed(0, "message", new AssertionError());
 
 		// retrieve failure
 		try( BufferedReader b = new BufferedReader(a.getRequestNodeMessage(qid, 0)) ){
@@ -253,7 +253,7 @@ public class TestBroker {
 		assertEquals(1, c2.getMyNode().id);
 
 		// create request and limit to second node
-		String qid = a.createRequest("text/x-test-1", "test1");
+		int qid = a.createRequest("text/x-test-1", "test1");
 		a.setRequestTargetNodes(qid, new int[]{1});
 		int[] nodes = a.getRequestTargetNodes(qid);
 		assertEquals(1, nodes.length);
@@ -276,7 +276,7 @@ public class TestBroker {
 	@Test
 	public void testRequestSubmitResult() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
-		String qid = a.createRequest("text/x-test-1", "test1");
+		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
@@ -294,7 +294,7 @@ public class TestBroker {
 	@Test
 	public void verifyLastContactUpdated() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
-		String qid = a.createRequest("text/x-test-1", "test1");
+		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
@@ -314,7 +314,7 @@ public class TestBroker {
 	@Test
 	public void addDeleteNodeResource() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
-		String qid = a.createRequest("text/x-test-1", "test1");
+		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
 		c.putMyResource("stats", "text/plain", "123");
@@ -342,7 +342,7 @@ public class TestBroker {
 		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
 		String testId = "01";
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
-		String qid = a.createRequest("text/x-test-1", "test1");
+		int qid = a.createRequest("text/x-test-1", "test1");
 		// expect notification for published request
 		websocket.messages.clear();
 		websocket.prepareForMessages(1);

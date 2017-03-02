@@ -24,11 +24,11 @@ public abstract class AbstractBrokerClient extends AbstractClient{
 
 	protected abstract URI getQueryBaseURI();
 	
-	public URI getQueryURI(String id){
-		return getQueryBaseURI().resolve(id);
+	public URI getQueryURI(int id){
+		return getQueryBaseURI().resolve(Integer.toString(id));
 	}
-	public String getQueryId(URI uri){
-		return getQueryBaseURI().relativize(uri).getPath();
+	public int getQueryId(URI uri){
+		return Integer.parseInt(getQueryBaseURI().relativize(uri).getPath());
 	}
 
 	// Make sure that a valid list is returned. TODO better solution

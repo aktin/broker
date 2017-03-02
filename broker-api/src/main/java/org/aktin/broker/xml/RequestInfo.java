@@ -14,9 +14,9 @@ public class RequestInfo {
 
 	/** Unique id for the request */
 	@XmlAttribute
-	String id;
+	int id;
 
-	public String getId(){
+	public int getId(){
 		return id;
 	}
 	/**
@@ -52,7 +52,7 @@ public class RequestInfo {
 	
 	protected RequestInfo(){
 	}
-	public RequestInfo(String id, Instant published, Instant closed, boolean targeted){
+	public RequestInfo(int id, Instant published, Instant closed, boolean targeted){
 		this.id = id;
 		this.published = published;
 		this.closed = closed;
@@ -75,7 +75,7 @@ public class RequestInfo {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((closed == null) ? 0 : closed.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + id;
 		result = prime * result + ((published == null) ? 0 : published.hashCode());
 		result = prime * result + Arrays.hashCode(types);
 		return result;
