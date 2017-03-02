@@ -2,7 +2,10 @@ package org.aktin.broker.xml.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -48,18 +51,21 @@ public class Util {
 		// TODO java 7 incompatible
 		return DateTimeFormatter.RFC_1123_DATE_TIME.format(instant.atOffset(ZoneOffset.UTC));
 	}
-	public static void printDOM(Node node, OutputStream out, String encoding) throws TransformerException{
+	public static void writeDOM(Node node, OutputStream out, String encoding) throws TransformerException, UnsupportedEncodingException{
+		writeDOM(node, new OutputStreamWriter(out, encoding), encoding);
+	}
+	public static void writeDOM(Node node, Writer writer, String encoding) throws TransformerException{
 	    TransformerFactory tf = TransformerFactory.newInstance();
 	    Transformer transformer;
 			transformer = tf.newTransformer();
 	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 	    transformer.setOutputProperty(OutputKeys.METHOD, "xml");
 	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-	    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+	    transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
 	    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 
 	    transformer.transform(new DOMSource(node), 
-	         new StreamResult(out));
+	         new StreamResult(writer));
 	}
 
 }
