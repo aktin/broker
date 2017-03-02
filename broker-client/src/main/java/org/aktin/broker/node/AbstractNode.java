@@ -3,14 +3,11 @@ package org.aktin.broker.node;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.auth.ClientAuthenticator;
-import org.aktin.broker.xml.RequestInfo;
 
 /** Abstract node supporting a single broker
  * 
@@ -18,19 +15,7 @@ import org.aktin.broker.xml.RequestInfo;
  *
  */
 public abstract class AbstractNode {
-	protected long startup;
 	protected BrokerClient broker;
-	protected List<RequestProcessor> processors;
-	protected List<RequestInfo> requests;
-
-	public AbstractNode(){
-		this.startup = System.currentTimeMillis();
-		processors = new ArrayList<>();
-	}
-
-	public void addProcessor(RequestProcessor processor){
-		this.processors.add(processor);
-	}
 	/**
 	 * Connect to the broker and exchange status information. After retrieving the remote
 	 * status, the client status with modules and software versions are submitted.

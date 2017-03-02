@@ -16,6 +16,17 @@ import org.aktin.broker.xml.RequestInfo;
  *
  */
 public abstract class SynchronousNode extends AbstractNode {
+	protected List<RequestProcessor> processors;
+	protected List<RequestInfo> requests;
+
+	public SynchronousNode(){
+//		this.startup = System.currentTimeMillis();
+		processors = new ArrayList<>();
+	}
+
+	public void addProcessor(RequestProcessor processor){
+		this.processors.add(processor);
+	}
 
 	/**
 	 * Load requests from the broker and preprocess
