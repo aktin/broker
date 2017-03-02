@@ -144,7 +144,7 @@ public class BrokerEndpoint {
 		if( ds == null ){
 			throw new NotFoundException();
 		}
-		ResponseBuilder resp = Response.ok(ds);
+		ResponseBuilder resp = Response.ok(ds, ds.getContentType());
 		// set etag
 		if( ds instanceof DigestPathDataSource ){
 			resp.tag(Base64.getUrlEncoder().encodeToString(((DigestPathDataSource)ds).sha256));
