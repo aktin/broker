@@ -732,13 +732,13 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		}
 	}
 	private String nodeResourceName(int nodeId, String resourceId, MediaType mediaType){
-		// TODO use media type to generate file extension (e.g. .txt, .xml)
+		// use media type to generate file extension (e.g. .txt, .xml)
 		try {
 			StringBuilder builder = new StringBuilder();
 			builder.append(nodeId).append('_').append(URLEncoder.encode(resourceId, "UTF-8"));
 			if( mediaType.isCompatible(MediaType.TEXT_PLAIN_TYPE) ){
 				builder.append(".txt");
-			}else if( mediaType.getSubtype().endsWith("+xml") ){
+			}else if( mediaType.isCompatible(MediaType.APPLICATION_XML_TYPE) || mediaType.getSubtype().endsWith("+xml") ){
 				builder.append(".xml");
 			}
 			return builder.toString();
