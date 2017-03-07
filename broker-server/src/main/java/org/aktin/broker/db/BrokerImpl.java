@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -754,7 +755,12 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		// replace file
 		if( oldFile != null ){
 			// delete old file
-			Files.delete(dataDir.resolve(oldFile));
+			try{
+				Files.delete(dataDir.resolve(oldFile));
+			}catch( IOException e ){
+				// delete may fail, log warning
+				log.log(Level.WARNING, "Unable to delete node resource: "+oldFile, e);
+			}
 		}
 		// create the new file, shouldn't replace anything
 		DigestCalculatingInputStream di;
