@@ -134,6 +134,7 @@ public class BrokerEndpoint {
 	 * The eTag is calculated {@code url-safe-base64(sha-256(data))}.
 	 * </p>
 	 * @param nodeId node id
+	 * @param resourceId resource id
 	 * @return status {@code 200} with node info or status {@code 404} if not found. 
 	 * @throws SQLException sql error
 	 */
@@ -157,9 +158,10 @@ public class BrokerEndpoint {
 	
 	/**
 	 * Upload node resources to the broker
-	 * @param status JSON status
+	 * @param resourceId resource id
+	 * @param headers HTTP headers. Used to retrieve media type
 	 * @param sec security context
-	 * @throws SQLException 
+	 * @param content resource content to store
 	 */
 	@Authenticated
 	@PUT
