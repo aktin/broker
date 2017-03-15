@@ -68,6 +68,7 @@ public abstract class AbstractClient {
 			c = (HttpURLConnection)url.openConnection();
 		}
 		c.setRequestMethod(method);
+		// TODO set user agent with broker API version and user defined version
 		return c;
 	}	
 	protected void delete(URI resource) throws IOException{
