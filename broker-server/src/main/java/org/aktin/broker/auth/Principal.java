@@ -21,7 +21,10 @@ public class Principal implements java.security.Principal, SecurityContext{
 			}
 			commonName = clientDn.substring(3, e);
 		}
-		
+	}
+
+	public String getClientDN(){
+		return clientDn;
 	}
 	@Override
 	public String getName() {
