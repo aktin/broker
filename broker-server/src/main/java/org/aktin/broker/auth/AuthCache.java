@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -35,10 +36,13 @@ public class AuthCache implements Flushable{
 	}
 	
 	public Principal getPrincipal(String nodeKey, String clientDn) throws SQLException{
+		Objects.requireNonNull(clientDn);
 		Principal p = cache.get(nodeKey);
 		if( p == null ){
 			p = backend.accessPrincipal(nodeKey, clientDn);
 			cache.put(nodeKey, p);
+		}else{
+			// TODO check if client DN changed. If so, log warning and update the client DN
 		}
 		p.updateLastAccessed();
 		return p;

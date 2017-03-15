@@ -55,8 +55,8 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter {
 			// access denied
 			ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
 			log.info("Access denied for API key: "+key);
+			return;
 		}
-
 		Principal principal;
 		try {
 			principal = authCache.getPrincipal(key, clientDn);
