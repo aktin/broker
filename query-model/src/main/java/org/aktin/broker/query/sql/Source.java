@@ -51,6 +51,8 @@ public class Source {
 			}else{
 				// add the line to the statement
 				stmt.append(line);
+				// add whitespace which may have been stripped by xml
+				stmt.append(' ');
 			}
 		}
 	}

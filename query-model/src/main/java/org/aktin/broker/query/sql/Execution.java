@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
@@ -19,6 +20,7 @@ public class Execution implements Runnable{
 	private Connection dbc;
 	private SQLQuery query;
 	private List<String> batch;
+	private boolean failed;
 
 	public Execution(Connection dbc, SQLQuery query){
 		this.dbc = dbc;
@@ -35,7 +37,8 @@ public class Execution implements Runnable{
 
 	protected void handleException(String sql, SQLException e){
 		// TODO pass to caller
-		log.warning("SQL error: "+e.getMessage());		
+		log.warning("in ["+sql+"]:");
+		log.warning("SQL error: "+e.getMessage());
 	}
 
 	/**
@@ -55,6 +58,10 @@ public class Execution implements Runnable{
 			try( Statement stmt = dbc.createStatement() ){
 				stmt.executeUpdate(sql);
 				warning = stmt.getWarnings();
+			}catch( SQLException e ){
+				handleException(sql, e);
+				failed = true;
+				throw e;
 			}
 			if( warning != null ){
 				handleWarning(sql, warning);
@@ -63,9 +70,11 @@ public class Execution implements Runnable{
 	}
 
 	public void cleanup(){
+		log.info("Cleanup temporary tables");
 		// TODO method to drop temporary tables which were not exported
 		for( ExportTable table : query.export ){
-			String sql = "DROP TEMPORARY TABLE "+table.table+" IF EXISTS";
+			// XXX drop TEMPORARY not supported, make sure not to drop regular tables
+			String sql = "DROP TABLE IF EXISTS "+table.table;
 			try( Statement s = dbc.createStatement() ){
 				s.executeQuery(sql);
 			} catch (SQLException e) {
@@ -109,7 +118,7 @@ public class Execution implements Runnable{
 		StringBuilder sql = new StringBuilder();
 		sql.append("ALTER TABLE ").append(reference.table);
 		sql.append(" ADD COLUMN a_").append(reference.column);
-		sql.append("(INTEGER NULL)");
+		sql.append(" INTEGER NULL");
 		batch.add(sql.toString());
 		// fill column in original table
 		sql = new StringBuilder();
@@ -117,7 +126,7 @@ public class Execution implements Runnable{
 		sql.append(" SET a_").append(reference.column);
 		sql.append(" = map.target ");
 		sql.append(" FROM anon_map map WHERE ");
-		sql.append(reference.column).append(" = map.id");
+		sql.append(reference.table).append('.').append(reference.column).append(" = map.id");
 		batch.add(sql.toString());
 		// drop original column
 		sql = new StringBuilder();
@@ -151,15 +160,15 @@ public class Execution implements Runnable{
 		batch.add(sql.toString());
 
 		// add auto increment column
-		batch.add("ALTER TABLE anon_map ADD COLUMN target(INTEGER NOT NULL AUTO_INCREMENT)");
+		batch.add("ALTER TABLE anon_map ADD COLUMN target SERIAL NOT NULL");
 
 		// fill ids and generate new anonymized ids
 		sql = new StringBuilder();
-		sql.append("INSERT INTO anon_map(id) (SELECT DISTINCT ");
+		sql.append("INSERT INTO anon_map SELECT DISTINCT ");
 		sql.append(anonymize.key.column);
-		sql.append(" FROM ");
+		sql.append(" AS id FROM ");
 		sql.append(anonymize.key.table);
-		sql.append(")");
+		sql.append("");
 		batch.add(sql.toString());
 
 		// next steps are also repeated for each reference table
@@ -167,36 +176,43 @@ public class Execution implements Runnable{
 		for( TableColumn ref : anonymize.ref ){
 			anonymizeReference(batch, ref);
 		}
+		// drop anonymisation map before next anonymisation
+		batch.add("DROP TABLE anon_map");
 		// execute the batch statements
 		try{
 			for( int i=0; i<batch.size(); i++ ){
 				Statement s = dbc.createStatement();
+				log.info("Executing ["+batch.get(i)+"]");
 				s.executeUpdate(batch.get(i));
-				s.close();
 				SQLWarning w = s.getWarnings();
 				if( w != null ){
 					handleWarning(batch.get(i), w);
 				}
+				s.close();
 			}
 		}catch( SQLException e ){
 			// batch execution failed.
 			// make sure to drop the temporary map in the end
 			try( Statement s = dbc.createStatement() ){
-				s.executeUpdate("DROP TEMPORARY TABLE anon_map IF EXISTS");
+				// DROP TEMPORARY not supported, XXX make sure no regular tables are dropped
+				s.executeUpdate("DROP TABLE IF EXISTS anon_map");
 			}catch( SQLException e2 ){
 				e.addSuppressed(e2);
 			}
 			throw e;
 		}
 	}
+
+	private TableWriter openTableWriter(String name){
+		return new ConsoleTableWriter();
+		// TODO create folder and files
+	}
 	@Override
 	public void run() {
 		Objects.requireNonNull(batch, "prepareStatements must be called prior to run");
 		// do calculations
 		try{
-			for( Source s : query.source ){
-				runStatements();
-			}
+			runStatements();
 			// anonymisation
 			for( AnonymizeKey anon : query.anonymize ){
 				doAnonymisation(anon);
@@ -205,13 +221,13 @@ public class Execution implements Runnable{
 			// failed
 			cleanup();
 			// TODO store error status somewhere
-			return;
+			
+			throw new CompletionException(e);
 		}
 		// export
-		// TODO create folder and files
 		try{
 			for( ExportTable ex : query.export ){
-				exportTable(ex, null);
+				exportTable(ex, openTableWriter(ex.table));
 			}
 		}catch( IOException e ){
 			e.printStackTrace();

@@ -26,9 +26,12 @@ public class TestJAXB {
 		Source s = query.source.get(0);
 		List<String> l = new ArrayList<>();
 		s.splitStatements(null, l::add);
-		assertEquals(4, l.size());
+		assertEquals(3, l.size());
 		for( String command : l ){
 			System.out.println("Command: "+command);
 		}
+	
+		assertEquals("temp_patients", query.anonymize.get(0).key.table);
+		assertEquals("id", query.anonymize.get(0).key.column);
 	}
 }
