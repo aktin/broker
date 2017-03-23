@@ -58,5 +58,13 @@
 			<scope>test</scope>
 		</dependency>
 
+<!-- XXX only temporary for testing  -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.4-1201-jdbc41</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 </project>
