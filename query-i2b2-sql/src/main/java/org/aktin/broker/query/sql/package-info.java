@@ -5,7 +5,7 @@
  * @author R.W.Majeed
  *
  */
-@XmlSchema(namespace="http://aktin.org/ns/i2b2/sql",
+@XmlSchema(namespace=SQLQuery.XML_NAMESPACE,
 elementFormDefault=XmlNsForm.QUALIFIED,
 	xmlns = {
 			

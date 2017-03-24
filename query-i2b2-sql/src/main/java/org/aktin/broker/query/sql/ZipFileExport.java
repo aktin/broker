@@ -27,7 +27,8 @@ public class ZipFileExport implements TableExport {
 	private CharBuffer buffer;
 	/**
 	 * Create a ZIP file export.
-	 * @param out output stream
+	 * A call to {@link #close()} will also close the output stream.
+	 * @param out output stream to write the ZIP file to
 	 * @param charset charset used for CSV data, zip entry names, zip comments
 	 */
 	public ZipFileExport(OutputStream out, Charset charset) {
@@ -45,7 +46,9 @@ public class ZipFileExport implements TableExport {
 			if( i != 0 ){
 				buffer.put(fieldSeparator);
 			}
-			buffer.put(values[i]);
+			if( values[i] != null ){
+				buffer.put(values[i]);
+			}
 		}
 		buffer.put(recordSeparator);
 		buffer.flip();

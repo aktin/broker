@@ -10,11 +10,23 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-public abstract class Execution implements Runnable{
+/**
+ * SQL export execution.
+ * The export is performed in five steps:
+ * <ol>
+ * 	<li>Prepare SQL</li>
+ *  <li>Create tables via {@link #generateTables(Connection)}. 
+ *      This step also performs anonymization.</li>
+ *  <li>Export tables</li>
+ *  <li>Remove tables</li>
+ * </ol>
+ * @author R.W.Majeed
+ *
+ */
+public class Execution{
 	private static final Logger log = Logger.getLogger(Execution.class.getName());
 
 	private Connection dbc;
@@ -22,9 +34,12 @@ public abstract class Execution implements Runnable{
 	private List<String> batch;
 	private boolean failed;
 
-	public Execution(Connection dbc, SQLQuery query){
-		this.dbc = dbc;
+	public Execution(SQLQuery query){
 		this.query = query;
+	}
+
+	public void setConnection(Connection dbc){
+		this.dbc = dbc;
 	}
 
 	public boolean isFailed(){
@@ -50,7 +65,7 @@ public abstract class Execution implements Runnable{
 	 * @param properties lookup table
 	 * @throws SubstitutionError 
 	 */
-	void prepareStatements(Function<String,String> propertyLookup) throws SubstitutionError{
+	public void prepareStatements(Function<String,String> propertyLookup) throws SubstitutionError{
 		batch = new ArrayList<>();
 		for( Source source : query.source ){
 			source.splitStatements(propertyLookup, batch::add);
@@ -73,21 +88,19 @@ public abstract class Execution implements Runnable{
 		}
 	}
 
-	public void cleanup(){
+	public void removeTables(){
 		log.info("Cleanup temporary tables");
 		// TODO method to drop temporary tables which were not exported
 		for( ExportTable table : query.export ){
 			// XXX drop TEMPORARY not supported, make sure not to drop regular tables
 			String sql = "DROP TABLE IF EXISTS "+table.table;
 			try( Statement s = dbc.createStatement() ){
-				s.executeQuery(sql);
+				s.executeUpdate(sql);
 			} catch (SQLException e) {
 				handleException(sql, e);
 			}
 		}
 	}
-
-	protected abstract TableExport openTableExport();
 	
 	private void exportTable(ExportTable export, TableWriter writer) throws SQLException, IOException{
 		Statement s = dbc.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -119,7 +132,7 @@ public abstract class Execution implements Runnable{
 		writer.close();
 	}
 	
-	private void anonymizeReference(List<String> batch, TableColumn reference){
+	private static void anonymizeReference(List<String> batch, TableColumn reference){
 		// add column to original table
 		StringBuilder sql = new StringBuilder();
 		sql.append("ALTER TABLE ").append(reference.table);
@@ -209,33 +222,27 @@ public abstract class Execution implements Runnable{
 		}
 	}
 
-	@Override
-	public void run() throws CompletionException{
+	public void generateTables(Connection dbc) throws SQLException{
 		Objects.requireNonNull(batch, "prepareStatements must be called prior to run");
+		this.dbc = dbc;
 		// do calculations
-		try{
-			runStatements();
-			// anonymisation
-			for( AnonymizeKey anon : query.anonymize ){
-				doAnonymisation(anon);
-			}
-		}catch( SQLException e ){
-			// store error status
-			failed = true;
-			cleanup();
-			throw new CompletionException(e);
+		runStatements();
+		// anonymisation
+		for( AnonymizeKey anon : query.anonymize ){
+			doAnonymisation(anon);
 		}
-		// export
-		try( TableExport export = openTableExport() ){
-			for( ExportTable ex : query.export ){
-				exportTable(ex, export.exportTable(ex.table));
-			}
-		}catch( IOException | SQLException e ){
-			failed = true;
-			cleanup();
-			throw new CompletionException(e);
+	}
+	/**
+	 * Export the generated tables.
+	 * This method does not close the {@link TableExport}
+	 * @param export export
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
+	 */
+	public void exportTables(TableExport export) throws SQLException, IOException{
+		for( ExportTable ex : query.export ){
+			exportTable(ex, export.exportTable(ex.table));
 		}
-		cleanup();
 	}
 	
 }
