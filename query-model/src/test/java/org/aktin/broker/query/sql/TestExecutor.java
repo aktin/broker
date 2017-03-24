@@ -12,13 +12,25 @@ import javax.xml.bind.JAXB;
 
 public class TestExecutor {
 
+	private static final class ConsoleQueryExecution extends Execution{
+
+		public ConsoleQueryExecution(Connection dbc, SQLQuery query) {
+			super(dbc, query);
+		}
+
+		@Override
+		protected TableExport openTableExport() {
+			return new ConsoleTableExport();
+		}
+		
+	}
 	public static void main(String[] args) throws SQLException, SubstitutionError, IOException{
 		SQLQuery q;
 		try( InputStream in = TestExecutor.class. getResourceAsStream("/query-sql.xml") ){
 			q = JAXB.unmarshal(in,SQLQuery.class);
 		}
 		Connection c = DriverManager.getConnection("jdbc:postgresql://localhost:15432/i2b2", "i2b2crcdata", "");
-		Execution x = new Execution(c, q);
+		Execution x = new ConsoleQueryExecution(c, q);
 		Map<String, String> m = new HashMap<>();
 		m.put("data.start", "2016-01-01");
 		m.put("data.end", "2017-12-31");

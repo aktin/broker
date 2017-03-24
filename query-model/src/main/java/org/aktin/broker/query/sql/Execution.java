@@ -14,7 +14,7 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-public class Execution implements Runnable{
+public abstract class Execution implements Runnable{
 	private static final Logger log = Logger.getLogger(Execution.class.getName());
 
 	private Connection dbc;
@@ -87,6 +87,8 @@ public class Execution implements Runnable{
 		}
 	}
 
+	protected abstract TableExport openTableExport();
+	
 	private void exportTable(ExportTable export, TableWriter writer) throws SQLException, IOException{
 		Statement s = dbc.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		String[] row;
@@ -207,10 +209,6 @@ public class Execution implements Runnable{
 		}
 	}
 
-	private TableWriter openTableWriter(String name){
-		return new ConsoleTableWriter();
-		// TODO create folder and files
-	}
 	@Override
 	public void run() throws CompletionException{
 		Objects.requireNonNull(batch, "prepareStatements must be called prior to run");
@@ -224,17 +222,17 @@ public class Execution implements Runnable{
 		}catch( SQLException e ){
 			// store error status
 			failed = true;
-			// failed
 			cleanup();
 			throw new CompletionException(e);
 		}
 		// export
-		try{
+		try( TableExport export = openTableExport() ){
 			for( ExportTable ex : query.export ){
-				exportTable(ex, openTableWriter(ex.table));
+				exportTable(ex, export.exportTable(ex.table));
 			}
 		}catch( IOException | SQLException e ){
 			failed = true;
+			cleanup();
 			throw new CompletionException(e);
 		}
 		cleanup();

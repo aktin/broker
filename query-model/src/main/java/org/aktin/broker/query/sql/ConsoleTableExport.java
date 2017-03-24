@@ -2,7 +2,7 @@ package org.aktin.broker.query.sql;
 
 import java.io.IOException;
 
-public class ConsoleTableWriter implements TableWriter {
+public class ConsoleTableExport implements TableExport, TableWriter {
 
 	@Override
 	public void header(String[] headers) throws IOException {
@@ -16,7 +16,14 @@ public class ConsoleTableWriter implements TableWriter {
 
 	@Override
 	public void close() throws IOException {
-		System.out.println("-- end of table --");
+		System.out.println("--");
+	}
+
+	@Override
+	public TableWriter exportTable(String name) throws IOException {
+		System.out.println("TABLE("+name+")");
+		System.out.println("-");
+		return this;
 	}
 
 }
