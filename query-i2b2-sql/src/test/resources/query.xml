@@ -1,0 +1,22 @@
+<query xmlns="http://aktin.org/ns/exchange" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	<id>123</id>
+	<description>Lala</description>
+	<principal>
+		<name>Prince Ipal</name>
+		<organisation>AKTIN</organisation>
+		<email>it-support@aktin.org</email>
+		<phone>+49 (441) 798 - 2772</phone>
+		<!-- optional cryptographic signature at a later release <signature></signature> -->
+	</principal>
+	<schedule xsi:type="singleExecution">
+		<duration>-P1M</duration>
+		<reference>2016-04-01T00:00:00Z</reference>
+	</schedule>
+	<!-- export descriptor -->
+	<xi:include href="query-sql.xml"/>
+
+	<!-- also possible: xsi:type="psm:query_definition" -->
+	<!-- also possible: xsi:type="dwh:eclectic_query", see http://methods.schattauer.de/en/contents/archivestandard/issue/2168/manuscript/21349/show.html -->
+</query>

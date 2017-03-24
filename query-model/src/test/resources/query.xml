@@ -43,5 +43,4 @@
 	</export>
 	<!-- also possible: xsi:type="psm:query_definition" -->
 	<!-- also possible: xsi:type="dwh:eclectic_query", see http://methods.schattauer.de/en/contents/archivestandard/issue/2168/manuscript/21349/show.html -->
-	<xi:include href="query-sql.xml"/>
 </query>
