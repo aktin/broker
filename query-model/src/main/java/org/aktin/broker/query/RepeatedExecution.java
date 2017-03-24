@@ -1,4 +1,4 @@
-package org.aktin.broker.xml.query;
+package org.aktin.broker.query;
 
 import java.time.Duration;
 
