@@ -1,0 +1,130 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<name>AKTIN : Broker : Administration GUI</name>
+	<packaging>war</packaging>
+
+	<description>
+	Administration frontend for the AKTIN broker and aggregator
+	</description>
+
+	<groupId>org.aktin</groupId>
+	<artifactId>broker-admin</artifactId>
+	<version>0.4-SNAPSHOT</version>
+
+	<parent>
+		<groupId>org.aktin</groupId>
+		<artifactId>broker</artifactId>
+		<version>0.4-SNAPSHOT</version>
+	</parent>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.0.0</version>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+
+		<!-- dependencies for annotations provided by the container/application 
+			server -->
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<version>1.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+			<version>1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- broker API -->
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-server</artifactId>
+			<version>0.4-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-client</artifactId>
+			<version>0.4-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.hsqldb/hsqldb -->
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.3.4</version>
+		</dependency>
+
+
+
+		<!-- test dependencies to run a server for testing -->
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>9.2.14.v20151106</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlet</artifactId>
+			<version>9.2.14.v20151106</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>2.23.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>2.23.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-jetty-http</artifactId>
+			<version>2.23.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.ext.cdi</groupId>
+			<artifactId>jersey-cdi1x-servlet</artifactId>
+			<version>2.23.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.hk2</groupId>
+			<artifactId>hk2-locator</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.hk2</groupId>
+			<artifactId>hk2-core</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+
+
+		<!-- test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+</project>
