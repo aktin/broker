@@ -1,4 +1,4 @@
-package org.aktin.broker.query;
+package org.aktin.broker.query.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,9 +12,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.aktin.broker.query.Query;
-import org.aktin.broker.query.QueryRequest;
-import org.aktin.broker.query.SingleExecution;
+import org.aktin.broker.query.xml.Query;
+import org.aktin.broker.query.xml.QueryRequest;
+import org.aktin.broker.query.xml.SingleExecution;
 import org.aktin.broker.xml.TestMarshallUnmarshall;
 import org.junit.Assert;
 import org.junit.Before;

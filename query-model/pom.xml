@@ -40,7 +40,7 @@
 				<configuration>
 					<locale>en</locale>
 					<sources>
-						<source>src/main/java/org/aktin/broker/xml</source>
+						<source>src/main/java/org/aktin/broker/query/xml</source>
 					</sources>
 				</configuration>
 			</plugin>

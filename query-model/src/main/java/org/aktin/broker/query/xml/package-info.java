@@ -19,5 +19,5 @@ elementFormDefault=XmlNsForm.QUALIFIED,
 	@javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter(type=java.time.Instant.class,value=org.aktin.broker.xml.util.InstantAdapter.class)
 })
 
-package org.aktin.broker.query;
+package org.aktin.broker.query.xml;
 import javax.xml.bind.annotation.*;

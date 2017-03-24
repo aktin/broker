@@ -1,4 +1,4 @@
-package org.aktin.broker.query;
+package org.aktin.broker.query.xml;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlValue;
