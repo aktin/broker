@@ -22,6 +22,7 @@ public class ZipFileExport implements TableExport {
 	private ZipOutputStream zip;
 	private String fieldSeparator;
 	private String recordSeparator;
+	private String tableFileSuffix;
 	private CharsetEncoder encoder;
 	private CharBuffer buffer;
 	/**
@@ -32,7 +33,8 @@ public class ZipFileExport implements TableExport {
 	public ZipFileExport(OutputStream out, Charset charset) {
 		zip = new ZipOutputStream(out, charset);
 		fieldSeparator = "\t";
-		recordSeparator = "\n";
+		recordSeparator = System.lineSeparator();
+		tableFileSuffix = ".txt";
 		encoder = charset.newEncoder();
 		buffer = CharBuffer.allocate(1024*16);
 	}
@@ -46,22 +48,23 @@ public class ZipFileExport implements TableExport {
 			buffer.put(values[i]);
 		}
 		buffer.put(recordSeparator);
+		buffer.flip();
 		ByteBuffer bytes = encoder.encode(buffer);
 		zip.write(bytes.array(), bytes.arrayOffset(), bytes.arrayOffset()+bytes.limit());
 	}
 	@Override
 	public TableWriter exportTable(String name) throws IOException {
-		ZipEntry ze = new ZipEntry(name);
+		ZipEntry ze = new ZipEntry(name + tableFileSuffix);
 		zip.putNextEntry(ze);
 		return new TableWriter() {
 			
 			@Override
-			public void row(String[] columns) throws IOException {
+			public void row(String ... columns) throws IOException {
 				writeRecord(columns);
 			}
 			
 			@Override
-			public void header(String[] headers) throws IOException {
+			public void header(String ... headers) throws IOException {
 				writeRecord(headers);
 			}
 			
