@@ -23,6 +23,8 @@ public class ZipFileExport implements TableExport {
 	private String fieldSeparator;
 	private String recordSeparator;
 	private String tableFileSuffix;
+	/** String to write to the file instead of a {@code null} value. Defaults to empty string. */
+	private String nullString;
 	private CharsetEncoder encoder;
 	private CharBuffer buffer;
 	/**
@@ -35,6 +37,7 @@ public class ZipFileExport implements TableExport {
 		zip = new ZipOutputStream(out, charset);
 		fieldSeparator = "\t";
 		recordSeparator = System.lineSeparator();
+		nullString = "";
 		tableFileSuffix = ".txt";
 		encoder = charset.newEncoder();
 		buffer = CharBuffer.allocate(1024*16);
@@ -48,6 +51,8 @@ public class ZipFileExport implements TableExport {
 			}
 			if( values[i] != null ){
 				buffer.put(values[i]);
+			}else{
+				buffer.put(nullString);
 			}
 		}
 		buffer.put(recordSeparator);
