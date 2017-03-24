@@ -26,6 +26,10 @@ public class Execution implements Runnable{
 		this.dbc = dbc;
 		this.query = query;
 	}
+
+	public boolean isFailed(){
+		return failed;
+	}
 	protected void handleWarning(String sql, SQLWarning warning){
 		Objects.requireNonNull(warning);
 		// handle warnings same as errors (without aborting)
@@ -208,7 +212,7 @@ public class Execution implements Runnable{
 		// TODO create folder and files
 	}
 	@Override
-	public void run() {
+	public void run() throws CompletionException{
 		Objects.requireNonNull(batch, "prepareStatements must be called prior to run");
 		// do calculations
 		try{
@@ -218,10 +222,10 @@ public class Execution implements Runnable{
 				doAnonymisation(anon);
 			}
 		}catch( SQLException e ){
+			// store error status
+			failed = true;
 			// failed
 			cleanup();
-			// TODO store error status somewhere
-			
 			throw new CompletionException(e);
 		}
 		// export
@@ -229,10 +233,9 @@ public class Execution implements Runnable{
 			for( ExportTable ex : query.export ){
 				exportTable(ex, openTableWriter(ex.table));
 			}
-		}catch( IOException e ){
-			e.printStackTrace();
-		}catch( SQLException e ){
-			e.printStackTrace();
+		}catch( IOException | SQLException e ){
+			failed = true;
+			throw new CompletionException(e);
 		}
 		cleanup();
 	}
