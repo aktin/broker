@@ -10,7 +10,6 @@ import javax.sql.DataSource;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
 
-import org.aktin.broker.BrokerEndpoint;
 import org.aktin.broker.auth.AuthFilterAdmin;
 import org.aktin.broker.db.TestDataSource;
 import org.aktin.broker.db.TestDatabaseHSQL;
@@ -41,8 +40,12 @@ public class TestServer {
 		rc = new ResourceConfig();
 		rc.register(SSLHeaderAuth.class);
 		rc.register(AuthFilterAdmin.class);
-		rc.register(BrokerEndpoint.class);
-		rc.register(AggregatorEndpoint.class);
+		rc.registerClasses(Broker.ENDPOINTS);
+//		rc.register(BrokerStatusEndpoint.class);
+//		rc.register(MyBrokerEndpoint.class);
+//		rc.register(NodeInfoEndpoint.class);
+//		rc.register(RequestAdminEndpoint.class);		
+//		rc.register(AggregatorEndpoint.class);
 		rc.register(new MyBinder(ds));		
 	}
 	public void register(Class<?> componentClass){
@@ -53,7 +56,7 @@ public class TestServer {
 		start(new InetSocketAddress(InetAddress.getLoopbackAddress(), port));
 	}
 	public URI getBrokerServiceURI(){
-		return jetty.getURI().resolve(BrokerEndpoint.SERVICE_URL);
+		return jetty.getURI().resolve(Broker.SERVICE_URL);
 	}
 	public int getLocalPort(){
 		return ((ServerConnector)jetty.getConnectors()[0]).getLocalPort();
