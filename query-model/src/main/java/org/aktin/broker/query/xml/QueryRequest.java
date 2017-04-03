@@ -31,7 +31,7 @@ public class QueryRequest {
 	 * The id is given by the broker.
 	 */
 	@XmlElement(required=true)
-	String id;
+	int id;
 	
 	/**
 	 * Date reference for recurring queries. A recurring
