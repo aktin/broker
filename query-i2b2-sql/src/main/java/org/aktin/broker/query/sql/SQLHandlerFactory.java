@@ -4,13 +4,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.function.Function;
 
 import javax.sql.DataSource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import org.aktin.broker.query.QueryHandler;
 import org.aktin.broker.query.QueryHandlerFactory;
 import org.w3c.dom.Element;
 
@@ -20,16 +20,24 @@ public class SQLHandlerFactory implements QueryHandlerFactory{
 	private DataSource ds;
 	private Charset exportCharset;
 
-	public SQLHandlerFactory(DataSource database) {
-		this.ds = database;
+	public SQLHandlerFactory() {
 		this.exportCharset = StandardCharsets.UTF_8;
 	}
+	public SQLHandlerFactory(DataSource database) {
+		this();
+		this.ds = database;
+	}
+	
 
+	public void setDataSource(DataSource database){
+		this.ds = database;
+	}
 	public Charset getExportCharset(){
 		return exportCharset;
 	}
 
 	Connection openConnection() throws SQLException{
+		Objects.requireNonNull(ds, "datasource not set");
 		return ds.getConnection();
 	}
 	@Override
@@ -43,7 +51,7 @@ public class SQLHandlerFactory implements QueryHandlerFactory{
 	}
 
 	@Override
-	public QueryHandler parse(Element element, Function<String,String> propertyLookup) {
+	public SQLHandler parse(Element element, Function<String,String> propertyLookup) {
 		SQLQuery q;
 		try {
 			JAXBContext c = JAXBContext.newInstance(SQLQuery.class);
