@@ -32,7 +32,10 @@ public class QueryRequest {
 	 */
 	@XmlElement(required=true)
 	int id;
-	
+
+	public int getId(){
+		return id;
+	}
 	/**
 	 * Date reference for recurring queries. A recurring
 	 * query may be requested once per month. The reference
@@ -77,7 +80,10 @@ public class QueryRequest {
 	 */
 	@XmlElement(required=true)
 	Query query;
-	
+
+	public Query getQuery(){
+		return query;
+	}
 	@XmlElement(name="signature", required=false)
 	Signature[] signatures;
 }
