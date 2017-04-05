@@ -28,7 +28,7 @@ public class Query {
 	 * executions.
 	 */
 	@XmlElement(required=true)
-	public String id;
+	public int id;
 	
 	/**
 	 * Human readable description of the query.
