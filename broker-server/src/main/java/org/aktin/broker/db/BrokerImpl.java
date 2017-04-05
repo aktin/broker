@@ -365,14 +365,25 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
 			Statement st = dbc.createStatement();
 			// targeted requests are ONLY supplied to selected nodes: .. AND (r.targeted = FALSE OR s.request_id IS NOT NULL)
-			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL AND (r.targeted = FALSE OR s.request_id IS NOT NULL) ORDER BY r.id");
+			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted, s.retrieved, s.interaction, s.queued, s.processing, s.completed, s.rejected, s.failed FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL AND (r.targeted = FALSE OR s.request_id IS NOT NULL) ORDER BY r.id");
 //			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL ORDER BY r.id");
 			while( rs.next() ){
 				RequestInfo ri = new RequestInfo(rs.getInt(1), optionalTimestamp(rs, 2), optionalTimestamp(rs,3), rs.getBoolean(4));
 				RequestStatusInfo status = new RequestStatusInfo();
 				status.retrieved = optionalTimestamp(rs, 5);
+				status.interaction = optionalTimestamp(rs, 6);
+				status.queued = optionalTimestamp(rs, 7);
+				status.processing = optionalTimestamp(rs, 8);
+				status.completed = optionalTimestamp(rs, 9);
+				status.rejected = optionalTimestamp(rs, 10);
+				status.failed = optionalTimestamp(rs, 11);
 				// TODO more status
-				ri.nodeStatus = Collections.singletonList(status);
+				if( status.getStatus() == null ){
+					// all timestamps empty, there is no status
+					ri.nodeStatus = Collections.emptyList();
+				}else{
+					ri.nodeStatus = Collections.singletonList(status);
+				}
 				// deleted timestamp will always be null here, because of the where clause
 				list.add(ri);
 				// retrieve media types

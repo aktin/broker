@@ -150,7 +150,8 @@ public class TestBroker {
 		// retrieve request
 		String def = c.getMyRequestDefinitionString(0, "text/vnd.test1");
 		assertEquals("test",  def);
-		// request status should be automatically set to retrieved
+		// request status must be manually set to retrieved
+		c.postRequestStatus(0, RequestStatus.retrieved);
 		list = a.listRequestStatus(0);
 		assertEquals(1, list.size());
 		assertNotNull(list.get(0).retrieved);
@@ -192,6 +193,7 @@ public class TestBroker {
 		
 		// retrieve
 		c.getMyRequestDefinitionString(0, "text/x-test");
+		c.postRequestStatus(0, RequestStatus.retrieved);
 		System.out.println("New request: "+qid);
 		l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
