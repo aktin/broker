@@ -1,4 +1,4 @@
-package org.aktin.broker.xml;
+package org.aktin.broker.query.util;
 
 import java.net.URL;
 
@@ -8,16 +8,14 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
-import org.junit.Before;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-public class TestMarshallUnmarshall {
+public class XIncludeUnmarshaller {
 	protected XMLReader reader;
 	
-	@Before
-	public void initializeXIncludeReader() throws SAXException{
+	public XIncludeUnmarshaller() throws SAXException{
 		SAXParser parser;
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -41,5 +39,11 @@ public class TestMarshallUnmarshall {
 	public Source getResource(String name){
 		return getResource(getClass().getResource(name));
 	}
-
+	public static final Source getXIncludeResource(String name){
+		try {
+			return new XIncludeUnmarshaller().getResource(name);
+		} catch (SAXException e) {
+			throw new IllegalStateException(e);
+		}
+	}
 }

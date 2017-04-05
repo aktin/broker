@@ -12,17 +12,16 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.aktin.broker.query.util.XIncludeUnmarshaller;
 import org.aktin.broker.query.xml.Query;
-import org.aktin.broker.query.xml.QueryRequest;
 import org.aktin.broker.query.xml.SingleExecution;
-import org.aktin.broker.xml.TestMarshallUnmarshall;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-public class TestUnmarshallDocuments extends TestMarshallUnmarshall{
+public class TestUnmarshallDocuments {
 	Validator validator;
 	
 	@Before
@@ -40,11 +39,11 @@ public class TestUnmarshallDocuments extends TestMarshallUnmarshall{
 	
 	@Test
 	public void validateQuery() throws IOException, SAXException{
-		validator.validate(getResource("/query.xml"));
+		validator.validate(XIncludeUnmarshaller.getXIncludeResource("/query.xml"));
 	}
 	@Test
 	public void unmarshallQuery() throws IOException, SAXException{
-		Source xml = getResource("/query.xml");
+		Source xml = XIncludeUnmarshaller.getXIncludeResource("/query.xml");
 		Query query = JAXB.unmarshal(xml, Query.class);
 		Assert.assertEquals(SingleExecution.class, query.schedule.getClass());
 		SingleExecution se = (SingleExecution)query.schedule;
@@ -59,15 +58,7 @@ public class TestUnmarshallDocuments extends TestMarshallUnmarshall{
 	}
 	@Test
 	public void validateQueryRequest() throws IOException, SAXException, TransformerException{
-		validator.validate(getResource("/request.xml"));
+		validator.validate(XIncludeUnmarshaller.getXIncludeResource("/request.xml"));
 
 	}
-	
-	@Test
-	public void unmarshallRequest(){
-		QueryRequest r = JAXB.unmarshal(getResource("/request.xml"), QueryRequest.class);
-		Assert.assertNotNull(r.published);
-		Assert.assertNotNull(r.deadline);
-	}
-
 }
