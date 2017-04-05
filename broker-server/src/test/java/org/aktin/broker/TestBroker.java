@@ -170,6 +170,13 @@ public class TestBroker {
 		// now, there is a message
 		Assert.assertEquals("text/plain", list.get(0).type);
 		
+		// verify interaction
+		c.postRequestStatus(0, RequestStatus.interaction);
+		assertNotNull(a.listRequestStatus(0).get(0).interaction);
+		// setting other status will clear interaction
+		c.postRequestStatus(0, RequestStatus.completed);
+		assertNull(a.listRequestStatus(0).get(0).interaction);
+		assertNotNull(a.listRequestStatus(0).get(0).completed);
 	}
 
 	@Test

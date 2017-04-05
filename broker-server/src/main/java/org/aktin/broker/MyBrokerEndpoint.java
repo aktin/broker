@@ -105,6 +105,7 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 		List<MediaType> accept = headers.getAcceptableMediaTypes();
 
 		Response resp = getRequest(requestId, accept);
+		// TODO don't set the status automatically. the client might fail during storage. let the client set the #retrieved status
 		if( resp.getStatus() == 200 ){
 			// set retrieved timestamp
 			db.setRequestNodeStatus(requestId, user.getNodeId(), RequestStatus.retrieved, Instant.now());

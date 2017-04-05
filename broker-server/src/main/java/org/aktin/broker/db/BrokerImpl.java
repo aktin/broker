@@ -451,7 +451,14 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			Timestamp ts = Timestamp.from(timestamp);
 			int rowCount = 0;
 			// no status message, just update the timestamp
-			PreparedStatement ps = dbc.prepareStatement("UPDATE request_node_status SET "+status.name()+"=? WHERE request_id=? AND node_id=?");
+			StringBuilder sql = new StringBuilder();
+			sql.append("UPDATE request_node_status SET ").append(status.name()).append("=?");
+			// for status other than interaction, clear the interaction timestamp
+			if( status != RequestStatus.interaction ){
+				sql.append(", interaction=NULL");
+			}
+			sql.append(" WHERE request_id=? AND node_id=?");
+			PreparedStatement ps = dbc.prepareStatement(sql.toString());
 			ps.setTimestamp(1, ts);
 			ps.setInt(2, requestId);
 			ps.setInt(3, nodeId);
@@ -546,7 +553,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		List<RequestStatusInfo> list = new ArrayList<>();
 		try( Connection dbc = brokerDB.getConnection() ){
 			Statement st = dbc.createStatement();
-			ResultSet rs = st.executeQuery("SELECT node_id, retrieved, deleted, queued, processing, completed, rejected, failed, message_type  FROM request_node_status WHERE request_id="+requestId);
+			ResultSet rs = st.executeQuery("SELECT node_id, retrieved, deleted, queued, processing, completed, rejected, failed, interaction, message_type  FROM request_node_status WHERE request_id="+requestId);
 			while( rs.next() ){
 				RequestStatusInfo info = new RequestStatusInfo(rs.getInt(1));
 				info.retrieved = optionalTimestamp(rs, 2);
@@ -555,8 +562,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 				info.processing = optionalTimestamp(rs, 5);
 				info.completed = optionalTimestamp(rs, 6);
 				info.rejected = optionalTimestamp(rs, 7);
-				info.failed= optionalTimestamp(rs, 8);
-				info.type = rs.getString(9);
+				info.failed = optionalTimestamp(rs, 8);
+				info.interaction = optionalTimestamp(rs, 9);
+				info.type = rs.getString(10);
 				list.add(info);
 			}
 		}

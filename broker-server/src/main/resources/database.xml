@@ -165,6 +165,12 @@
 				<constraints nullable="false"/>
 			</column>
 		</addColumn>
+		<addColumn tableName="request_node_status">
+			<column name="interaction" type="TIMESTAMP" remarks="Store the timestamp when client reported that interaction is required">
+				<constraints nullable="true"/>
+			</column>
+		</addColumn>
+
 		<!-- allow nodes to upload arbitrary non-request data. e.g. status, logfiles, metadata-ontology -->
 		<createTable tableName="node_resources">
 			<column name="node_id" autoIncrement="true" type="INTEGER">
@@ -191,5 +197,4 @@
 		</createTable>
 		<addPrimaryKey tableName="node_resources" columnNames="node_id, name"/>
 	</changeSet>
-
 </databaseChangeLog>

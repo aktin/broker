@@ -33,6 +33,12 @@ public class RequestStatusInfo {
 	public Instant rejected;
 	public Instant failed;
 	/**
+	 * The interaction timestamp is handled specially.
+	 * When any other timestamp is updated, the interaction 
+	 * timestamp should be cleared.
+	 */
+	public Instant interaction;
+	/**
 	 * Media type of the status message
 	 */
 	public String type;
@@ -49,6 +55,8 @@ public class RequestStatusInfo {
 			return RequestStatus.rejected;
 		}else if( completed != null ){
 			return RequestStatus.completed;
+		}else if( interaction != null ){
+			return RequestStatus.interaction;
 		}else if( processing != null ){
 			return RequestStatus.processing;
 		}else if( queued != null ){

@@ -5,7 +5,7 @@ public enum RequestStatus {
 	/** The request has been retrieved by the node. */
 	retrieved,
 	/** The request is waiting for user interaction,
-	 * e.g. manual confirmation of execution o result submission.
+	 * e.g. manual confirmation of execution or result submission.
 	 */
 	interaction,
 	/** The request was accepted for processing, but is currently waiting in the execution queue. XXX rename to queued */
