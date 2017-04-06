@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class QueryRequest {
-
+	public static final String MEDIA_TYPE="application/vnd.aktin.query.request+xml";
 	/**
 	 * Unique id for the query request.
 	 * This id will always be unique and different
