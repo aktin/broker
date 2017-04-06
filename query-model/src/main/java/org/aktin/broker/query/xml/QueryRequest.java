@@ -36,6 +36,10 @@ public class QueryRequest {
 	public int getId(){
 		return id;
 	}
+
+	public Instant getScheduledTimestamp(){
+		return scheduled;
+	}
 	/**
 	 * Date reference for recurring queries. A recurring
 	 * query may be requested once per month. The reference
