@@ -2,8 +2,8 @@ package org.aktin.broker.query;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
-import java.nio.file.Path;
 
 import javax.activation.DataSource;
 
@@ -33,7 +33,7 @@ public interface QueryHandler {
 	 * @return exported data
 	 * @throws IOException execution/export failure
 	 */
-	DataSource execute(Path target) throws IOException;
+	DataSource execute(OutputStream target) throws IOException;
 
 	/**
 	 * Get additional media types to which
