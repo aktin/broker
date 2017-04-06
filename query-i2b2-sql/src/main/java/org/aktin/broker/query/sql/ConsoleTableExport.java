@@ -5,12 +5,12 @@ import java.io.IOException;
 public class ConsoleTableExport implements TableExport, TableWriter {
 
 	@Override
-	public void header(String[] headers) throws IOException {
+	public void header(String... headers) throws IOException {
 		System.out.println(String.join("\t", headers));
 	}
 
 	@Override
-	public void row(String[] columns) throws IOException {
+	public void row(String... columns) throws IOException {
 		System.out.println(String.join("\t", columns));
 	}
 
