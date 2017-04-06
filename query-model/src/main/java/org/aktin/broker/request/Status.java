@@ -17,5 +17,5 @@ import javax.inject.Qualifier;
 //@Target({METHOD, FIELD, PARAMETER, TYPE})
 @Retention(RUNTIME)
 public @interface Status {
-	RequestStatus status();
+	RequestStatus value();
 }
