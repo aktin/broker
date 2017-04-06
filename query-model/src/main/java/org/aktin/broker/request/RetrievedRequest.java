@@ -1,6 +1,7 @@
 package org.aktin.broker.request;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.activation.DataSource;
 
@@ -29,6 +30,17 @@ public interface RetrievedRequest {
 	 * @return timestamp in epoch milliseconds
 	 */
 	public long getLastActionTimestamp();
+
+	
+	/**
+	 * Set processing properties and change the status
+	 * to {@link RequestStatus#Processing}.
+	 *
+	 * @param properties processing properties
+	 * @throws IOException IO error
+	 */
+	void setProcessing(Map<String,String> properties)throws IOException;
+
 	/**
 	 * Change the status of the request. This will fire a status change event.
 	 * @param userId user id who changed the status, or {@code null}
