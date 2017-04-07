@@ -4,12 +4,14 @@ import java.security.Principal;
 
 public class Token implements Principal{
 	private String user;
+	private long issued;
 
 	public Token(String user){
 		this.user = user;
+		this.issued = System.currentTimeMillis();
 	}
 	public String getGUID(){
-		return Integer.toString(System.identityHashCode(this));
+		return Long.toHexString(System.identityHashCode(this)*this.issued);
 	}
 
 	public void invalidate() {
@@ -18,8 +20,7 @@ public class Token implements Principal{
 	}
 
 	public long issuedTimeMillis() {
-		// TODO Auto-generated method stub
-		return 0;
+		return issued;
 	}
 
 	@Override

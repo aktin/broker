@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 
 import org.aktin.broker.Broker;
 import org.aktin.broker.admin.auth.AuthEndpoint;
+import org.aktin.broker.admin.auth.AuthFilter;
 import org.aktin.broker.db.LiquibaseWrapper;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -40,6 +41,7 @@ public class HttpServer {
 		}
 		// register broker services
 		rc.registerClasses(Broker.ENDPOINTS);
+		rc.register(AuthFilter.class);
 		// register admin endpoints
 		rc.register(AuthEndpoint.class);
 	}
@@ -77,7 +79,7 @@ public class HttpServer {
 	}
 	public void start(InetSocketAddress addr) throws Exception{
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-		context.setContextPath("/");
+		context.setContextPath("/admin/rest");
 
 		jetty = new Server(addr);
 		HandlerList handlers = new HandlerList();

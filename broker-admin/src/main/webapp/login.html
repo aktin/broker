@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+		  crossorigin="anonymous"></script>
+		<script src="js.cookie-2.1.4.min.js"></script>
+		<script>
+$(document).ready(function(){
+    $('#login').on('submit', function(e){
+        e.preventDefault();
+		$.ajax({
+			type: 'POST',
+			url: '../rest/auth/login',
+			data: JSON.stringify( {username: $('#user').val(), password: $('#pass').val()} ),
+			success: function(data) {
+				Cookies.set('token', data);
+				window.location.replace('index.html');
+			},
+			error: function(xhr, s, e){ alert('Failed: '+e); },
+			contentType: "application/json",
+			dataType: 'text'
+		});
+	});
+});
+		</script>
+	</head>
+	<body>
+		<form id="login">
+			<label>Login <input type="text" id="user"/></label><br/>
+			<label>Password <input type="password" id="pass"/></label><br/>
+			<button>Anmelden</button><br/>
+		</form>
+	</body>
+</html>

@@ -1,5 +1,53 @@
+<!DOCTYPE html>
 <html>
+	<head>
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+		  crossorigin="anonymous"></script>
+		<script src="js.cookie-2.1.4.min.js"></script>
+		<script>
+function updateAuthStatus(onSuccess){
+		$.ajax({ 
+			type: 'GET', 
+			url: '../rest/auth/status',
+			success: function(data) {
+				// TODO remember token expiration date
+				onSuccess();
+			},
+			error: function(xhr, s, e){
+				console.log('Session abgelaufen: '+s);
+				window.location.replace('login.html');
+			},
+			dataType: "json"
+		});
+}
+function initializePage(){
+	alert('TODO: initialize page');
+	// TODO load and display requests
+}
+
+$(document).ready(function(){
+	// check if cookie is set
+	var token = Cookies.get('token');
+	if( token ){
+		$.ajaxSetup({beforeSend: function (xhr){
+			xhr.setRequestHeader("Authorization","Bearer "+token);        
+		}});
+		// cookie still valid?
+		updateAuthStatus(initializePage);
+	}else{
+		// no token cookie, redirect to login
+		window.location.replace('login.html');
+	}
+});
+		</script>
+	</head>
 	<body>
-	Geht
+		TODO
+		<ol>
+			<li>Check bearer token in cookie. If missing or expired redirect to login</li>
+			<li>Display list of requests</li>
+			<li>Display form for new request</li>
+		</ol>
 	</body>
 </html>

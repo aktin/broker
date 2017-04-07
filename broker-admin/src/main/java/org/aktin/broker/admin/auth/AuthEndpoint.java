@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -57,13 +58,23 @@ public class AuthEndpoint {
 		}
 	}
 	
+	@GET
+	@Secured
+	@Path("status")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Status getStatus(@Context SecurityContext sc){
+		Token t = (Token)sc.getUserPrincipal();
+		Status s = new Status();
+		s.issued = t.issuedTimeMillis();
+		return s;
+	}
 	@POST
 	@Secured
 	@Path("logout")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.TEXT_PLAIN)
-	public String logout(String token){
-		Token t = tokens.lookupToken(token);
+	public String logout(@Context SecurityContext sc){
+		Token t = (Token)sc.getUserPrincipal();
 		t.invalidate();
 		return "{duration="+(System.currentTimeMillis()-t.issuedTimeMillis())+"}";
 	}
