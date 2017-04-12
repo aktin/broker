@@ -1,0 +1,30 @@
+<assembly>
+	<id>package</id>
+	<!-- Specifies that our binary distribution is a tar.gz package -->
+	<formats>
+		<format>zip</format>
+		<!--zip, dir-->
+	</formats>
+  
+	<includeBaseDirectory>false</includeBaseDirectory>
+	
+	<!-- Add dependencies for the J2EE server to the /packages directory -->
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>lib</outputDirectory>
+			<useProjectArtifact>false</useProjectArtifact>
+			<unpack>false</unpack>
+			<scope>runtime</scope>
+		</dependencySet>
+	</dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>src/main/scripts</directory>
+            <outputDirectory>.</outputDirectory>
+            <filtered>true</filtered>
+            <!--<fileMode>755</fileMode>
+            <lineEnding>unix</lineEnding>-->
+        </fileSet>
+    </fileSets>
+
+</assembly>
