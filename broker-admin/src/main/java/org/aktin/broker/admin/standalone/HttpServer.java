@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 import org.aktin.broker.Broker;
 import org.aktin.broker.admin.auth.AuthEndpoint;
 import org.aktin.broker.admin.auth.AuthFilter;
+import org.aktin.broker.admin.rest.ValidatorEndpoint;
 import org.aktin.broker.db.LiquibaseWrapper;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -19,6 +20,7 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
@@ -44,6 +46,7 @@ public class HttpServer {
 		rc.register(AuthFilter.class);
 		// register admin endpoints
 		rc.register(AuthEndpoint.class);
+		rc.register(ValidatorEndpoint.class);
 	}
 
 	private void initialiseDatabase() throws SQLException{
@@ -66,7 +69,8 @@ public class HttpServer {
 		// TODO set context path to /aktin/admin
 
 		ResourceHandler handler = new ResourceHandler();
-		handler.setResourceBase("src/main/webapp");
+		
+		handler.setBaseResource(Resource.newClassPathResource("webapp"));
 		handler.setDirectoriesListed(true);
 		handler.setWelcomeFiles(new String[]{"index.html"});
 
@@ -79,7 +83,7 @@ public class HttpServer {
 	}
 	public void start(InetSocketAddress addr) throws Exception{
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-		context.setContextPath("/admin/rest");
+		context.setContextPath("/"); // /admin/rest
 
 		jetty = new Server(addr);
 		HandlerList handlers = new HandlerList();

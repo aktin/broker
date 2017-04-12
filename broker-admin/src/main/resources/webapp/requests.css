@@ -1,0 +1,5 @@
+.req .del {
+	cursor: pointer;
+	content: '(remove)';
+	color: blue;
+}
