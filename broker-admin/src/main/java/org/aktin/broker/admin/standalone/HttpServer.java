@@ -69,8 +69,11 @@ public class HttpServer {
 		// TODO set context path to /aktin/admin
 
 		ResourceHandler handler = new ResourceHandler();
-		
-		handler.setBaseResource(Resource.newClassPathResource("webapp"));
+		Resource res = Resource.newClassPathResource("webapp");
+		if( res == null ){
+			throw new IllegalStateException("Resources folder 'webapp' not found.");
+		}
+		handler.setBaseResource(res);
 		handler.setDirectoriesListed(true);
 		handler.setWelcomeFiles(new String[]{"index.html"});
 
