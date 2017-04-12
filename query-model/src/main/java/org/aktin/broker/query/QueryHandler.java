@@ -33,7 +33,7 @@ public interface QueryHandler {
 	 * @return exported data
 	 * @throws IOException execution/export failure
 	 */
-	DataSource execute(OutputStream target) throws IOException;
+	void execute(OutputStream target) throws IOException;
 
 	/**
 	 * Get additional media types to which

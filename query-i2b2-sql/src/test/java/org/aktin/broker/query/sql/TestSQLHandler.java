@@ -1,6 +1,7 @@
 package org.aktin.broker.query.sql;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -24,6 +25,8 @@ public class TestSQLHandler {
 		Path temp = Files.createTempFile("queries", ".zip");
 		System.out.println("Writing to "+temp.toString());
 		// write ZIP file
-		h.execute(temp);
+		try( OutputStream out = Files.newOutputStream(temp) ){
+			h.execute(out);
+		}
 	}
 }

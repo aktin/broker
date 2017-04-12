@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Function;
@@ -13,7 +11,6 @@ import java.util.function.Function;
 import javax.activation.DataSource;
 
 import org.aktin.broker.query.QueryHandler;
-import org.aktin.broker.query.util.ReadOnlyPathDataSource;
 
 public class SQLHandler implements QueryHandler {
 	private SQLHandlerFactory factory;
@@ -37,7 +34,7 @@ public class SQLHandler implements QueryHandler {
 	}
 
 	@Override
-	public DataSource execute(Path target) throws IOException {
+	public void execute(OutputStream target) throws IOException {
 		Execution ex = new Execution(query);
 		try {
 			ex.prepareStatements(propertyLookup);
@@ -47,17 +44,15 @@ public class SQLHandler implements QueryHandler {
 		try( Connection dbc = factory.openConnection() ){
 			try{
 				ex.generateTables(dbc);
-				try( OutputStream out = Files.newOutputStream(target);
-					 TableExport export = new ZipFileExport(out, factory.getExportCharset()) ){
-					ex.exportTables(export);
-				}
+				TableExport export = new ZipFileExport(target, factory.getExportCharset());
+				ex.exportTables(export);
+				export.close();
 			}finally{
 				ex.removeTables();
 			}
 		} catch (SQLException e) {
 			throw new IOException(e);
 		}
-		return new ReadOnlyPathDataSource(target, getResultMediaType());
 	}
 
 	@Override
