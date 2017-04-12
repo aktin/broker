@@ -53,7 +53,7 @@ function addNewRequest(){
 			$('#new_request button').prop('disabled',false);
 			$.post({
 				data: data,
-				contentType: 'application/vnd.aktin.request+xml',
+				contentType: 'application/vnd.aktin.query.request+xml',
 				url: rest_base+'/broker/request',
 				success: function(data, status, xhr) {
 					var loc = xhr.getResponseHeader('Location');
