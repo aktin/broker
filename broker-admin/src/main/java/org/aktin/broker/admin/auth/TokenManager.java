@@ -19,7 +19,7 @@ public class TokenManager {
 			// generate random password
 			StringBuilder b = new StringBuilder(8);
 			for( int i=0; i<b.capacity(); i++ ){
-				b.append(Character.valueOf((char)('0'+Math.random()*('Z'-'0'))));
+				b.append(Character.valueOf((char)('0'+Math.random()*('z'-'0'))));
 			}
 			simplePassword = b.toString();
 		}
