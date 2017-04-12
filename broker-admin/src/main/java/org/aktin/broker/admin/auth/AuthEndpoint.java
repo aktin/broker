@@ -44,7 +44,7 @@ public class AuthEndpoint {
 	@POST
 	@Path("login")
 	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_XML)
 	public Response authenticateUser(Credentials cred){
 		// TODO allow access for other users
 		Token t = tokens.authenticate(cred.username, cred.password.toCharArray());
@@ -61,7 +61,7 @@ public class AuthEndpoint {
 	@GET
 	@Secured
 	@Path("status")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_XML)
 	public Status getStatus(@Context SecurityContext sc){
 		Token t = (Token)sc.getUserPrincipal();
 		Status s = new Status();

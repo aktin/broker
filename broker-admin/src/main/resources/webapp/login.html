@@ -10,16 +10,21 @@ var rest_base='../..';
 $(document).ready(function(){
     $('#login').on('submit', function(e){
         e.preventDefault();
+        // build XML
+        var xml = $.parseXML("<credentials><username/><password/></credentials>");
+        $(xml).find('username').text($('#user').val());
+        $(xml).find('password').text($('#pass').val());
 		$.ajax({
 			type: 'POST',
 			url: rest_base+'/auth/login',
-			data: JSON.stringify( {username: $('#user').val(), password: $('#pass').val()} ),
+			data: xml,
+			processData: false,
 			success: function(data) {
 				Cookies.set('token', data);
 				window.location.replace('index.html');
 			},
 			error: function(xhr, s, e){ alert('Failed: '+e); },
-			contentType: "application/json",
+			contentType: "application/xml",
 			dataType: 'text'
 		});
 	});

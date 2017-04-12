@@ -123,12 +123,13 @@
 			<artifactId>hk2-core</artifactId>
 			<version>2.4.0</version>
 		</dependency>
+		<!-- don't need JSON support on server
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
 			<version>2.14</version>
 		</dependency>
-
+		-->
 
 		<!-- test -->
 		<dependency>

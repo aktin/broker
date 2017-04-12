@@ -11,7 +11,7 @@ function updateAuthStatus(onSuccess){
 				console.log('Session abgelaufen: '+s);
 				window.location.replace('login.html');
 			},
-			dataType: "json"
+			dataType: "xml"
 		});
 }
 function initializePage(){
