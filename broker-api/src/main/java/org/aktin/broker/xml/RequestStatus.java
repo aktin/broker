@@ -13,7 +13,7 @@ public enum RequestStatus {
 	/** The request is currently being processed.  */
 	processing,
 	/** The request completed successfully and results have been submitted */
-	completed, 
+	completed,
 	/** The request was rejected and will not be processed */
 	rejected,
 	/** An error occurred during request processing at the node */
