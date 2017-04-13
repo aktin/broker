@@ -1,0 +1,10 @@
+table{
+	border: 1px solid black;
+	margin-top: 1em;
+}
+table thead tr{
+	border-bottom: 1px solid black;
+}
+table caption{
+	font-weight: bold;
+}

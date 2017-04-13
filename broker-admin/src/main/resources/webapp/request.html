@@ -1,13 +1,28 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<link rel="stylesheet" type="text/css" href="requests.css"/>
+		<link rel="stylesheet" type="text/css" href="request.css"/>
 		<script src="https://code.jquery.com/jquery-3.2.1.min.js"
 		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
 		  crossorigin="anonymous"></script>
 		<script src="js.cookie-2.1.4.min.js"></script>
 		<script src="check-auth.js"></script>
 <script>
+function parseNodeStatus(rsi){
+	var node_id = rsi.find('node').text();
+	var status = 'unknown';
+	var c = ['completed','failed','interaction','processing','queued','retrieved'];
+	var t = 'unknown';
+	for( var i=0; i<c.length; i++ ){
+		t = rsi.find(c[i]).text();
+		if( t ){
+			status = c[i];
+			break;
+		}	
+	}
+		
+	return [node_id, status, t];
+}
 function init(){
 	var id=window.location.hash.substring(1);
 	$.get({
@@ -15,6 +30,36 @@ function init(){
 		dataType: 'text',
 		success: function(data){
 			$('#request').text(data);
+		}
+	});
+	// list node status
+	$.get({
+		url: rest_base+'/broker/request/'+id+'/status',
+		dataType: 'xml',
+		success: function(data){
+			var list = $(data).find('request-status-info');
+			if( list.length == 0 ){
+				$('#nodes').after('<p>Bisher Statusmeldungen eingegangen</p>');
+				$('#nodes').remove();
+			}else list.each(function(){
+				var st = parseNodeStatus($(this));
+				$('#nodes tbody').append('<tr><td>'+st[0]+'</td><td>'+st[1]+'</td><td>'+st[2]+'</td></tr>');
+			});
+		}
+	});
+	// list results
+	$.get({ 
+		url: rest_base+'/aggregator/request/'+id+'/result',
+		dataType: 'xml',
+		success: function(data){
+			var list = $(data).find('result');
+			if( list.length == 0 ){
+				$('#results').after('<p>Bisher keine Ergebnisse vorhanden</p>');
+				$('#results').remove();
+			}else list.each(function(){
+				var node_id = $(this).find('node').text();
+				$('#results tbody').append('<tr><td>'+node_id+'</td><td><a href="/aggregator/request/'+id+'/result/'+node_id+'">'+$(this).find('type').text()+'</a></td></tr>');
+			});
 		}
 	});
 }
@@ -25,7 +70,32 @@ function init(){
 		<div>
 			<a href="index.html">Liste</a>
 		</div>
+
+		<table id="nodes">
+			<caption>Abgeholt</caption>
+			<thead>
+				<tr>
+					<td>Node</td>
+					<td>Status</td>
+					<td>Zeitstempel</td>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+
+		<table id="results">
+			<caption>Ergebnisse</caption>
+			<thead>
+				<tr>
+					<td>Node</td>
+					<td>Type</td>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+
 		<pre id="request">
-		</pre>		
+		</pre>
+
 	</body>
 </html>
