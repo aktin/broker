@@ -1,0 +1,1 @@
+- Add interceptor method for adding request content. request/id in content must be the same as the URL id

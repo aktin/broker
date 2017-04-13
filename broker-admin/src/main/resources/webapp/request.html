@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="requests.css"/>
+		<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+		  crossorigin="anonymous"></script>
+		<script src="js.cookie-2.1.4.min.js"></script>
+		<script src="check-auth.js"></script>
+<script>
+function init(){
+	var id=window.location.hash.substring(1);
+	$.get({
+		url: rest_base+'/broker/request/'+id,
+		dataType: 'text',
+		success: function(data){
+			$('#request').text(data);
+		}
+	});
+}
+</script>
+	</head>
+	<body>
+		<h1>Anfrage zeigen</h1>
+		<div>
+			<a href="index.html">Liste</a>
+		</div>
+		<pre id="request">
+		</pre>		
+	</body>
+</html>

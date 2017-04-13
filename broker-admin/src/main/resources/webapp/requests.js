@@ -16,7 +16,7 @@ function loadRequestList(){
 			xml = $(data);
 			xml.find('request').each(function(){
 				var id = $(this).attr('id');
-				var el = $('<div class="req"><span>request id='+id+'</span><span class="del">x</span></div>');
+				var el = $('<div class="req"><span>request id='+id+'</span> <span class="del">x</span> <span class="show">s</span></div>');
 				el.data('id', id);
 				$('#requests').append( el );
 			});
@@ -30,6 +30,10 @@ function loadRequestList(){
 						//$('.req[data-id="'+id+'"]').remove();
 					}
 				})
+			});
+			$('#requests .show').click(function(){
+				var req_el = $(this).parent();
+				window.location.href = 'request.html#'+req_el.data('id');
 			});
 		},
 		dataType: "xml"
@@ -45,7 +49,7 @@ function addNewRequest(){
 		data: data,
 		contentType: 'application/xml',
 		url: rest_base+'/validator/check',
-		success: function(data) {
+		success: function() {
 			// syntactically valid, proceed to add the request
 			// clear input
 			$('#new_request textarea').val('');
