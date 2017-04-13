@@ -99,7 +99,7 @@ public class AggregatorEndpoint {
 			// no data for this request/node combination
 			return Response.status(404).build();
 		}else{
-			return Response.ok(data).lastModified(Date.from(data.getLastModified())).build();
+			return Response.ok(data).type(data.getContentType()).lastModified(Date.from(data.getLastModified())).build();
 		}
 	}
 
