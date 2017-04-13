@@ -13,7 +13,7 @@ public class AggregatorClient extends AbstractClient {
 		super(endpointURI);
 	}
 
-	public void putRequestResult(String requestId, String contentType, OutputWriter writer) throws IOException{
+	public void putRequestResult(int requestId, String contentType, OutputWriter writer) throws IOException{
 		HttpURLConnection c = openConnection("POST", "my/request/"+requestId+"/result");
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", contentType);
