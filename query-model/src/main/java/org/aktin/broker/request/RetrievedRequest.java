@@ -15,6 +15,7 @@ public interface RetrievedRequest {
 	public RequestStatus getStatus();
 	public Iterable<ActionLogEntry> getActionLog();
 	public boolean hasAutoSubmit();
+	public void setAutoSubmit(boolean autoSubmit);
 	/**
 	 * Get the result data. Result data is only available,
 	 * after a call to {@link #createResultData(String)}.
