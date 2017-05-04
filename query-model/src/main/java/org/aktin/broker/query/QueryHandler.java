@@ -1,7 +1,6 @@
 package org.aktin.broker.query;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 
@@ -39,8 +38,8 @@ public interface QueryHandler {
 	 * Get additional media types to which
 	 * the results can be converted for visualization.
 	 * <p>
-	 * Typical display types are {@code text/html}
-	 * and MS Excel
+	 * Typical display types are {@code text/html}, {@code text/plain}
+	 * or MS Excel
 	 * </p>
 	 * @return array with media types to display results
 	 */
@@ -55,5 +54,5 @@ public interface QueryHandler {
 	 * @param mediaType target media type
 	 * @return input stream with data of target media type
 	 */
-	InputStream getResultDisplayData(DataSource result, String mediaType);
+	DataSource getResultDisplayData(DataSource result, String targetMediaType);
 }
