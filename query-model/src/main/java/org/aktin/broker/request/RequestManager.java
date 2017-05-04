@@ -20,6 +20,9 @@ public interface RequestManager {
 		}
 		return null;
 	}
+
+	InteractionPreset getInteractionPreset();
+
 	/**
 	 * Get requests associated with the specified query.
 	 * All returned requests belong to the same query id.
