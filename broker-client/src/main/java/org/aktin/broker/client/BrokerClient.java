@@ -267,10 +267,25 @@ public class BrokerClient extends AbstractBrokerClient{
 		// will make sure the status code is in the 2xx group.
 		c.getInputStream().close();
 	}
-	public void postRequestStatus(int requestId, RequestStatus status, Instant date) throws IOException{
+//	public void postRequestStatus(int requestId, RequestStatus status, Instant date) throws IOException{
+//		HttpURLConnection c = openConnection("POST", getQueryBaseURI().resolve(requestId+"/status/"+status.name()));
+//		c.setRequestProperty("Date", Util.formatHttpDate(date));
+//		c.getInputStream().close();	
+//	}
+	public void postRequestStatus(int requestId, RequestStatus status, Instant date, String description) throws IOException{
 		HttpURLConnection c = openConnection("POST", getQueryBaseURI().resolve(requestId+"/status/"+status.name()));
-		c.setRequestProperty("Date", Util.formatHttpDate(date));
-		c.getInputStream().close();	
+		if( date != null ){
+			c.setRequestProperty("Date", Util.formatHttpDate(date));
+		}
+		if( description != null ){
+			c.setDoOutput(true);
+			c.setRequestProperty("Content-Type", "text/plain;charset=UTF-8");
+			try( OutputStream post = c.getOutputStream();
+					PrintWriter writer = new PrintWriter(new OutputStreamWriter(post, StandardCharsets.UTF_8))){
+				writer.write(description);
+			}
+		}
+		c.getInputStream().close();
 	}
 
 	// for i2b2, request application/xml+i2b2
