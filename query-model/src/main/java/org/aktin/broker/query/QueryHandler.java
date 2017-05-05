@@ -2,7 +2,6 @@ package org.aktin.broker.query;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Reader;
 
 import javax.activation.DataSource;
 
@@ -15,7 +14,7 @@ import javax.activation.DataSource;
  */
 public interface QueryHandler {
 
-	Reader getQueryHTML();
+	DataSource getQueryVisualisation(String mediaType) throws IOException;
 
 	
 	/**
@@ -54,5 +53,5 @@ public interface QueryHandler {
 	 * @param mediaType target media type
 	 * @return input stream with data of target media type
 	 */
-	DataSource getResultDisplayData(DataSource result, String targetMediaType);
+	DataSource getResultVisualisation(DataSource result, String targetMediaType) throws IOException;
 }
