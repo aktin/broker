@@ -16,6 +16,9 @@ public interface RetrievedRequest {
 	public Iterable<ActionLogEntry> getActionLog();
 	public boolean hasAutoSubmit();
 	public void setAutoSubmit(boolean autoSubmit);
+
+	// TODO methods for displaying the query and result data
+
 	/**
 	 * Get the result data. Result data is only available,
 	 * after a call to {@link #createResultData(String)}.
