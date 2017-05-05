@@ -4,7 +4,9 @@
 	xmlns:xi="http://www.w3.org/2001/XInclude"
 	xmlns:psm="http://www.i2b2.org/xsd/cell/crc/psm/1.1/">
 	<id>123</id>
-	<description>Lala</description>
+	<title>Grippescreening</title>
+	<description>Es soll untersucht werden, ob sich in den Notaufnahmen
+	Indikatoren für den Ausbruch von Grippewellen finden lassen.</description>
 	<principal>
 		<name>Prince Ipal</name>
 		<organisation>AKTIN</organisation>

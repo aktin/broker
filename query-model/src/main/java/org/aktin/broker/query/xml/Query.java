@@ -31,6 +31,11 @@ public class Query {
 	public int id;
 	
 	/**
+	 * Human readable short description of the query.
+	 */
+	@XmlElement(required=true)
+	public String title;
+	/**
 	 * Human readable description of the query.
 	 */
 	@XmlElement(required=true)
