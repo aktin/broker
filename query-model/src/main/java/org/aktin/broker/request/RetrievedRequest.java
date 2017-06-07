@@ -17,6 +17,9 @@ public interface RetrievedRequest {
 	public boolean hasAutoSubmit();
 	public void setAutoSubmit(boolean autoSubmit);
 
+	public Marker getMarker();
+	public void setMarker(Marker marker)throws IOException;
+	
 	// TODO methods for displaying the query and result data
 
 	/**
