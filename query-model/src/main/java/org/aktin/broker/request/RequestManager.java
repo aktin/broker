@@ -1,6 +1,7 @@
 package org.aktin.broker.request;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Request manager interface for a single broker.
@@ -11,6 +12,7 @@ import java.util.List;
 public interface RequestManager {
 
 	List<? extends RetrievedRequest> getRequests();
+	void forEachRequest(Consumer<RetrievedRequest> action);
 
 	default RetrievedRequest getRequest(int id){
 		for( RetrievedRequest r : getRequests() ){
