@@ -41,11 +41,11 @@ public class TestBroker {
 	private static final String CLIENT_01_SERIAL = "01";
 	private static final String CLIENT_02_SERIAL = "02";
 	private static final String ADMIN_00_SERIAL = "00";
-	private TestServer server;
+	private BrokerTestServer server;
 
 	@Before
 	public void setupServer() throws Exception{
-		server = new TestServer();
+		server = new BrokerTestServer(false);
 		server.start_local(0);
 		// TODO reset database
 	}

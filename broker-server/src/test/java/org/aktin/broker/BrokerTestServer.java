@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.sql.SQLException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.sql.DataSource;
@@ -29,16 +30,22 @@ import org.glassfish.jersey.servlet.ServletContainer;
  * @author R.W.Majeed
  *
  */
-public class TestServer {
+public class BrokerTestServer {
 
 	private ResourceConfig rc;
 	private Server jetty;
 	private DataSource ds;
 	
-	public TestServer() throws SQLException{
+	public BrokerTestServer(boolean apiKeyAuth) throws SQLException{
 		ds = new TestDataSource(new TestDatabaseHSQL());
 		rc = new ResourceConfig();
-		rc.register(SSLHeaderAuth.class);
+		if( apiKeyAuth ){
+			// use APU key auth
+			rc.register(ApiKeyAuth.class);
+		}else{
+			// use SSL header auth
+			rc.register(SSLHeaderAuth.class);
+		}
 		rc.register(AuthFilterAdmin.class);
 		rc.registerClasses(Broker.ENDPOINTS);
 //		rc.register(BrokerStatusEndpoint.class);
@@ -111,13 +118,13 @@ public class TestServer {
 			port = Integer.parseInt(args[0]);
 		}else{
 			System.err.println("Too many command line arguments!");
-			System.err.println("Usage: "+TestServer.class.getCanonicalName()+" [port]");
+			System.err.println("Usage: "+BrokerTestServer.class.getCanonicalName()+" [port]");
 			System.exit(-1);
 			return;
 		}
 
 		// start server
-		TestServer server = new TestServer();
+		BrokerTestServer server = new BrokerTestServer(true);
 		try{
 			server.start(new InetSocketAddress(port));
 			System.err.println("Broker service at: "+server.getBrokerServiceURI());
