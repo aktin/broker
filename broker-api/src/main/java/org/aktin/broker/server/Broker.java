@@ -17,6 +17,13 @@ public interface Broker {
 	String getNodeStatusContent(int nodeId) throws SQLException;
 
 	int createRequest(String mediaType, Reader content) throws SQLException;
+	/**
+	 * Create request without specifying content yet.
+	 * The request definition must be set afterwards via {@link #setRequestDefinition(int, String, Reader)}
+	 * @return request id
+	 * @throws SQLException database error
+	 */
+	int createRequest() throws SQLException;
 
 	void setRequestDefinition(int requestId, String mediaType, Reader content) throws SQLException;
 

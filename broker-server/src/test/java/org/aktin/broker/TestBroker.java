@@ -207,6 +207,13 @@ public class TestBroker {
 		// delete query
 		a.deleteRequest(qid);
 	}
+	public void testAddEmptyRequest() throws IOException{
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
+		Assert.assertEquals(0, a.listAllRequests().size());
+		int qid = a.createRequest();
+		RequestInfo ri = a.getRequestInfo(qid);
+		Assert.assertEquals(0, ri.types.length);
+	}
 	@Test
 	public void testRequestWithMultipleDefinitions() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);

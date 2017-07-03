@@ -166,6 +166,15 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		}
 		throw new SQLException("Unable get last insert id");
 	}
+
+	private int createEmptyRequest(Connection dbc) throws SQLException{
+		Statement st = dbc.createStatement();
+		st.executeUpdate("INSERT INTO requests(created) VALUES(NOW())");
+		st.close();
+		// get id
+		return getLastInsertId(dbc);
+		
+	}
 	/* (non-Javadoc)
 	 * @see org.aktin.broker.db.BrokerBackend#createRequest(java.lang.String, java.io.Reader)
 	 */
@@ -173,14 +182,22 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public int createRequest(String mediaType, Reader content) throws SQLException{
 		int id;
 		try( Connection dbc = brokerDB.getConnection() ){
-			Statement st = dbc.createStatement();
-			st.executeUpdate("INSERT INTO requests(created) VALUES(NOW())");
-			st.close();
-			// get id
-			id = getLastInsertId(dbc);
-
+			id = createEmptyRequest(dbc);
 			// insert request content
 			setRequestDefinition(dbc, id, mediaType, content);
+			// commit transaction
+			dbc.commit();
+		}
+		return id;
+	}
+	/* (non-Javadoc)
+	 * @see org.aktin.broker.db.BrokerBackend#createRequest(java.lang.String, java.io.Reader)
+	 */
+	@Override
+	public int createRequest() throws SQLException{
+		int id;
+		try( Connection dbc = brokerDB.getConnection() ){
+			id = createEmptyRequest(dbc);
 			// commit transaction
 			dbc.commit();
 		}

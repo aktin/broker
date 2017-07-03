@@ -88,6 +88,26 @@ public class BrokerAdmin extends AbstractBrokerClient {
 		}
 	}
 	/**
+	 * Create a request without content. Content must be specified later
+	 * via XXX
+	 * @return request id
+	 * @throws IOException IO error
+	 */
+	public int createRequest() throws IOException{
+		HttpURLConnection c = openConnection("POST", "request");
+		c.setDoOutput(false);
+		c.getInputStream().close();
+		String location = c.getHeaderField("Location");
+		if( location == null ){
+			throw new IOException("No location in response headers");
+		}
+		try {
+			return getQueryId(new URI(location));
+		} catch (URISyntaxException e) {
+			throw new IOException("Response header location no valid URI", e);
+		}		
+	}
+	/**
 	 * Create a request with specified content type and content
 	 * @param contentType content type
 	 * @param writer writer for the content

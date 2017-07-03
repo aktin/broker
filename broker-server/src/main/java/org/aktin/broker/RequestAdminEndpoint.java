@@ -51,9 +51,18 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	public Response createRequest(Reader content, @Context HttpHeaders headers) throws URISyntaxException{
 		MediaType type = headers.getMediaType();
 		try {
-			// remove charset information, since we already have the string representation
-			type = removeCharsetInfo(type);
-			int id = db.createRequest(type.toString(), content);
+			int id;
+			
+			if( type != null ){
+				// remove charset information, since we already have the string representation
+				type = removeCharsetInfo(type);
+				id = db.createRequest(type.toString(), content);
+			}else{
+				// no content type passed
+				// TODO verify that also no content is given (data without content type)
+				id = db.createRequest();
+			}
+			
 			return Response.created(new URI("/broker/request/"+Integer.toString(id))).build();
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to create request", e);
