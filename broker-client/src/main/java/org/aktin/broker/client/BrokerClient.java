@@ -60,7 +60,15 @@ public class BrokerClient extends AbstractBrokerClient{
 		return resolveBrokerURI("my/request/");
 	}
 
-	public void postSoftwareVersions(Map<String,String> softwareVersions) throws IOException{
+	/**
+	 * Post the supplied software versions under a resource {@code versions}.
+	 * Due to limitations in the way Java persists {@link Properties}, {@code null} values
+	 * are not allowed.
+	 * @param softwareVersions map with software names as keys and versions as values.
+	 * @throws IOException IO error during transmission
+	 * @throws NullPointerException for {@code null} values in the map
+	 */
+	public void postSoftwareVersions(Map<String,String> softwareVersions) throws IOException, NullPointerException{
 		Properties map = new Properties();
 		map.putAll(softwareVersions);
 		putMyResourceProperties("versions", map);

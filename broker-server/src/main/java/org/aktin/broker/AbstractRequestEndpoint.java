@@ -19,6 +19,11 @@ public abstract class AbstractRequestEndpoint {
 	protected abstract BrokerBackend getBroker();
 
 
+	/**
+	 * Remove charset information from media type.
+	 * @param type media type
+	 * @return media type without charset info
+	 */
 	public static MediaType removeCharsetInfo(MediaType type){
 		// TODO other media type parameters are not preserved (e.g. ;version=1.2, do we need these?
 		return new MediaType(type.getType(), type.getSubtype());
