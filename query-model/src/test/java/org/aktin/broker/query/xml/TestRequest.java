@@ -18,7 +18,6 @@ public class TestRequest {
 	@Test
 	public void expectUnmarshalledDocumentComplete(){
 		QueryRequest r = getSingleRequest(1, 1);
-		Assert.assertNotNull(r.published);
 		Assert.assertNotNull(r.deadline);
 		Assert.assertNotNull(r.query);
 	}
