@@ -4,8 +4,22 @@ function init(){
 		e.preventDefault();
 		addNewRequest();
 	});
-	loadRequestList();	
+	loadRequestList();
+	$('#new_request input[name="scheduled"]').val(new Date().toDateInputValue());
+	$('#new_request input[name="p_name"]').val('Ihr Name')
+	$('#new_request input[name="p_email"]').val('ihre.email@addres.se');
+	$('#new_request input[name="title"]').val('Titel der Abfrage')
+	$('#new_request input[name="x_ts"]').val(new Date().toDateInputValue()+"T00:00");
 }
+
+//$(document).ready(function(){
+//	init();
+//});
+Date.prototype.toDateInputValue = (function(){
+	var local = new Date(this);
+	local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+	return local.toJSON().slice(0,10);
+});
 function loadRequestList(){
 	$.get({
 		url: rest_base+'/broker/request',
@@ -39,11 +53,35 @@ function loadRequestList(){
 		dataType: "xml"
 	});
 }
+function buildRequestDefinitionXml(requestId, fragment){
+	var xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><scheduled/><query><id>'+requestId+'</id><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
+	$(xml).find('scheduled').text($('#new_request input[name="scheduled"]').val());
+	var query = $(xml).find('query')[0];
+	// use form elements
+	$('#new_request *').filter(':input').each(function(){
+		var jpath = $(this).data('jpath');
+		if( jpath == '' )return;
+		$(xml).find(jpath).text($(this).val());
+	});
+	// append XML fragment to query
+	$(query).append($(fragment).find('*').eq(0));
+	return xml;
+}
 function addNewRequest(){
 	// validate request syntax
 	// disable submit button
+	var fragment=null;
+	try{
+		fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
+	}catch( e ){
+		alert('query definition not valid XML');
+		return;
+	}
+	var data = buildRequestDefinitionXml(4711, fragment);
+	console.log((new XMLSerializer()).serializeToString(data));
+//	return;
+	// disable submit button until asynchronous call completed
 	$('#new_request button').prop('disabled',true);
-	var data = $('#new_request textarea').val();
 	$.ajax({ 
 		type: 'POST', 
 		data: data,
@@ -51,8 +89,7 @@ function addNewRequest(){
 		url: rest_base+'/validator/check',
 		success: function() {
 			// syntactically valid, proceed to add the request
-			// clear input
-			$('#new_request textarea').val('');
+			// TODO clear input
 			// enable submit button
 			$('#new_request button').prop('disabled',false);
 			$.post({
@@ -65,7 +102,9 @@ function addNewRequest(){
 					// publish immediately
 					$.post(loc+'/publish');
 					loadRequestList();
-				}
+				},
+				processData: false,
+				dataType: "xml"
 			});
 			// TODO display status notification of success
 		},
@@ -73,6 +112,7 @@ function addNewRequest(){
 			$('#new_request button').prop('disabled',false);
 			alert('invalid');
 		},
-		dataType: "text"
+		processData: false,
+		dataType: "xml"
 	});
 }

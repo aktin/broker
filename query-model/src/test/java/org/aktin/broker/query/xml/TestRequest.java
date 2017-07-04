@@ -22,4 +22,11 @@ public class TestRequest {
 		Assert.assertNotNull(r.query);
 	}
 
+	@Test
+	public void expectUnmarshalledDocumentComplete2(){
+		QueryRequest q = JAXB.unmarshal(XIncludeUnmarshaller.getXIncludeResource("/request2.xml"), QueryRequest.class);
+		Assert.assertNotNull(q.id);
+		Assert.assertNotNull(q.query);
+	}
+
 }

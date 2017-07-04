@@ -2,9 +2,11 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="requests.css"/>
-		<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+		<!--<script src="https://code.jquery.com/jquery-3.2.1.min.js"
 		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-		  crossorigin="anonymous"></script>
+		  crossorigin="anonymous"></script>-->
+		
+		<script src="jquery-3.2.1.min.js"></script>
 		<script src="js.cookie-2.1.4.min.js"></script>
 		<script src="check-auth.js"></script>
 		<script src="requests.js"></script>
@@ -14,7 +16,27 @@
 		<div id="requests">
 		</div>
 		<form id="new_request">
-			<textarea></textarea>
+			<legend>Geplante Ausführung <input type="date" name="scheduled" required="yes" /></legend>
+			<legend>Titel <input type="text" name="title" data-jpath="title" required="yes" /></legend>
+			<legend>Beschreibung <br/><textarea name="description" data-jpath="description"></textarea></legend>
+			<fieldset>
+				<legend>Auftraggeber</legend>
+				<legend>Name <input type="text" name="p_name" data-jpath="principal name" required="true" /></legend>
+				<legend>Organisation <input type="text" data-jpath="principal organisation" name="p_org"/></legend>
+				<legend>E-Mail <input type="text" name="p_email" data-jpath="principal email" required="true" /></legend>
+			</fieldset>
+			<fieldset>
+				<legend>Zeitraum (einmalige Ausführung)</legend>
+				<legend>Referenzzeitpunkt <input type="datetime-local" name="x_ts" required="yes" /></legend>
+				<legend>Zeitraum <select name="x_dur" data-jpath="schedule duration">
+					<option value="-P1M">Zurückliegender Monat</option>
+					<option value="-P7D">Zurückliegende Woche</option>
+					<option value="P1M">Folgender Monat</option>
+					<option value="P7D">Folgende 7 Tage</option>
+				</select></legend>
+			</fieldset>
+			
+			<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>
 			<button>Neue Anfrage</button>
 		</form>
 		
