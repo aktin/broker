@@ -67,52 +67,80 @@ function buildRequestDefinitionXml(requestId, fragment){
 	$(query).append($(fragment).find('*').eq(0));
 	return xml;
 }
-function addNewRequest(){
-	// validate request syntax
-	// disable submit button
-	var fragment=null;
-	try{
-		fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
-	}catch( e ){
-		alert('query definition not valid XML');
-		return;
-	}
-	var data = buildRequestDefinitionXml(4711, fragment);
-	console.log((new XMLSerializer()).serializeToString(data));
-//	return;
-	// disable submit button until asynchronous call completed
-	$('#new_request button').prop('disabled',true);
-	$.ajax({ 
-		type: 'POST', 
-		data: data,
-		contentType: 'application/xml',
-		url: rest_base+'/validator/check',
-		success: function() {
-			// syntactically valid, proceed to add the request
-			// TODO clear input
-			// enable submit button
-			$('#new_request button').prop('disabled',false);
+
+function allocateRequestId(success, error){
 			$.post({
-				data: data,
-				contentType: 'application/vnd.aktin.query.request+xml',
+				contentType: '',
 				url: rest_base+'/broker/request',
 				success: function(data, status, xhr) {
 					var loc = xhr.getResponseHeader('Location');
+					var id = loc.substr(loc.lastIndexOf('/')+1);
 					console.log('Request added: '+loc);
-					// publish immediately
-					$.post(loc+'/publish');
-					loadRequestList();
+					success(loc, id);
 				},
-				processData: false,
-				dataType: "xml"
+				//processData: false,
+				//dataType: "xml",
+				error: error
 			});
+}
+function setRequestDefinition(location, id){
+	// load XML syntax fragment
+	// content was already verified to be valid XML in addNewRequest()
+	var fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
+	var data = buildRequestDefinitionXml(id, fragment);
+	$.ajax({ 
+		type: 'PUT', 
+		data: data,
+		contentType: 'application/xml',
+		url: location,
+		success: function() {
+			// definition submitted
+			// enable submit button
+			$('#new_request button').prop('disabled',false);
+			// publish immediately
+			$.post(location+'/publish');
+			// reload request list
+			loadRequestList();
+			alert('Request created with id '+id);
+			// TODO clear input
 			// TODO display status notification of success
 		},
 		error: function(xhr, s, e){
 			$('#new_request button').prop('disabled',false);
-			alert('invalid');
+			// delete empty request
+			$.ajax({ 
+				type: 'DELETE', 
+				contentType: 'application/xml',
+				url: location
+			});
+			alert('Unable to set request definition for request '+id);
 		},
 		processData: false,
 		dataType: "xml"
 	});
+
 }
+function addNewRequest(){
+	// validate request syntax
+	try{
+		var fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
+	}catch( e ){
+		try{
+			var ta = $('#new_request textarea[name="xml"]')[0];
+			ta.setCustomValidity("No valid XML!")
+			ta.reportValidity();
+		}catch( e ){
+			// HTML5 form validation reporting failed, display alert box
+			alert('query definition not valid XML');
+		}
+		return;
+	}
+
+	// disable submit button
+	$('#new_request button').prop('disabled',true);
+	allocateRequestId(setRequestDefinition, function(){
+		$('#new_request button').prop('disabled',false);
+		alert('Unable to create new request id');
+	});
+}
+
