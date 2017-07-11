@@ -8,16 +8,16 @@ import org.junit.Test;
 
 public class TestRequest {
 
-	public static final QueryRequest getSingleRequest(int requestId, int queryId){
+	public static final QueryRequest getSingleRequest(int requestId){
 		QueryRequest q = JAXB.unmarshal(XIncludeUnmarshaller.getXIncludeResource("/request.xml"), QueryRequest.class);
 		q.id = requestId;
-		q.query.id = queryId;
+		//q.query.id = queryId;
 		return q;
 	}
 
 	@Test
 	public void expectUnmarshalledDocumentComplete(){
-		QueryRequest r = getSingleRequest(1, 1);
+		QueryRequest r = getSingleRequest(1);
 		Assert.assertNotNull(r.deadline);
 		Assert.assertNotNull(r.query);
 	}
@@ -27,6 +27,9 @@ public class TestRequest {
 		QueryRequest q = JAXB.unmarshal(XIncludeUnmarshaller.getXIncludeResource("/request2.xml"), QueryRequest.class);
 		Assert.assertNotNull(q.id);
 		Assert.assertNotNull(q.query);
+		Assert.assertNotNull(q.getScheduledTimestamp());
+		Assert.assertNotNull(q.getReferenceTimestamp());
+		
 	}
 
 }

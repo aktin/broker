@@ -22,13 +22,15 @@ import org.w3c.dom.Element;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Query {
 
-	/**
-	 * Unique identifier for this query. This identifier
-	 * will not change, even if a query scheduled for repeated
-	 * executions.
-	 */
-	@XmlElement(required=true)
-	public int id;
+// id moved to QuerySchedule
+	
+//	/**
+//	 * Unique identifier for this query. This identifier
+//	 * will not change, even if a query scheduled for repeated
+//	 * executions.
+//	 */
+//	@XmlElement(required=true)
+//	public int id;
 	
 	/**
 	 * Human readable short description of the query.

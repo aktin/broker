@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -64,6 +65,10 @@ public class SQLHandlerFactory implements QueryHandlerFactory{
 
 	public SQLHandler wrap(SQLQuery query, Function<String,String> propertyLookup){
 		return new SQLHandler(this, query, propertyLookup);
+	}
+	@Override
+	public String formatTimestamp(Instant timestamp) {
+		return timestamp.toString();
 	}
 
 }

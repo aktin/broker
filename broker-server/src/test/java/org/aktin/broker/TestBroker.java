@@ -156,15 +156,21 @@ public class TestBroker {
 		assertEquals(1, list.size());
 		assertNotNull(list.get(0).retrieved);
 
+		// make sure some time passes before changing the status
+		try { // otherwise this test will fail on fast machines
+			Thread.sleep(80);
+		} catch (InterruptedException e) {}
+		
 		// report status
 		c.postRequestStatus(0, RequestStatus.queued);
 		// request status
 		list = a.listRequestStatus(0);
 		assertEquals(1, list.size());
-		assertNotNull(list.get(0).queued);
-		assertTrue(list.get(0).queued.isAfter(list.get(0).retrieved));
-		assertNull(list.get(0).rejected);
-		assertNull(list.get(0).type); // should be no message type		
+		RequestStatusInfo nfo = list.get(0);
+		assertNotNull(nfo.queued);
+		assertTrue("queued "+nfo.queued+" expected after retrieved "+nfo.retrieved, nfo.queued.isAfter(nfo.retrieved));
+		assertNull(nfo.rejected);
+		assertNull(nfo.type); // should be no message type		
 		// update status (e.g. failed)
 		c.postRequestFailed(0, "Only test", new UnsupportedOperationException());
 		list = a.listRequestStatus(0);

@@ -37,18 +37,32 @@ public class QueryRequest {
 		return id;
 	}
 
+	/**
+	 * Timestamp for the earliest execution of the
+	 * query.
+	 * @return timestamp
+	 */
 	public Instant getScheduledTimestamp(){
 		return scheduled;
 	}
 	/**
-	 * Date reference for recurring queries. A recurring
+	 * Reference timestamp to use for data extraction.
+	 * This will be combined with duration contained in the execution schedule
+	 * to obtain the start and end timestamps of the queried data.
+	 * @return timestamp
+	 */
+	public Instant getReferenceTimestamp(){
+		return reference;
+	}
+	/**
+	 * Date reference for queries. A recurring
 	 * query may be requested once per month. The reference
 	 * date will then be used to determine the time frame
 	 * for the query. In other words, the reference date is used
-	 * to fill a placeholder in the recurring query. 
+	 * to fill a placeholder in the query syntax.
 	 */
-	@XmlElement(required=false)
-	Instant referenceDate;
+	@XmlElement(required=true)
+	Instant reference;
 	
 	/**
 	 * Time stamp for the earliest execution / when the request is open.

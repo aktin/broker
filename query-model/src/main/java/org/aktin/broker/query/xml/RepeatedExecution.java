@@ -19,4 +19,5 @@ public class RepeatedExecution extends QuerySchedule{
 	 * It is solely for information purposes.
 	 */
 	public Duration interval;
+	public int id;
 }

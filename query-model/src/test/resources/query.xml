@@ -3,7 +3,6 @@
 	xmlns:dwh="http://aktin.org/ns/dwh" 
 	xmlns:xi="http://www.w3.org/2001/XInclude"
 	xmlns:psm="http://www.i2b2.org/xsd/cell/crc/psm/1.1/">
-	<id>123</id>
 	<title>Grippescreening</title>
 	<description>Es soll untersucht werden, ob sich in den Notaufnahmen
 	Indikatoren für den Ausbruch von Grippewellen finden lassen.</description>
@@ -16,7 +15,6 @@
 	</principal>
 	<schedule xsi:type="singleExecution">
 		<duration>-P1M</duration>
-		<reference>2016-04-01T00:00:00Z</reference>
 	</schedule>
 	<!-- export descriptor -->
 	<export xmlns="http://sekmi.de/ns/histream/export-v1" xmlns:eav="http://sekmi.de/histream/ns/eav-data">

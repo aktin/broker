@@ -48,7 +48,7 @@ public class TestUnmarshallDocuments {
 		Assert.assertEquals(SingleExecution.class, query.schedule.getClass());
 		SingleExecution se = (SingleExecution)query.schedule;
 		Assert.assertNotNull(se.duration);
-		Assert.assertNotNull(se.reference);
+//		Assert.assertNotNull(se.reference);
 		//System.out.println("Duration:"+se.duration);
 		//System.out.println("Reference:"+se.reference);
 		
