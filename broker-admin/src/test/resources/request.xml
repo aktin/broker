@@ -1,11 +1,11 @@
 <queryRequest xmlns="http://aktin.org/ns/exchange"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<id>123</id>
-	<published>2016-04-28T00:00:00Z</published>
+	<reference>2016-04-28T00:00:00Z</reference>
 	<scheduled>2016-04-28T00:00:00Z</scheduled>
 	<deadline>2016-04-30T00:00:00Z</deadline>
 	<query>
-		<id>123</id>
+		<title>Titelala einmal</title>
 		<description>Lala</description>
 		<principal>
 			<name>Prince Ipal</name>
@@ -16,7 +16,6 @@
 		</principal>
 		<schedule xsi:type="singleExecution">
 			<duration>-P1M</duration>
-			<reference>2016-04-01T00:00:00Z</reference>
 		</schedule>
 		<!-- export descriptor -->
 		<sql datasource="java:/WorkplaceDemoDS" xmlns="http://aktin.org/ns/i2b2/sql">
