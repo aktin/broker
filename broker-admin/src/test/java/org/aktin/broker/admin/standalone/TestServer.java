@@ -3,6 +3,10 @@ package org.aktin.broker.admin.standalone;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 
+import org.aktin.broker.ApiKeyAuth;
+import org.aktin.broker.client.BrokerClient;
+import org.aktin.broker.client.auth.HttpApiKeyAuth;
+
 public class TestServer implements Configuration{
 	@Override
 	public InputStream readAPIKeyProperties() {
@@ -57,6 +61,13 @@ public class TestServer implements Configuration{
 		try{
 			server.start(new InetSocketAddress(port));
 			System.err.println("Broker service at: "+server.getBrokerServiceURI());
+			// add some nodes
+			BrokerClient c = new BrokerClient(server.getBrokerServiceURI());
+			c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey123"));
+			c.putMyResource("dummy", "text/plain", "empty");
+			c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey567"));
+			c.putMyResource("dummy", "text/plain", "empty");
+			
 			server.join();
 		}finally{
 			server.destroy();
