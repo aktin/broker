@@ -14,6 +14,25 @@ function updateAuthStatus(onSuccess){
 			dataType: "xml"
 		});
 }
+function getNodes(success, error){
+	$.ajax({ 
+		type: 'GET', 
+		url: rest_base+'/broker/node',
+		success: function(data) {
+			var a = [];
+			$(data).find('node').each(function(){
+				var id = $(this).find('id').text();
+				a[id] = {
+					id: id,
+					dn: $(this).find('clientDN').text()
+				};
+			});
+			success(a);
+		},
+		error: error,
+		dataType: "xml"
+	});	
+}
 $(document).ready(function(){
 	// check if cookie is set
 	var token = Cookies.get('token');

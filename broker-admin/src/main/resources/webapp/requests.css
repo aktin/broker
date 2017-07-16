@@ -3,3 +3,9 @@
 	content: '(remove)';
 	color: blue;
 }
+#requests .published::after {
+	content: " (p)";
+}
+#requests .closed::after {
+	content: " (c)";
+}

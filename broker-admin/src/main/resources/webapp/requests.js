@@ -10,6 +10,28 @@ function init(){
 	$('#new_request input[name="p_email"]').val('ihre.email@addres.se');
 	$('#new_request input[name="title"]').val('Titel der Abfrage')
 	$('#new_request input[name="x_ts"]').val(new Date().toDateInputValue()+"T00:00");
+	// load nodes
+	getNodes(function(nodes){
+		for( var i=0; i<nodes.length; i++ ){
+			$('#target')
+	         .append($("<option></option>")
+	                    .attr("value",nodes[i].id)
+	                    .text(nodes[i].dn)); 
+		}
+		console.log('Loaded nodes: '+nodes.length);
+	},function(){
+		alert('DWH-Knoten konnten nicht geladen werden.');
+	});
+	$('#limit_target_a').click(function(){
+		// clear selection
+		$("#target option:selected").prop("selected", false);
+		$("#target").prop("disabled", true);
+	});
+	$('#limit_target_a').prop("checked", true).trigger("click");
+	$('#limit_target_s').click(function(){
+		// clear selection
+		$("#target").prop("disabled", false);
+	});
 }
 
 //$(document).ready(function(){
@@ -30,7 +52,14 @@ function loadRequestList(){
 			xml = $(data);
 			xml.find('request').each(function(){
 				var id = $(this).attr('id');
-				var el = $('<div class="req"><span>request id='+id+'</span> <span class="del">x</span> <span class="show">s</span></div>');
+				var cls = 'req';
+				if( $(this).find('published').text() != '' ){
+					cls += ' published';
+				}
+				if( $(this).find('closed').text() != '' ){
+					cls += ' closed';
+				}
+				var el = $('<div class="'+cls+'"><span>request id='+id+'</span> <span class="del">x</span> <span class="show">s</span></div>');
 				el.data('id', id);
 				$('#requests').append( el );
 			});
@@ -53,9 +82,22 @@ function loadRequestList(){
 		dataType: "xml"
 	});
 }
+function localTimeToISO(local_str){
+	if( local_str.length == 10 ){
+		local_str += "T00:00";
+	}
+	if( local_str.length == 16 ){
+		local_str += ":00";
+	}
+	
+	// TODO parse local_str and convert and return YYYY-MM-DDT00:00:00Z
+	local_str += "Z"; // XXX 
+	return local_str;
+}
 function buildRequestDefinitionXml(requestId, fragment){
-	var xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><scheduled/><query><id>'+requestId+'</id><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
-	$(xml).find('scheduled').text($('#new_request input[name="scheduled"]').val());
+	var xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
+	$(xml).find('scheduled').text(localTimeToISO($('#new_request input[name="scheduled"]').val()));
+	$(xml).find('reference').text(localTimeToISO($('#new_request input[name="reference"]').val()));
 	var query = $(xml).find('query')[0];
 	// use form elements
 	$('#new_request *').filter(':input').each(function(){
@@ -76,14 +118,34 @@ function allocateRequestId(success, error){
 					var loc = xhr.getResponseHeader('Location');
 					var id = loc.substr(loc.lastIndexOf('/')+1);
 					console.log('Request added: '+loc);
-					success(loc, id);
+					setRequestDefinition(loc, id, success, function(message){
+						// all failures from this point on should
+						// delete the request
+						console.log('Deleting request '+id+'...');
+						$.ajax({ 
+							type: 'DELETE', 
+							contentType: 'application/xml',
+							url: loc
+						});
+						error(message);
+					});
 				},
 				//processData: false,
 				//dataType: "xml",
-				error: error
+				error: function(x, m, t){
+					error('Unable to allocate new request ID: '+m);
+				}
 			});
 }
-function setRequestDefinition(location, id){
+function buildNodesXml(nodeIds){
+	var xml = $.parseXML('<nodes xmlns="http://aktin.org/ns/exchange"></nodes>');
+	for( var i=0; i<nodeIds.length; i++ ){
+		$(xml).find('nodes').append('<node>'+nodeIds[i]+'</node>');
+	}
+	return xml;
+}
+
+function setRequestDefinition(location, id, success_fn, error_fn){
 	// load XML syntax fragment
 	// content was already verified to be valid XML in addNewRequest()
 	var fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
@@ -91,31 +153,40 @@ function setRequestDefinition(location, id){
 	$.ajax({ 
 		type: 'PUT', 
 		data: data,
+		processData: false,
 		contentType: 'application/xml',
 		url: location,
 		success: function() {
 			// definition submitted
-			// enable submit button
-			$('#new_request button').prop('disabled',false);
-			// publish immediately
-			$.post(location+'/publish');
-			// reload request list
-			loadRequestList();
-			alert('Request created with id '+id);
-			// TODO clear input
-			// TODO display status notification of success
+			if( $("#limit_target_s").prop("checked") ){
+				// limit request to certain nodes
+				// build <nodes><node>1</node>... and post to location+'/nodes
+				var n = $('#target').val();
+				var x = buildNodesXml(n);
+				console.log('Limiting request target nodes to '+n);
+				$.ajax({
+					type: 'PUT', 
+					data: x,
+					processData: false,
+					contentType: 'application/xml',
+					url: location+'/nodes',
+					success: function(){
+						console.log('..ok');
+						success_fn(location,id);
+					},
+					error: function(x,m,t){
+						console.log('..failed');
+						error_fn('Failed to limit destination nodes: '+m);
+					}
+				});
+			}else{
+				console.log('Request not limited to certain target nodes');
+				success_fn(location, id);
+			}
 		},
-		error: function(xhr, s, e){
-			$('#new_request button').prop('disabled',false);
-			// delete empty request
-			$.ajax({ 
-				type: 'DELETE', 
-				contentType: 'application/xml',
-				url: location
-			});
-			alert('Unable to set request definition for request '+id);
+		error: function(x, m, t){
+			error_fn('Unable to set request definition for request '+id+': '+m);
 		},
-		processData: false,
 		dataType: "xml"
 	});
 
@@ -138,7 +209,20 @@ function addNewRequest(){
 
 	// disable submit button
 	$('#new_request button').prop('disabled',true);
-	allocateRequestId(setRequestDefinition, function(){
+	allocateRequestId(function(location, id){
+		// success
+		$('#new_request button').prop('disabled',false);
+		// publish immediately
+		console.log('Publishing request '+location);
+		$.post(location+'/publish');	
+		// reload request list
+		loadRequestList();
+		alert('Request created with id '+id);
+		// TODO clear input
+		// TODO display status notification of success
+	}, 
+	function(){
+		// failed
 		$('#new_request button').prop('disabled',false);
 		alert('Unable to create new request id');
 	});

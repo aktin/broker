@@ -15,7 +15,10 @@
 		<h1>Anfragen</h1>
 		<div id="requests">
 		</div>
+		<hr/>
+		<h1>Neue Anfrage</h1>
 		<form id="new_request">
+			<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
 			<legend>Geplante Ausführung <input type="date" name="scheduled" required="yes" /></legend>
 			<legend>Titel <input type="text" name="title" data-jpath="title" required="yes" /></legend>
 			<legend>Beschreibung <br/><textarea name="description" data-jpath="description"></textarea></legend>
@@ -27,13 +30,19 @@
 			</fieldset>
 			<fieldset>
 				<legend>Zeitraum (einmalige Ausführung)</legend>
-				<legend>Referenzzeitpunkt <input type="datetime-local" name="x_ts" required="yes" /></legend>
 				<legend>Zeitraum <select name="x_dur" data-jpath="schedule duration">
 					<option value="-P1M">Zurückliegender Monat</option>
 					<option value="-P7D">Zurückliegende Woche</option>
 					<option value="P1M">Folgender Monat</option>
 					<option value="P7D">Folgende 7 Tage</option>
 				</select></legend>
+			</fieldset>
+			<fieldset>
+				<legend>Notaufnahmen</legend>
+				<legend>alle<input type="radio" id="limit_target_a" name="limit_target" /></legend>
+				<legend>ausgewählte<input type="radio" id="limit_target_s" name="limit_target" /></legend>
+				<select name="target" id="target" multiple="multiple">
+				</select>
 			</fieldset>
 			
 			<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>

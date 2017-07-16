@@ -2,9 +2,7 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="request.css"/>
-		<script src="https://code.jquery.com/jquery-3.2.1.min.js"
-		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-		  crossorigin="anonymous"></script>
+		<script src="jquery-3.2.1.min.js"></script>
 		<script src="js.cookie-2.1.4.min.js"></script>
 		<script src="check-auth.js"></script>
 <script>
@@ -47,6 +45,26 @@ function init(){
 			});
 		}
 	});
+	// list target nodes
+	$.get({
+		url: rest_base+'/broker/request/'+id+'/nodes',
+		dataType: 'xml',
+		success: function(data){
+			var list = $(data).find('node');
+			$('#target p').text('Limited to specified nodes');
+			list.each(function(){
+				$('#target ul').append('<li>'+$(this).text()+'</li>');
+			});
+		},
+		error: function(x,m,t){
+			$('#target ul').empty();
+			if( x.status == 404 ){
+				$('#target p').text('Request available to all nodes');
+			}else{
+				$('#target p').text('Unable to load node restriction: '+m);
+			}
+		}
+	});
 	// list results
 	$.get({ 
 		url: rest_base+'/aggregator/request/'+id+'/result',
@@ -82,7 +100,12 @@ function init(){
 			</thead>
 			<tbody></tbody>
 		</table>
-
+		
+		<div id="target">
+			<p>Einschränkung auf Zielknoten</p>
+			<ul>
+			</ul>
+		</div>
 		<table id="results">
 			<caption>Ergebnisse</caption>
 			<thead>
