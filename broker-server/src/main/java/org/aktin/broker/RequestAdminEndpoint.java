@@ -2,7 +2,6 @@ package org.aktin.broker;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -24,9 +23,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.notify.BrokerWebsocket;
@@ -48,7 +50,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 //	@Authenticated
 //	@RequireAdmin
 	@POST
-	public Response createRequest(Reader content, @Context HttpHeaders headers) throws URISyntaxException{
+	public Response createRequest(Reader content, @Context HttpHeaders headers, @Context UriInfo info) throws URISyntaxException{
 		MediaType type = headers.getMediaType();
 		try {
 			int id;
@@ -62,12 +64,43 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 				// TODO verify that also no content is given (data without content type)
 				id = db.createRequest();
 			}
-			
-			return Response.created(new URI("/broker/request/"+Integer.toString(id))).build();
+			String ref = "/broker/request/"+Integer.toString(id);
+			// may return the wrong scheme (eg http instead of https) behind reverse proxies
+			//return Response.created(new URI(ref)).build();
+			// allow override via system property
+			UriBuilder ub = info.getBaseUriBuilder().path(ref);
+			String forceScheme = System.getProperty("force.uri.scheme");
+			if( forceScheme != null ){
+				log.info("Forcing response location URI scheme "+forceScheme);
+				ub.scheme(forceScheme);
+			}
+			return Response.created(ub.build()).build();
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to create request", e);
 			return Response.serverError().build();
 		}
+	}
+
+	@GET
+	@Path("headers")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String debugReturnRequestHeaders(@Context HttpHeaders headers){
+		StringBuilder b = new StringBuilder();
+		MultivaluedMap<String, String> req = headers.getRequestHeaders();
+		for( String key : req.keySet() ){
+			
+			b.append(key).append(": ");
+			boolean multiple = false;
+			for( String value : req.get(key) ){
+				if( multiple ){
+					b.append(", ");
+				}
+				b.append(value);
+				multiple = true;
+			}
+			b.append("\n");
+		}
+		return b.toString();
 	}
 //	@Authenticated
 //	@RequireAdmin
