@@ -3,7 +3,6 @@ package org.aktin.broker.admin.standalone;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 
-import org.aktin.broker.ApiKeyAuth;
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
 
