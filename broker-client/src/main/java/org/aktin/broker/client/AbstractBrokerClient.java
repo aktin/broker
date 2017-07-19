@@ -66,6 +66,10 @@ public abstract class AbstractBrokerClient extends AbstractClient{
 			c.addRequestProperty("Accept", mediaType);
 		}
 		if( c.getResponseCode() == 404 ){
+			// resource not found
+			return null;
+		}else if( c.getResponseCode() == 406 ){
+			// unable to supply the requested media type
 			return null;
 		}
 		String contentType = c.getContentType();
