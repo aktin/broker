@@ -154,7 +154,7 @@ function setRequestDefinition(location, id, success_fn, error_fn){
 		type: 'PUT', 
 		data: data,
 		processData: false,
-		contentType: 'application/xml',
+		contentType: 'application/vnd.aktin.query.request+xml', // use aktin mime type
 		url: location,
 		success: function() {
 			// definition submitted
