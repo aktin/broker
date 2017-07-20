@@ -70,6 +70,7 @@ public abstract class AbstractBrokerClient extends AbstractClient{
 			return null;
 		}else if( c.getResponseCode() == 406 ){
 			// unable to supply the requested media type
+			// TODO allow user to notice/differentiate between 404 and 406 responses
 			return null;
 		}
 		String contentType = c.getContentType();
