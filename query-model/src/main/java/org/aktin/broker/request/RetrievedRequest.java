@@ -30,6 +30,7 @@ public interface RetrievedRequest {
 	 * via {@link DataSource#getOutputStream()}.
 	 * </p>
 	 * @return result data
+	 * @throws IOException IO error
 	 */
 	public DataSource getResultData() throws IOException;
 	/**

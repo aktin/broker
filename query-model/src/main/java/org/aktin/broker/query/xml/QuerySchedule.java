@@ -15,7 +15,7 @@ public abstract class QuerySchedule {
 
 	/**
 	 * Duration for the queried data, relative to the request reference date
-	 * {@link QueryRequest#referenceDate}. Usually negative: e.g. -D1M for previous month.
+	 * {@link QueryRequest#getReferenceTimestamp()}. Usually negative: e.g. -D1M for previous month.
 	 */
 	@XmlElement(required=true)
 	public Period duration;

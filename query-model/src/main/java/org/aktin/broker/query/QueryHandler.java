@@ -27,8 +27,7 @@ public interface QueryHandler {
 	/**
 	 * Execute the query and store the results
 	 * in the target location.
-	 * @param target
-	 * @return exported data
+	 * @param target output stream where the results will be stored
 	 * @throws IOException execution/export failure
 	 */
 	void execute(OutputStream target) throws IOException;
@@ -50,8 +49,9 @@ public interface QueryHandler {
 	 * returned by {@link #getResultDisplayTypes()}.
 	 *
 	 * @param result result data
-	 * @param mediaType target media type
+	 * @param targetMediaType target media type
 	 * @return input stream with data of target media type
+	 * @throws IOException IO error
 	 */
 	DataSource getResultVisualisation(DataSource result, String targetMediaType) throws IOException;
 }

@@ -62,7 +62,7 @@ public class Execution{
 
 	/**
 	 * Map for property substitution in SQL statements
-	 * @param properties lookup table
+	 * @param propertyLookup lookup table
 	 * @throws SubstitutionError 
 	 */
 	public void prepareStatements(Function<String,String> propertyLookup) throws SubstitutionError{
