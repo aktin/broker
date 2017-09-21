@@ -32,8 +32,9 @@ public class TestServer implements Configuration{
 	}
 
 	/**
-	 * Run the test server with with the official i2b2
-	 * webclient.
+	 * Starts the broker admin interface for debugging (e.g. from Eclipse)
+	 * To use a constant password, specify system property: aktin.broker.password
+	 *
 	 * @param args command line arguments: port can be specified optionally
 	 * @throws Exception any error
 	 */
