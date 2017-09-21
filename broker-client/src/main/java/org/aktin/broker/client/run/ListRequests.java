@@ -9,8 +9,18 @@ import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
 import org.aktin.broker.xml.RequestInfo;
 
-public class App {
+/**
+ * Fetch requests.
+ * @author R.W.Majeed
+ *
+ */
+public class ListRequests {
 
+	/**
+	 * Fetch requests.
+	 * @param args command line arguments. First two are required: Broker URL and API key.
+	 * @throws IOException IO Error
+	 */
 	public static void main(String[] args) throws IOException{
 		String apiKey = args[1];
 		String brokerUrl = args[0];
