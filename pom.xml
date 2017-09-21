@@ -22,6 +22,8 @@
 		<module>broker-client</module>
 		<module>broker-client-websocket</module>
 		<module>broker-server</module>
+		<module>broker-admin</module>
+		<module>broker-admin-dist</module>
 	</modules>
 
 	<url>https://github.com/aktin/broker</url>
