@@ -20,13 +20,14 @@ function getNodes(success, error){
 		url: rest_base+'/broker/node',
 		success: function(data) {
 			var a = [];
-			$(data).find('node').each(function(){
-				var id = $(this).find('id').text();
+			var nodes = data.getElementsByTagNameNS('http://aktin.org/ns/exchange','node');
+			for( var i=0; i<nodes.length; i++ ){
+				var id=nodes[i].firstChild.innerHTML;
 				a[id] = {
 					id: id,
-					dn: $(this).find('clientDN').text()
+					dn: nodes[i].childNodes[1].innerHTML
 				};
-			});
+			}
 			success(a);
 		},
 		error: error,
