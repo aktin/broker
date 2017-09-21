@@ -3,5 +3,16 @@
 Simulate result upload:
 curl -X PUT -H "Authorization: Bearer xxxApiKey123" -H "Content-type: lala/la" 'http://localhost:8080/aggregator/my/request/0/result'
 
+curl -X PUT -H "Authorization: Bearer xxxApiKey123" -H "Content-type: text/plain" --data "@test.txt" 'http://localhost:8080/aggregator/my/request/1/result'
+
+
 Simulate request retrieval:
-curl -X POST -H "Authorization: Bearer xxxApiKey123" 'http://localhost:8080/broker/my/request/0/status/retrieved'
+curl -X POST -H "Authorization: Bearer xxxApiKey567" 'http://localhost:8080/broker/my/request/1/status/retrieved'
+
+curl -X POST -H "Authorization: Bearer xxxApiKey123" -H "Content-type: text/plain" --data "@test.txt" 'http://localhost:8080/broker/my/request/0/status/failed'
+
+
+
+
+Simulate request list retrieval:
+curl -X GET -H "Authorization: Bearer xxxApiKey123" 'http://localhost:8080/broker/my/request'
