@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -703,6 +704,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	}
 	@Override
 	public void setRequestTargets(int requestId, int[] nodes) throws SQLException {
+		Objects.requireNonNull(nodes);
 		try( Connection dbc = brokerDB.getConnection() ){
 			// set targeted
 			Statement st = dbc.createStatement();

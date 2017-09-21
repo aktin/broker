@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -222,6 +223,11 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	@Path("{id}/nodes")
 	@Consumes(MediaType.APPLICATION_XML)
 	public void setRequestTargetNodes(@PathParam("id") Integer requestId, RequestTargetNodes nodes) throws SQLException, IOException, NotFoundException{
+		if( nodes == null || nodes.getNodes() == null || nodes.getNodes().length == 0 ){
+			String message = "node targeting requires at least one node";
+			log.warning(message);
+			throw new BadRequestException(message);
+		}
 		db.setRequestTargets(requestId, nodes.getNodes());
 	}
 
