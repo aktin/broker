@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -14,6 +13,8 @@ import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -30,6 +31,7 @@ import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.notify.BrokerWebsocket;
 import org.aktin.broker.xml.Node;
+import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatus;
 
@@ -96,6 +98,18 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 			throw new InternalServerErrorException(e);
 		}
 	}
+	
+	@Authenticated
+	@OPTIONS
+	@Path("request/{id}")
+	public RequestInfo getNodesRequestInfo(@PathParam("id") Integer requestId, @Context SecurityContext sec, @Context HttpHeaders headers) throws SQLException, IOException{
+		RequestInfo info = db.getRequestInfo(requestId);
+		if( info == null ){
+			throw new NotFoundException("No request with id "+requestId);
+		}
+		return info;
+	}
+	
 	@Authenticated
 	@GET
 	@Path("request/{id}")

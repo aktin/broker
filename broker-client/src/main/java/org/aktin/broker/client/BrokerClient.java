@@ -98,6 +98,19 @@ public class BrokerClient extends AbstractBrokerClient{
 		}
 		return postprocessRequestList(list);
 	}
+	/**
+	 * Get info for a single request
+	 * @return request list
+	 * @throws IOException error
+	 */
+	public RequestInfo getRequestInfo(int id) throws IOException{
+		HttpURLConnection c = openConnection("OPTIONS", getQueryURI(id));
+		RequestInfo info = null;
+		try( InputStream response = c.getInputStream() ){
+			info = JAXB.unmarshal(response, RequestInfo.class);
+		}
+		return info;
+	}
 	public void deleteMyRequest(int id) throws IOException{
 		delete(getQueryURI(id));
 	}
