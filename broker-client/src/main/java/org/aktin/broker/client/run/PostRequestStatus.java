@@ -16,7 +16,7 @@ import org.aktin.broker.xml.RequestStatus;
 public class PostRequestStatus {
 
 	/**
-	 * Post request status
+	 * Post request status. For allowed values, see {@link RequestStatus}
 	 * @param args command line arguments. First three are required: Broker URL,  API key, request ID and status to post
 	 * @throws IOException IO Error
 	 */
