@@ -8,8 +8,10 @@
 @XmlSchema(namespace=org.aktin.broker.xml.XMLConstants.XML_NAMESPACE,
 elementFormDefault=XmlNsForm.QUALIFIED,
 	xmlns = {
-			
-		@XmlNs(prefix = "xsi", namespaceURI = javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI) 
+			// try to force default prefix for broker xml namespace
+			//@XmlNs(prefix = "", namespaceURI = org.aktin.broker.xml.XMLConstants.XML_NAMESPACE),
+			// xsi namespace
+			@XmlNs(prefix = "xsi", namespaceURI = javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI) 
 		//"http://www.w3.org/2001/XMLSchema-instance"
 	}
 )
