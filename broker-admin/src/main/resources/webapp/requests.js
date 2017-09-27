@@ -140,7 +140,7 @@ function allocateRequestId(success, error){
 function buildNodesXml(nodeIds){
 	var xml = $.parseXML('<nodes xmlns="http://aktin.org/ns/exchange"></nodes>');
 	for( var i=0; i<nodeIds.length; i++ ){
-		var el = xml.createElementNS('node','http://aktin.org/ns/exchange');
+		var el = xml.createElementNS('http://aktin.org/ns/exchange','node');
 		el.innerHTML = nodeIds[i];
 		xml.documentElement.appendChild(el);
 	}
