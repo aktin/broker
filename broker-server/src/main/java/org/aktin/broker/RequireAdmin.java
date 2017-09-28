@@ -8,13 +8,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import javax.ws.rs.NameBinding;
+import javax.ws.rs.container.ContainerRequestFilter;
 
 /**
- * Qualifier indicating that a type or method requires
- * a valid client certificate.
- * 
- * TODO additional qualifier type AllowClientCert for optional client cert.
- * 
+ * Qualifier indicating that a REST method requires admin privileges.
+ * To implement admin authentication, provide a class which implements {@link ContainerRequestFilter}
+ * with the following annotations:
+ *<pre>
+ *  {@literal @}RequireAdmin
+ *  {@literal @}Provider
+ *  {@literal @}Priority(Priorities.AUTHENTICATION)
+ *</pre>
  * @author R.W.Majeed
  *
  */
