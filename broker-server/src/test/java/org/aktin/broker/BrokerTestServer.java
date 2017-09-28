@@ -38,7 +38,7 @@ public class BrokerTestServer {
 		ds = new TestDataSource(new TestDatabaseHSQL());
 		rc = new ResourceConfig();
 		if( apiKeyAuth ){
-			// use APU key auth
+			// use API key auth
 			rc.register(ApiKeyAuth.class);
 		}else{
 			// use SSL header auth
