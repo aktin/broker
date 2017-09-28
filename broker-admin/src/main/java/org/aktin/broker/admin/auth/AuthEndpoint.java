@@ -13,6 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import org.aktin.broker.RequireAdmin;
+
 
 /**
  * RESTful authentication endpoint. Log on/off users
@@ -59,7 +61,7 @@ public class AuthEndpoint {
 	}
 	
 	@GET
-	@Secured
+	@RequireAdmin
 	@Path("status")
 	@Produces(MediaType.APPLICATION_XML)
 	public Status getStatus(@Context SecurityContext sc){
@@ -69,7 +71,7 @@ public class AuthEndpoint {
 		return s;
 	}
 	@POST
-	@Secured
+	@RequireAdmin
 	@Path("logout")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.TEXT_PLAIN)

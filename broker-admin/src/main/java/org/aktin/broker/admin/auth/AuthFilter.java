@@ -15,6 +15,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
+import org.aktin.broker.RequireAdmin;
+
 
 /**
  * Authentication filter for RESTful interfaces.
@@ -27,7 +29,7 @@ import javax.ws.rs.ext.Provider;
  * @author R.W.Majeed
  *
  */
-@Secured
+@RequireAdmin
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class AuthFilter implements ContainerRequestFilter{
