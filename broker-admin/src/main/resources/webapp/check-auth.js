@@ -25,7 +25,8 @@ function getNodes(success, error){
 				var id=nodes[i].firstChild.innerHTML;
 				a[id] = {
 					id: id,
-					dn: nodes[i].childNodes[1].innerHTML
+					dn: nodes[i].childNodes[1].innerHTML,
+					seen: nodes[i].childNodes[2].innerHTML
 				};
 			}
 			success(a);
