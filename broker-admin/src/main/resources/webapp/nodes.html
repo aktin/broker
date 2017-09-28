@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="request.css"/>
+		<script src="jquery-3.2.1.min.js"></script>
+		<script src="js.cookie-2.1.4.min.js"></script>
+		<script src="check-auth.js"></script>
+<script>
+function init(){
+	// load nodes
+	getNodes(function(nodes){
+		for( var i=0; i<nodes.length; i++ ){
+			var node = nodes[i];
+			$('#nodes tbody').append('<tr><td onclick="showNodeStats('+node.id+')">'+node.id+'</td><td>'+node.dn+'</td><td>'+node.seen+'</td></tr>');
+		}
+		$('#nodes tbody tr td:first-child').css('cursor','pointer');
+	},function(){
+		alert('DWH-Knoten konnten nicht geladen werden.');
+	});
+	// load XSLTs to display stats/versions
+	$.get({
+		url: 'xslt/stats-fragment.xsl',
+		success: function(data) {
+			var xp = new XSLTProcessor();
+		  	xp.importStylesheet(data);
+			// store for later use
+			window.xps = xp;
+		},
+		dataType: "xml"
+	});
+}
+function showNodeStats(id){
+	var name=$('#nodes tbody tr td:first-child').filter(function(){return this.innerHTML==id;}).next().text();
+	
+	$('#info').empty();
+	$('#nhead').text('Loading '+id+'...');
+	$.get({
+		url: rest_base+'/broker/node/'+id+'/stats',
+		success: function(data) {
+			$('#nhead').text(name);
+			$('#info').empty();
+		 	var frag = window.xps.transformToFragment(data, document);
+			document.getElementById("info").appendChild(frag);
+		},
+		dataType: "xml"
+	});
+}
+</script>
+	</head>
+	<body>
+		<h1>Connected nodes</h1>
+		<div>
+			<a href="index.html">Liste</a>
+		</div>
+
+		<table id="nodes">
+			<caption>Known nodes</caption>
+			<thead>
+				<tr>
+					<td>Node</td>
+					<td>DN</td>
+					<td>Last contact</td>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+		<h2 id="nhead">Click on node id for more info</h2>
+		<div id="info">
+		</div>
+	</body>
+</html>
