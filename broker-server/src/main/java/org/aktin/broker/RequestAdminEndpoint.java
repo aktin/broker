@@ -48,9 +48,9 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	private RequestTypeManager typeManager;
 
 
-//	@Authenticated
-//	@RequireAdmin
+
 	@POST
+	@RequireAdmin
 	public Response createRequest(Reader content, @Context HttpHeaders headers, @Context UriInfo info) throws URISyntaxException{
 		MediaType type = headers.getMediaType();
 		try {
@@ -103,10 +103,10 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 		return b.toString();
 	}
-//	@Authenticated
-//	@RequireAdmin
+
 	@PUT
 	@Path("{id}")
+	@RequireAdmin
 	public Response createRequest(@PathParam("id") String requestId, Reader content, @Context HttpHeaders headers) throws URISyntaxException{
 		MediaType type = headers.getMediaType();
 		try {
@@ -126,6 +126,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
+	@RequireAdmin
 	public Response listAllRequests() {
 		try {
 			return Response.ok(new RequestList(db.listAllRequests())).build();
@@ -134,10 +135,10 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			return Response.serverError().build();			
 		}
 	}
-//	@Authenticated
-//	@RequireAdmin
+
 	@DELETE
 	@Path("{id}")
+	@RequireAdmin
 	public Response deleteRequest(@PathParam("id") String id){
 		int i;
 		try{
@@ -156,6 +157,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 	}
 
+	@RequireAdmin
 	@GET
 	@Path("{id}")
 	public Response getRequest(@PathParam("id") Integer requestId, @Context HttpHeaders headers) throws SQLException, IOException, NotFoundException{
@@ -164,6 +166,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	}
 	@OPTIONS
 	@Path("{id}")
+	@RequireAdmin
 	//@Produces(MediaType.APPLICATION_XML) will cause errors in this case. therefore the media type is set below
 	public Response getRequestInfo(@PathParam("id") int requestId, @Context HttpHeaders headers) throws SQLException, IOException{
 		// TODO return RequestInfo
@@ -185,6 +188,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@GET
 	@Path("{id}/status")
+	@RequireAdmin
 	@Produces(MediaType.APPLICATION_XML)
 	public RequestStatusList getRequestInfo(@PathParam("id") Integer requestId) throws SQLException, IOException{
 		// TODO return RequestInfo
@@ -207,6 +211,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	@GET
 	@Path("{id}/nodes")
 	@Produces(MediaType.APPLICATION_XML)
+	@RequireAdmin
 	public RequestTargetNodes getRequestTargetNodes(@PathParam("id") Integer requestId) throws SQLException, IOException, NotFoundException{
 		int[] nodes = db.getRequestTargets(requestId);
 		if( nodes == null ){
@@ -216,12 +221,14 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	}
 	@DELETE
 	@Path("{id}/nodes")
+	@RequireAdmin
 	public void clearRequestTargetNodes(@PathParam("id") Integer requestId) throws SQLException, IOException, NotFoundException{
 		db.clearRequestTargets(requestId);
 	}
 	@PUT
 	@Path("{id}/nodes")
 	@Consumes(MediaType.APPLICATION_XML)
+	@RequireAdmin
 	public void setRequestTargetNodes(@PathParam("id") Integer requestId, RequestTargetNodes nodes) throws SQLException, IOException, NotFoundException{
 		if( nodes == null || nodes.getNodes() == null || nodes.getNodes().length == 0 ){
 			String message = "node targeting requires at least one node";
@@ -234,6 +241,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	// TODO add method to retrieve request node status message (e.g. error messages)
 	@GET
 	@Path("{id}/status/{nodeId}")
+	@RequireAdmin
 	public Response getRequestNodeStatusMessage(@PathParam("id") Integer requestId, @PathParam("nodeId") Integer nodeId) throws SQLException, IOException{
 		// TODO set header: timestamp, custom header with status code
 		Reader r = db.getRequestNodeStatusMessage(requestId, nodeId);
@@ -243,11 +251,12 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		// TODO retrieve and return exact media type
 		return Response.ok(r, MediaType.TEXT_PLAIN).build();
 	}
-	
-//	@Authenticated
-//	@RequireAdmin
+
+
+
 	@POST
 	@Path("{id}/publish")
+	@RequireAdmin
 	public void publishRequest(@PathParam("id") Integer requestId) throws SQLException{
 		// find query
 		RequestInfo info = db.getRequestInfo(requestId);
@@ -267,10 +276,10 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			BrokerWebsocket.broadcastRequestPublished(requestId);
 		}
 	}
-//	@Authenticated
-//	@RequireAdmin
+
 	@POST
 	@Path("{id}/close")
+	@RequireAdmin
 	public void closeRequest(@PathParam("id") Integer requestId) throws SQLException{
 		// find query
 		RequestInfo info = db.getRequestInfo(requestId);
