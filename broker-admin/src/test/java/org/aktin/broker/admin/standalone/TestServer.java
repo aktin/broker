@@ -64,10 +64,13 @@ public class TestServer implements Configuration{
 			// add some nodes
 			BrokerClient c = new BrokerClient(server.getBrokerServiceURI());
 			c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey123"));
-			c.putMyResource("dummy", "text/plain", "empty");
+			try( InputStream in = TestServer.class.getResourceAsStream("/stats-example1.xml") ){
+				c.putMyResource("stats", "application/xml", in);
+			}
 			c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey567"));
-			c.putMyResource("dummy", "text/plain", "empty");
-			
+			try( InputStream in = TestServer.class.getResourceAsStream("/stats-example2.xml") ){
+				c.putMyResource("stats", "application/xml", in);
+			}
 			server.join();
 		}finally{
 			server.destroy();

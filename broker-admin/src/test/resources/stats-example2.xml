@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml-stylesheet type="text/xsl" href="stats-fragment.xsl"?>
+<import-statistics>
+    <start>2017-09-08T13:48:27.257+02:00</start>
+    <last-write>2017-09-28T15:02:53.873+02:00</last-write>
+    <imported>583</imported>
+    <updated>0</updated>
+    <invalid>0</invalid>
+    <failed>0</failed>
+    <last-errors/>
+</import-statistics>
