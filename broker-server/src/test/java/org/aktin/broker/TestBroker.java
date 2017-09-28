@@ -61,7 +61,7 @@ public class TestBroker {
 		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen";
 		String testId = "01";
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		c.postSoftwareVersions(Collections.singletonMap("TEST", "test1"));
 		Properties m = a.getNodeProperties(0, "versions");
 		System.out.println(m);
@@ -88,7 +88,7 @@ public class TestBroker {
 		// posting status will trigger authentication
 		c.postSoftwareVersions(Collections.singletonMap("TEST", "1"));
 
-		TestAdmin a = new TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		TestAdmin a = new TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		// verify client list
 		List<Node> nl = a.listNodes();
 		// we should be the only node
