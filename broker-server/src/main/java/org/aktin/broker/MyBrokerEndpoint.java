@@ -115,9 +115,9 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 	@Path("request/{id}")
 	// response type depends on the data
 	public Response getNodesRequest(@PathParam("id") Integer requestId, @Context SecurityContext sec, @Context HttpHeaders headers) throws SQLException, IOException{
-		Principal user = (Principal)sec.getUserPrincipal();
+//		Principal user = (Principal)sec.getUserPrincipal();
 		List<MediaType> accept = headers.getAcceptableMediaTypes();
-
+		// TODO for */* and only single request definition, return that definition
 		Response resp = getRequest(requestId, accept);
 		//  don't set the status automatically. the client might fail during storage. let the client set the #retrieved status
 //		if( resp.getStatus() == 200 ){
