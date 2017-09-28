@@ -4,14 +4,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.sql.SQLException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.sql.DataSource;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
 
-import org.aktin.broker.auth.AuthFilterAdmin;
 import org.aktin.broker.db.TestDataSource;
 import org.aktin.broker.db.TestDatabaseHSQL;
 import org.aktin.broker.notify.BrokerWebsocket;
