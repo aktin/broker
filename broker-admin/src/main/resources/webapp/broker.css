@@ -1,0 +1,101 @@
+#header {
+	padding-bottom: 10px;
+	width: 1200px;
+	/*margin-left: 20.5%;*/
+	/*display: flex;*/
+	margin:0 auto 15px auto;
+}
+
+#header p {
+	margin: auto 0 auto 0;
+	text-align: center;
+	text-shadow: 2px 2px #777777;
+	font-size: 50px;
+	margin-bottom: 5px;
+}
+
+/********** MenuListe ***********/
+#menu {
+	width: 100%;
+	bottom: 0px;
+	left: 0px;
+	background: #C5D6EB;
+	/*border: 1px solid black;*/
+	/*text-align: center;*/
+}
+
+#menu ul {
+	list-style: none;
+	margin: 10px auto 5px auto;
+	display: inline-block;
+}
+
+
+#menu li {
+	float: left;
+	margin-right: 15px;
+}
+
+
+#menu a{
+	margin-left: 5px;
+	float: left;
+	color:black;
+	text-decoration: none;
+}
+
+#menu a:hover{
+	background-color: yellow;
+}
+/************ Mainsection *********/
+#mainsection {
+	display: flex;
+}
+/************ IDListe *********/
+#idliste {
+}
+
+#idliste ul {
+	list-style-type: none;
+	margin: 3px 15px 0 0;
+	padding: 5px 5px 5px 5px;
+	/*width: 180px; damit der scroll balken verschwindet */
+}
+
+#idliste li {
+	margin: 5px 0 0 0;
+}
+
+#idliste a {
+	color: black;
+	text-decoration: none;
+}
+
+.floatingbutton {
+	display:block; /*damit width/height funktionieren;*/
+
+	/* aussehen; */
+	background-color: #FFF;
+	border-radius: 7px;
+	line-height: 26px;
+	box-shadow: 2px 2px 2px #333;
+	border: 2px solid grey;
+	padding: 0 7px 0 7px;
+
+	/*damit text abgeschnitten wird; 
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;*/
+}
+
+.floatingbutton:hover {
+	background-color: yellow;
+}
+
+/************ Anfragen *********/
+#anfragen {
+	border: 2px solid black;
+	flex:1;
+	border-radius: 25px;
+	padding: 7px 7px 7px 7px;
+}
