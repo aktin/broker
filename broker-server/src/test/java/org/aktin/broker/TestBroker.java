@@ -125,6 +125,29 @@ public class TestBroker {
 	}
 
 	@Test
+	public void testQueryCharsetConversion() throws IOException{
+		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen,OU=admin";
+		String testId = "01";
+		TestAdmin c = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		// assume list is empty
+		List<RequestInfo> l = c.listAllRequests();
+		Assert.assertTrue(l.isEmpty());
+		// add request
+		// TODO use large file
+		String nonAsciiChars = "ÄÖÜß€ê";
+		int qid = c.createRequest("text/x-test", nonAsciiChars);
+		System.out.println("New request: "+qid);
+		l = c.listAllRequests();
+		Assert.assertEquals(1, l.size());
+		// try to read the query
+		Reader def = c.getRequestDefinition(l.get(0).getId(),  "text/x-test");
+		// delete query
+		c.deleteRequest(qid);
+
+		Assert.assertEquals(nonAsciiChars, Util.readContent(def));
+	}
+
+	@Test
 	public void expect404ForNonExistentRequests() throws IOException{
 		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_CN);
 		assertNull(a.getRequestDefinition(0, "text/plain"));

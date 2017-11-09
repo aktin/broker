@@ -44,7 +44,8 @@ public abstract class AbstractRequestEndpoint {
 			Reader def = getBroker().getRequestDefinition(requestId, rc.getConsumedType());
 			// transform
 			def = rc.transform(def);
-			return Response.ok(def, MediaType.valueOf(rc.getProducedType())).build();
+			// output using UTF-8. The HTTP default charset ISO-8859-1 has some missing characters like e.g Euro sign.
+			return Response.ok(def, MediaType.valueOf(rc.getProducedType()).withCharset("UTF-8")).build();
 		}
 	}
 
