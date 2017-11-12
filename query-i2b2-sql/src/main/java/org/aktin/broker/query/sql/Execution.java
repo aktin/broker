@@ -228,8 +228,11 @@ public class Execution{
 		// do calculations
 		runStatements();
 		// anonymisation
-		for( AnonymizeKey anon : query.anonymize ){
-			doAnonymisation(anon);
+		// query.anonymize can be null if no <anonymize> element is present
+		if( query.anonymize != null ){
+			for( AnonymizeKey anon : query.anonymize ){
+				doAnonymisation(anon);
+			}
 		}
 	}
 	/**
