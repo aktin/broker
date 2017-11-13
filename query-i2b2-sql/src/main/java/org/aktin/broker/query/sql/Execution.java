@@ -192,8 +192,11 @@ public class Execution{
 
 		// next steps are also repeated for each reference table
 		anonymizeReference(batch, anonymize.key);
-		for( TableColumn ref : anonymize.ref ){
-			anonymizeReference(batch, ref);
+		// anonymisation without references are possible,
+		if( anonymize.ref != null ){ // process references only if provided
+			for( TableColumn ref : anonymize.ref ){
+				anonymizeReference(batch, ref);
+			}
 		}
 		// drop anonymisation map before next anonymisation
 		batch.add("DROP TABLE anon_map");
