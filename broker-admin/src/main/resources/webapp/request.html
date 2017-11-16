@@ -21,7 +21,25 @@ function parseNodeStatus(rsi){
 		
 	return [node_id, status, t];
 }
+function annotateStatusMessage(requestId, nodeId){
+	$.get({
+		url: rest_base+'/broker/request/'+requestId+'/status/'+nodeId,
+		dataType: 'text',
+		success: function(data){
+			//console.log('Retrieved status for '+nodeId+': '+data);
+			$('#nodes tr[data-node-id="'+nodeId+'"]').prop('title',data);
+		}
+	});
+}
+
 function init(){
+
+	getNodes(function(data){
+		window.nodes = data;
+	}, function(){
+		console.log('Unable to retrieve nodes');
+	});
+	
 	var id=window.location.hash.substring(1);
 	$.get({
 		url: rest_base+'/broker/request/'+id,
@@ -41,7 +59,11 @@ function init(){
 				$('#nodes').remove();
 			}else list.each(function(){
 				var st = parseNodeStatus($(this));
-				$('#nodes tbody').append('<tr><td>'+st[0]+'</td><td>'+st[1]+'</td><td>'+st[2]+'</td></tr>');
+				$('#nodes tbody').append('<tr data-node-id="'+st[0]+'"><td>'+st[0]+'</td><td>'+st[1]+'</td><td>'+st[2]+'</td></tr>');
+				if( st[1] == 'failed' ){
+					// retrieve status message
+					annotateStatusMessage(id,st[0]);
+				}
 			});
 		}
 	});
@@ -76,7 +98,7 @@ function init(){
 				$('#results').remove();
 			}else list.each(function(){
 				var node_id = $(this).find('node').text();
-				$('#results tbody').append('<tr><td>'+node_id+'</td><td><a href="/aggregator/request/'+id+'/result/'+node_id+'">'+$(this).find('type').text()+'</a></td></tr>');
+				$('#results tbody').append('<tr data-node-id="'+node_id+'"><td>'+node_id+'</td><td><a href="/aggregator/request/'+id+'/result/'+node_id+'">'+$(this).find('type').text()+'</a></td></tr>');
 			});
 		}
 	});
