@@ -6,8 +6,15 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 @XmlAccessorType(XmlAccessType.NONE)
 public class ExportTable {
-	@XmlAttribute
+	/**
+	 * SQL table from which the data should be extracted
+	 */
+	@XmlAttribute(required=true)
 	public String table;
-	@XmlAttribute
+
+	/**
+	 * Destination name for the exported data file. If undefined, {@link #table} is used.
+	 */
+	@XmlAttribute(required=false)
 	public String destination;
 }

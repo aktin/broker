@@ -247,7 +247,11 @@ public class Execution{
 	 */
 	public void exportTables(TableExport export) throws SQLException, IOException{
 		for( ExportTable ex : query.export ){
-			exportTable(ex, export.exportTable(ex.table));
+			String dest = ex.destination;
+			if( dest == null || dest.length() == 0 ){
+				dest = ex.table;
+			}
+			exportTable(ex, export.exportTable(dest));
 		}
 	}
 	
