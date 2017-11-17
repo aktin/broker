@@ -90,10 +90,10 @@ public class Execution{
 
 	public void removeTables(){
 		log.info("Cleanup temporary tables");
-		// TODO method to drop temporary tables which were not exported
-		for( ExportTable table : query.export ){
+		for( TemporaryTable table : query.tables){
 			// XXX drop TEMPORARY not supported, make sure not to drop regular tables
-			String sql = "DROP TABLE IF EXISTS "+table.table;
+			String sql = "DROP TABLE IF EXISTS "+table.name;
+			log.info(sql);
 			try( Statement s = dbc.createStatement() ){
 				s.executeUpdate(sql);
 			} catch (SQLException e) {

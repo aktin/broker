@@ -41,7 +41,7 @@
 		<key table="temp_encounters" column="id" />
 		<ref table="temp_diag" column="encounter" />
 	</anonymize>
-	<export table="temp_patients" destination="patients.txt" />
-	<export table="temp_encounters" destination="encounters.txt" />
-	<export table="temp_diag" destination="diag.txt" />
+	<export table="temp_patients" destination="patients" />
+	<export table="temp_encounters" destination="encounters" />
+	<export table="temp_diag" destination="diag" />
 </sql>
