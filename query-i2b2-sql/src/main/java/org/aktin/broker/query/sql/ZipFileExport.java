@@ -36,7 +36,7 @@ public class ZipFileExport implements TableExport {
 	public ZipFileExport(OutputStream out, Charset charset) {
 		zip = new ZipOutputStream(out, charset);
 		fieldSeparator = "\t";
-		recordSeparator = System.lineSeparator();
+		recordSeparator = "\r\n";//System.lineSeparator();
 		nullString = "";
 		tableFileSuffix = ".txt";
 		encoder = charset.newEncoder();
