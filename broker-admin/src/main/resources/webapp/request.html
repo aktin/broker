@@ -116,11 +116,11 @@ function init(){
 		}
 		$('tr[data-node-id]').each(function(){
 			var id = $(this).data('node-id');
-			$(this).children('td:first-child').text(window.nodes[id].cn);
+			$(this).children('td:first-child').empty().append(window.nodes[id].link());
 		});
 		$('li[data-node-id]').each(function(){
 			var id = $(this).data('node-id');
-			$(this).text(window.nodes[id].cn);
+			$(this).empty().append(window.nodes[id].link());
 		});
 		
 	});

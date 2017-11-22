@@ -35,6 +35,9 @@ function getNodes(success, error){
 					id: id,
 					dn: dn,
 					cn: cn,
+					link:function(){
+						return $('<a/>',{href:'nodes.html#'+this.id, text:this.cn, title:this.dn});
+					},
 					seen: nodes[i].childNodes[2].innerHTML
 				};
 			}
