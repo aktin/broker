@@ -39,8 +39,12 @@ function showNodeStats(id){
 		success: function(data) {
 			$('#nhead').text(name);
 			$('#info').empty();
-		 	var frag = window.xps.transformToFragment(data, document);
+			var frag = window.xps.transformToFragment(data, document);
 			document.getElementById("info").appendChild(frag);
+		},
+		error: function(xhr, s, e){
+			$('#nhead').text("Unable to load node info");
+			$('#info').text("Error: "+s);
 		},
 		dataType: "xml"
 	});
