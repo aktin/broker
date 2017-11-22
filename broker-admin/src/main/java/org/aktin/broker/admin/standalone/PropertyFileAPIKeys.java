@@ -2,6 +2,7 @@ package org.aktin.broker.admin.standalone;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -33,4 +34,8 @@ public class PropertyFileAPIKeys extends AuthFilterAPIKeys {
 		return properties.getProperty(apiKey);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public Map<String,String> getMap(){
+		return (Map)properties;
+	}
 }

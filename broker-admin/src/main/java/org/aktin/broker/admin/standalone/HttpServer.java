@@ -13,6 +13,7 @@ import org.aktin.broker.Broker;
 import org.aktin.broker.admin.auth.AuthEndpoint;
 import org.aktin.broker.admin.auth.AuthFilter;
 import org.aktin.broker.admin.rest.ValidatorEndpoint;
+import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.db.LiquibaseWrapper;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -26,6 +27,17 @@ import org.glassfish.jersey.servlet.ServletContainer;
 
 import liquibase.exception.LiquibaseException;
 
+/**
+ * Run a standalone broker server from the command line.
+ * <p>
+ * To update the subject_DN in the database, specify a system 
+ * property {@code rewriteNodeDN}. In this case, all stored node
+ * subject DN values are rewritten with the values loaded from the
+ * API key properties file.
+ * </p>
+ * @author R.W.Majeed
+ *
+ */
 public class HttpServer {
 	private Configuration config;
 	private ResourceConfig rc;
@@ -38,9 +50,14 @@ public class HttpServer {
 		// initialize database
 		initialiseDatabase();
 		rc = new ResourceConfig();
+		PropertyFileAPIKeys keys;
 		try( InputStream in = config.readAPIKeyProperties() ){
-			rc.register(new PropertyFileAPIKeys(in));			
+			keys = new PropertyFileAPIKeys(in);
 		}
+		if( System.getProperty("rewriteNodeDN") != null ){
+			BrokerImpl.updatePrincipalDN(ds, keys.getMap());
+		}
+		rc.register(keys);
 		// register broker services
 		rc.registerClasses(Broker.ENDPOINTS);
 		rc.register(AuthFilter.class);
@@ -115,8 +132,8 @@ public class HttpServer {
 
 	
 	/**
-	 * Run the test server with with the official i2b2
-	 * webclient.
+	 * Run a standalone broker server from the command line.
+	 *
 	 * @param args command line arguments: port can be specified optionally
 	 * @throws Exception any error
 	 */
