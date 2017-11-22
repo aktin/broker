@@ -15,7 +15,7 @@ function updateAuthStatus(onSuccess){
 		});
 }
 function getNodes(success, error){
-	$.ajax({ 
+	return $.ajax({ 
 		type: 'GET', 
 		url: rest_base+'/broker/node',
 		success: function(data) {
@@ -23,9 +23,18 @@ function getNodes(success, error){
 			var nodes = data.getElementsByTagNameNS('http://aktin.org/ns/exchange','node');
 			for( var i=0; i<nodes.length; i++ ){
 				var id=nodes[i].firstChild.innerHTML;
+				var dn = nodes[i].childNodes[1].innerHTML;
+				// extract CN
+				var cna = dn.match(/CN=([^,]*)/);
+				var cn = dn; // default to DN if no match is found
+				if( cna ){
+					// use CN if found
+					cn = cna[1];
+				}
 				a[id] = {
 					id: id,
-					dn: nodes[i].childNodes[1].innerHTML,
+					dn: dn,
+					cn: cn,
 					seen: nodes[i].childNodes[2].innerHTML
 				};
 			}
