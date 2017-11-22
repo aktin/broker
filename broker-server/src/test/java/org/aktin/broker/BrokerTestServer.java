@@ -101,6 +101,9 @@ public class BrokerTestServer {
 		jetty.stop();
 	}
 
+	public DataSource getDataSource(){
+		return ds;
+	}
 	/**
 	 * Run the test server with with the official i2b2
 	 * webclient.

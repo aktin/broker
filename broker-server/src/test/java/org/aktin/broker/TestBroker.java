@@ -5,16 +5,20 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
+import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.client.ClientWebsocket;
 import org.aktin.broker.client.NodeResource;
 import org.aktin.broker.xml.BrokerStatus;
@@ -355,6 +359,21 @@ public class TestBroker {
 		c.listMyRequests();
 		node = a.getNode(0);
 		Assert.assertTrue(t1.isBefore(node.lastContact));
+	}
+
+	@Test
+	public void databaseUpdateOfNodeDN() throws SQLException, IOException{
+		// make sure that client_01 is known to the database
+		TestClient c = new TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_CN);
+		c.listMyRequests();
+		// fill updated CN
+		Properties p = new Properties();
+		p.setProperty(CLIENT_01_SERIAL, CLIENT_01_CN +",L="+new Random().nextInt());
+		// try updating the node CN
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		int updated = BrokerImpl.updatePrincipalDN(server.getDataSource(), (Map)p);
+		// verify that the database was updated
+		assertEquals(1, updated);
 	}
 	@Test
 	public void addDeleteNodeResource() throws IOException{

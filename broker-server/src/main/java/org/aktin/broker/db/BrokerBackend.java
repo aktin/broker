@@ -27,8 +27,6 @@ public interface BrokerBackend extends Broker{
 	 */
 	Principal accessPrincipal(String nodeKey, String clientDn) throws SQLException;
 
-
-
 	void updateNodeLastSeen(int[] nodeIds, long[] timestamps) throws SQLException;
 
 

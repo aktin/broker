@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -882,5 +884,25 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		ds.md5 = md5;
 		ds.sha256 = sha2;
 		return ds;
+	}
+
+	/**
+	 * Update the clientDN string for the nodes given in the provided map.
+	 * @param mapNodeDN Map of node keys pointing to clientDN strings
+	 * @return number of updated nodes
+	 */
+	public static int updatePrincipalDN(DataSource ds, Map<String, String> mapNodeDN) throws SQLException {
+		int updated = 0;
+		try( Connection dbc = ds.getConnection() ){
+			PreparedStatement update_dn = dbc.prepareStatement("UPDATE nodes SET subject_dn=? WHERE client_key=?");
+			for( Entry<String, String> entry : mapNodeDN.entrySet() ){
+				// try to update database
+				update_dn.setString(1, entry.getValue());
+				update_dn.setString(2, entry.getKey());
+				updated += update_dn.executeUpdate();
+			}
+			update_dn.close();
+		}
+		return updated;
 	}
 }
