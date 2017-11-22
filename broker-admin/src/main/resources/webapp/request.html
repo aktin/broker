@@ -33,14 +33,9 @@ function annotateStatusMessage(requestId, nodeId){
 }
 
 function init(){
-
-	getNodes(function(data){
-		window.nodes = data;
-	}, function(){
-		console.log('Unable to retrieve nodes');
-	});
 	
 	var id=window.location.hash.substring(1);
+	// load request definition
 	$.get({
 		url: rest_base+'/broker/request/'+id,
 		dataType: 'text',
@@ -48,59 +43,86 @@ function init(){
 			$('#request').text(data);
 		}
 	});
-	// list node status
-	$.get({
-		url: rest_base+'/broker/request/'+id+'/status',
-		dataType: 'xml',
-		success: function(data){
-			var list = $(data).find('request-status-info');
-			if( list.length == 0 ){
-				$('#nodes').after('<p>Bisher Statusmeldungen eingegangen</p>');
-				$('#nodes').remove();
-			}else list.each(function(){
-				var st = parseNodeStatus($(this));
-				$('#nodes tbody').append('<tr data-node-id="'+st[0]+'"><td>'+st[0]+'</td><td>'+st[1]+'</td><td>'+st[2]+'</td></tr>');
-				if( st[1] == 'failed' ){
-					// retrieve status message
-					annotateStatusMessage(id,st[0]);
-				}
-			});
-		}
-	});
-	// list target nodes
-	$.get({
-		url: rest_base+'/broker/request/'+id+'/nodes',
-		dataType: 'xml',
-		success: function(data){
-			var list = $(data).find('node');
-			$('#target p').text('Limited to specified nodes');
-			list.each(function(){
-				$('#target ul').append('<li>'+$(this).text()+'</li>');
-			});
-		},
-		error: function(x,m,t){
-			$('#target ul').empty();
-			if( x.status == 404 ){
-				$('#target p').text('Request available to all nodes');
-			}else{
-				$('#target p').text('Unable to load node restriction: '+m);
+	
+	// load node info
+	$.when(
+		// load node names
+		getNodes(function(data){
+			window.nodes = data;
+		}, function(){
+		console.log('Unable to retrieve nodes');
+		}),
+	
+		// list node status
+		$.get({
+			url: rest_base+'/broker/request/'+id+'/status',
+			dataType: 'xml',
+			success: function(data){
+				var list = $(data).find('request-status-info');
+				if( list.length == 0 ){
+					$('#nodes').after('<p>Bisher Statusmeldungen eingegangen</p>');
+					$('#nodes').remove();
+				}else list.each(function(){
+					var st = parseNodeStatus($(this));
+					$('#nodes tbody').append('<tr data-node-id="'+st[0]+'"><td>'+st[0]+'</td><td>'+st[1]+'</td><td>'+st[2]+'</td></tr>');
+					if( st[1] == 'failed' ){
+						// retrieve status message
+						annotateStatusMessage(id,st[0]);
+					}
+				});
 			}
+		}),
+		// list target nodes
+		$.get({
+			url: rest_base+'/broker/request/'+id+'/nodes',
+			dataType: 'xml',
+			success: function(data){
+				var list = $(data).find('node');
+				$('#target p').text('Limited to specified nodes');
+				list.each(function(){
+					var id = $(this).text();
+					$('#target ul').append('<li data-node-id="'+id+'">'+id+'</li>');
+				});
+			},
+			error: function(x,m,t){
+				$('#target ul').empty();
+				if( x.status == 404 ){
+					$('#target p').text('Request available to all nodes');
+				}else{
+					$('#target p').text('Unable to load node restriction: '+m);
+				}
+			}
+		}),
+		// list results
+		$.get({ 
+			url: rest_base+'/aggregator/request/'+id+'/result',
+			dataType: 'xml',
+			success: function(data){
+				var list = $(data).find('result');
+				if( list.length == 0 ){
+					$('#results').after('<p>Bisher keine Ergebnisse vorhanden</p>');
+					$('#results').remove();
+				}else list.each(function(){
+					var node_id = $(this).find('node').text();
+					$('#results tbody').append('<tr data-node-id="'+node_id+'"><td>'+node_id+'</td><td><a href="/aggregator/request/'+id+'/result/'+node_id+'">'+$(this).find('type').text()+'</a></td></tr>');
+				});
+			}
+		})
+	).always(function(){
+		// update node names
+		if( !window.nodes ){
+			console.log('Nodes info not loaded, unable to resolve node IDs');
+			return;
 		}
-	});
-	// list results
-	$.get({ 
-		url: rest_base+'/aggregator/request/'+id+'/result',
-		dataType: 'xml',
-		success: function(data){
-			var list = $(data).find('result');
-			if( list.length == 0 ){
-				$('#results').after('<p>Bisher keine Ergebnisse vorhanden</p>');
-				$('#results').remove();
-			}else list.each(function(){
-				var node_id = $(this).find('node').text();
-				$('#results tbody').append('<tr data-node-id="'+node_id+'"><td>'+node_id+'</td><td><a href="/aggregator/request/'+id+'/result/'+node_id+'">'+$(this).find('type').text()+'</a></td></tr>');
-			});
-		}
+		$('tr[data-node-id]').each(function(){
+			var id = $(this).data('node-id');
+			$(this).children('td:first-child').text(window.nodes[id].cn);
+		});
+		$('li[data-node-id]').each(function(){
+			var id = $(this).data('node-id');
+			$(this).text(window.nodes[id].cn);
+		});
+		
 	});
 }
 </script>
