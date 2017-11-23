@@ -12,43 +12,46 @@
 		<script src="requests.js"></script>
 	</head>
 	<body>
-		<h1>Anfragen</h1>
-		<a href="nodes.html">View nodes</a>
-		<div id="requests">
-		</div>
+		<section>
+			<h1>Anfragen</h1>
+			<a href="nodes.html">View nodes</a>
+			<div id="requests">
+			</div>
+		</section>
 		<hr/>
-		<h1>Neue Anfrage</h1>
-		<form id="new_request">
-			<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
-			<legend>Geplante Ausführung <input type="date" name="scheduled" required="yes" /></legend>
-			<legend>Titel <input type="text" name="title" data-jpath="title" required="yes" /></legend>
-			<legend>Beschreibung <br/><textarea name="description" data-jpath="description" style="height:10em"></textarea></legend>
-			<fieldset>
-				<legend>Auftraggeber</legend>
-				<legend>Name <input type="text" name="p_name" data-jpath="principal name" required="true" /></legend>
-				<legend>Organisation <input type="text" data-jpath="principal organisation" name="p_org"/></legend>
-				<legend>E-Mail <input type="text" name="p_email" data-jpath="principal email" required="true" /></legend>
-			</fieldset>
-			<fieldset>
-				<legend>Zeitraum (einmalige Ausführung)</legend>
-				<legend>Zeitraum <select name="x_dur" data-jpath="schedule duration">
-					<option value="-P1M">Zurückliegender Monat</option>
-					<option value="-P7D">Zurückliegende Woche</option>
-					<option value="P1M">Folgender Monat</option>
-					<option value="P7D">Folgende 7 Tage</option>
-				</select></legend>
-			</fieldset>
-			<fieldset>
-				<legend>Notaufnahmen</legend>
-				<legend>alle<input type="radio" id="limit_target_a" name="limit_target" /></legend>
-				<legend>ausgewählte<input type="radio" id="limit_target_s" name="limit_target" /></legend>
-				<select name="target" id="target" multiple="multiple" style="height:10em">
-				</select>
-			</fieldset>
-			
-			<legend>Query XML<br/><textarea name="xml" required="yes" style="height:10em"></textarea></legend>
-			<button>Neue Anfrage</button>
-		</form>
-		
+		<section id="create">
+			<h1>Neue Anfrage</h1>
+			<form id="new_request">
+				<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
+				<legend>Geplante Ausführung <input type="date" name="scheduled" required="yes" /></legend>
+				<legend>Titel <input type="text" name="title" data-jpath="title" required="yes" /></legend>
+				<legend>Beschreibung <br/><textarea name="description" data-jpath="description"></textarea></legend>
+				<fieldset>
+					<legend>Auftraggeber</legend>
+					<legend>Name <input type="text" name="p_name" data-jpath="principal name" required="true" /></legend>
+					<legend>Organisation <input type="text" data-jpath="principal organisation" name="p_org"/></legend>
+					<legend>E-Mail <input type="text" name="p_email" data-jpath="principal email" required="true" /></legend>
+				</fieldset>
+				<fieldset>
+					<legend>Zeitraum (einmalige Ausführung)</legend>
+					<legend>Zeitraum <select name="x_dur" data-jpath="schedule duration">
+						<option value="-P1M">Zurückliegender Monat</option>
+						<option value="-P7D">Zurückliegende Woche</option>
+						<option value="P1M">Folgender Monat</option>
+						<option value="P7D">Folgende 7 Tage</option>
+					</select></legend>
+				</fieldset>
+				<fieldset>
+					<legend>Notaufnahmen</legend>
+					<legend>alle<input type="radio" id="limit_target_a" name="limit_target" /></legend>
+					<legend>ausgewählte<input type="radio" id="limit_target_s" name="limit_target" /></legend>
+					<select name="target" id="target" multiple="multiple" style="height:10em">
+					</select>
+				</fieldset>
+				
+				<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>
+				<button>Neue Anfrage</button>
+			</form>
+		</section>
 	</body>
 </html>

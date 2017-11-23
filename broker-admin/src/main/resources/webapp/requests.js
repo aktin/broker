@@ -13,10 +13,11 @@ function init(){
 	// load nodes
 	getNodes(function(nodes){
 		for( var i=0; i<nodes.length; i++ ){
-			$('#target')
-	         .append($("<option></option>")
-	                    .attr("value",nodes[i].id)
-	                    .text(nodes[i].dn)); 
+			$('#target').append($("<option/>",{
+	        	value: nodes[i].id,
+	        	text: nodes[i].cn,
+	        	title: nodes[i].dn
+	        }));
 		}
 		console.log('Loaded nodes: '+nodes.length);
 	},function(){
@@ -32,6 +33,20 @@ function init(){
 		// clear selection
 		$("#target").prop("disabled", false);
 	});
+	// hide new request form
+	$('#create').before($('<button/>',{text:'Show form'}).click(function(){
+		$(this).remove();
+		$('#create').show();
+	}));
+	$('#create').hide();
+	// add button to set date
+	$('#new_request input[name="reference"]').after($('<a>Last month</a>').click(function(){
+		var d = new Date();
+		d.setDate(1);
+		console.log('Setting reference date',d);
+		$('#new_request input[name="reference"]').val(d.toDateInputValue()+"T00:00:00");
+	}));
+	
 }
 
 //$(document).ready(function(){
@@ -65,14 +80,16 @@ function loadRequestList(){
 			});
 			$('#requests .del').click(function(){
 				var req_el = $(this).parent();
-				$.ajax({
-					type: 'DELETE',
-					url: rest_base+'/broker/request/'+req_el.data('id'),
-					success: function(){
-						req_el.remove();
-						//$('.req[data-id="'+id+'"]').remove();
-					}
-				})
+				if( confirm('Please confirm to delete request id '+req_el.data('id')) ){				
+					$.ajax({
+						type: 'DELETE',
+						url: rest_base+'/broker/request/'+req_el.data('id'),
+						success: function(){
+							req_el.remove();
+							//$('.req[data-id="'+id+'"]').remove();
+						}
+					});
+				}
 			});
 			$('#requests .show').click(function(){
 				var req_el = $(this).parent();

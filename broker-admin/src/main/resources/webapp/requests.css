@@ -9,3 +9,7 @@
 #requests .closed::after {
 	content: " (c)";
 }
+#new_request textarea{
+	height: 10em;
+	white-space: nowrap;
+}
