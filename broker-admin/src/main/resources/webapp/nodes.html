@@ -11,13 +11,13 @@ function init(){
 	getNodes(function(nodes){
 		for( var i=0; i<nodes.length; i++ ){
 			var node = nodes[i];
-			$('#nodes tbody').append('<tr><td onclick="showNodeStats('+node.id+')">'+node.id+'</td><td>'+node.dn+'</td><td>'+node.seen+'</td></tr>');
+			$('#nodes tbody').append('<tr data-node-id="'+node.id+'"><td><a href="#'+node.id+'">'+node.id+'</a></td><td>'+node.dn+'</td><td>'+node.seen+'</td></tr>');
 		}
 		$('#nodes tbody tr td:first-child').css('cursor','pointer');
 		// check if node is selected by url hash
 		if( window.location.hash != '' ){
-			var id=window.location.hash.substring(1);
-			setTimeout(function(){showNodeStats(id);});
+			// trigger hashchange
+			$(window).trigger('hashchange');
 		}
 
 	},function(){
@@ -34,9 +34,17 @@ function init(){
 		},
 		dataType: "xml"
 	});
+	$(window).on('hashchange',function(){
+		// if id provided..
+		if( window.location.hash != '' ){
+			// ..load node description
+			var id=window.location.hash.substring(1);
+			setTimeout(function(){showNodeStats(id);});
+		}
+	});
 }
 function showNodeStats(id){
-	var name=$('#nodes tbody tr td:first-child').filter(function(){return this.innerHTML==id;}).next().text();
+	var name=$('#nodes tbody tr[data-node-id="'+id+'"] td:first-child').next().text();
 	
 	$('#info').empty();
 	$('#nhead').text('Loading '+id+'...');
@@ -51,6 +59,10 @@ function showNodeStats(id){
 		error: function(xhr, s, e){
 			$('#nhead').text("Unable to load node info");
 			$('#info').text("Error: "+s);
+		},
+		complete: function(){
+			// scroll to result
+			$('html').animate({scrollTop:$('#nhead').offset().top});
 		},
 		dataType: "xml"
 	});
