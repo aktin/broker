@@ -22,7 +22,7 @@
 			<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
 			<legend>Geplante Ausführung <input type="date" name="scheduled" required="yes" /></legend>
 			<legend>Titel <input type="text" name="title" data-jpath="title" required="yes" /></legend>
-			<legend>Beschreibung <br/><textarea name="description" data-jpath="description"></textarea></legend>
+			<legend>Beschreibung <br/><textarea name="description" data-jpath="description" style="height:10em"></textarea></legend>
 			<fieldset>
 				<legend>Auftraggeber</legend>
 				<legend>Name <input type="text" name="p_name" data-jpath="principal name" required="true" /></legend>
@@ -42,11 +42,11 @@
 				<legend>Notaufnahmen</legend>
 				<legend>alle<input type="radio" id="limit_target_a" name="limit_target" /></legend>
 				<legend>ausgewählte<input type="radio" id="limit_target_s" name="limit_target" /></legend>
-				<select name="target" id="target" multiple="multiple">
+				<select name="target" id="target" multiple="multiple" style="height:10em">
 				</select>
 			</fieldset>
 			
-			<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>
+			<legend>Query XML<br/><textarea name="xml" required="yes" style="height:10em"></textarea></legend>
 			<button>Neue Anfrage</button>
 		</form>
 		
