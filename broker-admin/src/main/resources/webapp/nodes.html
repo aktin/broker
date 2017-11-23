@@ -13,7 +13,6 @@ function init(){
 			var node = nodes[i];
 			$('#nodes tbody').append('<tr data-node-id="'+node.id+'"><td><a href="#'+node.id+'">'+node.id+'</a></td><td>'+node.dn+'</td><td>'+node.seen+'</td></tr>');
 		}
-		$('#nodes tbody tr td:first-child').css('cursor','pointer');
 		// check if node is selected by url hash
 		if( window.location.hash != '' ){
 			// trigger hashchange
