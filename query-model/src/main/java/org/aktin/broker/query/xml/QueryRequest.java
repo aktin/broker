@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Request execution of a query. The query is contained in this request type.
@@ -35,6 +36,15 @@ public class QueryRequest {
 
 	public int getId(){
 		return id;
+	}
+
+	@XmlTransient
+	public Integer getQueryId(){
+		if( getQuery().schedule instanceof RepeatedExecution ){
+			return ((RepeatedExecution)getQuery().schedule).id;
+		}else{
+			return null;
+		}
 	}
 
 	/**

@@ -10,7 +10,6 @@ import org.aktin.broker.query.xml.QueryRequest;
 public interface RetrievedRequest {
 
 	public int getRequestId();
-	public Integer getQueryId();
 	public QueryRequest getRequest();
 	public RequestStatus getStatus();
 	public Iterable<ActionLogEntry> getActionLog();
