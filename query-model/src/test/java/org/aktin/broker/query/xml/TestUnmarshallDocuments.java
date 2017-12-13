@@ -42,6 +42,10 @@ public class TestUnmarshallDocuments {
 		validator.validate(XIncludeUnmarshaller.getXIncludeResource("/query.xml"));
 	}
 	@Test
+	public void validateRepeatingQuery() throws IOException, SAXException{
+		validator.validate(XIncludeUnmarshaller.getXIncludeResource("/query-repeating.xml"));
+	}
+	@Test
 	public void unmarshallQuery() throws IOException, SAXException{
 		Source xml = XIncludeUnmarshaller.getXIncludeResource("/query.xml");
 		Query query = JAXB.unmarshal(xml, Query.class);

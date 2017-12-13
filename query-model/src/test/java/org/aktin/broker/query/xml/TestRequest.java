@@ -15,11 +15,27 @@ public class TestRequest {
 		return q;
 	}
 
+	public static final QueryRequest getRepeatingRequest(int requestId, int queryId){
+		QueryRequest q = JAXB.unmarshal(XIncludeUnmarshaller.getXIncludeResource("/request3.xml"), QueryRequest.class);
+		q.id = requestId;
+		((RepeatedExecution)q.query.schedule).id = queryId;
+		return q;
+	}
+
 	@Test
 	public void expectUnmarshalledDocumentComplete(){
 		QueryRequest r = getSingleRequest(1);
 		Assert.assertNotNull(r.deadline);
 		Assert.assertNotNull(r.query);
+	}
+
+	@Test
+	public void expectUnmarshalRepeatedExecution(){
+		QueryRequest r = getRepeatingRequest(1,2);
+		Assert.assertNotNull(r.deadline);
+		Assert.assertNotNull(r.query);
+		Assert.assertTrue(r.query.schedule instanceof RepeatedExecution);
+		
 	}
 
 	@Test

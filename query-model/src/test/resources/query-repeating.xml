@@ -2,10 +2,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:dwh="http://aktin.org/ns/dwh"
 	xmlns:psm="http://www.i2b2.org/xsd/cell/crc/psm/1.1/">
-	<id>123</id>
 	<title>Grippescreening</title>
 	<description>Es soll untersucht werden, ob sich in den Notaufnahmen
-	Indikatoren für den Ausbruch von Grippewellen finden lassen.</description>
+	Indikatoren fÃ¼r den Ausbruch von Grippewellen finden lassen.</description>
 	<principal>
 		<name>Principal</name>
 		<organisation>AKTIN</organisation>
@@ -18,9 +17,6 @@
 		<id>123</id>
 		<!-- created timestamp? -->
 	</schedule>
-	<concepts>
-		<concept id="birthdate" xsi:type="raw"/>
-	</concepts>
 	<!-- also possible: xsi:type="psm:query_definition" -->
 	<!-- also possible: xsi:type="dwh:eclectic_query", 
 	see http://methods.schattauer.de/en/contents/archivestandard/issue/2168/manuscript/21349/show.html
