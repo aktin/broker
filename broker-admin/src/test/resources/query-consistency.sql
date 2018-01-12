@@ -70,4 +70,8 @@ INSERT INTO temp_analysis(name,value) VALUES('fact_start_last', (
 SELECT MAX(start_date) FROM i2b2crcdata.observation_fact
 ));
 
+-- Postgres software version
+INSERT INTO temp_analysis(name,value) VALUES('pg_version', (
+SELECT version()
+));
 
