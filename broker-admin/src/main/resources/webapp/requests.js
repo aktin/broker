@@ -46,6 +46,22 @@ function init(){
 		console.log('Setting reference date',d);
 		$('#new_request input[name="reference"]').val(d.toDateInputValue()+"T00:00:00");
 	}));
+	// switch between single/repeating executions
+	$('#x_exec legend:first-child').css('cursor','pointer').click(function(){
+		var rep = ($('#x_qid').parent('fieldset').length == 1);
+		var target;
+		if( rep ){
+			// switch to single
+			target = $('#hidden_fields');
+			$(this).text('Single execution (click to change)');
+		}else{
+			// switch to repeating
+			target = $('#x_exec');
+			$(this).text('Repeated execution (click to change)');
+		}
+		$('#x_intvl').detach().appendTo(target);
+		$('#x_qid').detach().appendTo(target);
+	});
 	
 }
 

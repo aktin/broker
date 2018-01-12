@@ -32,7 +32,7 @@
 					<legend>Organisation <input type="text" data-jpath="principal organisation" name="p_org"/></legend>
 					<legend>E-Mail <input type="text" name="p_email" data-jpath="principal email" required="true" /></legend>
 				</fieldset>
-				<fieldset>
+				<fieldset id="x_exec">
 					<legend>Zeitraum (einmalige Ausführung)</legend>
 					<legend>Zeitraum <select name="x_dur" data-jpath="schedule duration">
 						<option value="-P1M">Zurückliegender Monat</option>
@@ -51,6 +51,10 @@
 				
 				<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>
 				<button>Neue Anfrage</button>
+			</form>
+			<form id="hidden_fields" style="display:none">
+					<legend id="x_intvl">Intervall (ca.)<input type="text" name="x_intvl" data-jpath="schedule interval" pattern="P[0-9]+[DM]" /></legend>
+					<legend id="x_qid">Query ID<input type="text" id="x_qid" name="x_qid" data-jpath="schedule id" /></legend>
 			</form>
 		</section>
 	</body>
