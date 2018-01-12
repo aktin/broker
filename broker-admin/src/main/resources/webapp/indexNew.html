@@ -1,6 +1,8 @@
 <!DOCTYPE html>
+<html lang="de">
 <html>
 	<head>
+	<meta charset="utf-8"/>
 		<link rel="stylesheet" type="text/css" href="broker.css"/>
 		<!--<script src="https://code.jquery.com/jquery-3.2.1.min.js"
 		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -9,8 +11,9 @@
 		<script src="jquery-3.2.1.min.js"></script>
 		<script src="js.cookie-2.1.4.min.js"></script>
 		<script src="check-auth.js"></script>
-		<script src="requestsNew.js"></script>
+		<script src="index.js"></script>
 	</head>
+
 	<body>
 		<div id="header">
 			<p>
@@ -37,11 +40,42 @@
 				</ul>
 			</div>
 			<div id="anfragen">
-				<p>ID: 1</p>
+				<p id="id">ID: 1</p>
 				<p>Details</p>
 				<p>Status</p>
 				<p>XML</p>
 			</div>
 		</div>
+
+		<table id="nodes">
+			<caption>Abgeholt</caption>
+			<thead>
+				<tr>
+					<td>Node</td>
+					<td>Status</td>
+					<td>Zeitstempel</td>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+		
+		<div id="target">
+			<p>Einschränkung auf Zielknoten</p>
+			<ul>
+			</ul>
+		</div>
+		<table id="results">
+			<caption>Ergebnisse</caption>
+			<thead>
+				<tr>
+					<td>Node</td>
+					<td>Type</td>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+
+		<pre id="request">
+		</pre>
 	</body>
 </html>

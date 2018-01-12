@@ -50,6 +50,9 @@ function loadRequestList(){
 			$('#requests').empty();
 			// TODO render request list
 			xml = $(data);
+			if (window.location.href.indexOf('indexNew.html') != -1) {
+				window.location.href = 'indexNew.html#'+xml.find('request').first().attr('id');
+			}
 			xml.find('request').each(function(){
 				var id = $(this).attr('id');
 				var cls = 'req';
@@ -60,7 +63,7 @@ function loadRequestList(){
 					cls += ' closed';
 				}
 				//var el = $('<div class="'+cls+'"><span>request id='+id+'</span> <span class="del">x</span> <span class="show">s</span></div>');
-				var el = $('<li class="'+cls+'"><a href="request.html#'+id+'" class="floatingbutton">ID:'+id+'</a></li>');
+				var el = $('<li class="'+cls+'"><a href="indexNew.html#'+id+'" class="floatingbutton">ID:'+id+'</a></li>');
 				el.data('id', id);
 				$('#requests').append( el );
 			});
