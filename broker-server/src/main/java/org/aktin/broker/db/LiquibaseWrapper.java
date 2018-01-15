@@ -54,11 +54,11 @@ public class LiquibaseWrapper implements AutoCloseable {
 	@Override
 	public void close() throws DatabaseException{
 
-		// database.close() will now also close the connection.
-		// simple solution: we don't close the liquibase database anymore
-		//database.close();
 		if( database.getConnection().isClosed() ){
 			throw new DatabaseException("Connection closed");
 		}
+		// database.close() will now also close the connection.
+		// simple solution: we don't close the liquibase database anymore
+		database.close();
 	}
 }

@@ -61,7 +61,7 @@ public class TestDatabaseHSQL extends AbstractDatabase {
 	}
 
 	public Connection getConnection() throws SQLException{
-		return DriverManager.getConnection("jdbc:hsqldb:mem:broker_test;shutdown=true", "sa", "");
+		return DriverManager.getConnection("jdbc:hsqldb:mem:broker_test", "sa", "");
 	}
 	
 	@Test
@@ -79,8 +79,7 @@ public class TestDatabaseHSQL extends AbstractDatabase {
 	
 	@Test
 	public void loadChangelogToLiquibase() throws SQLException, LiquibaseException, IOException {
-		try(	Connection dbc = getConnection();
-				LiquibaseWrapper lw = new LiquibaseWrapper(dbc) )
+		try( LiquibaseWrapper lw = new LiquibaseWrapper(getConnection()) )
 		{
 			lw.update();
 		}
