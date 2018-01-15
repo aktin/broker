@@ -94,7 +94,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>jaxb2-maven-plugin</artifactId>
-					<version>2.3.1</version>
+					<version>2.2</version>
 				</plugin>
 				<!-- more plugins for ossrh distribution -->
 				<plugin>
