@@ -14,7 +14,6 @@ import org.aktin.broker.xml.RequestStatusInfo;
 public interface Broker {
 	List<Node> getAllNodes() throws SQLException;
 	Node getNode(int nodeId) throws SQLException;
-	String getNodeStatusContent(int nodeId) throws SQLException;
 
 	int createRequest(String mediaType, Reader content) throws SQLException;
 	/**

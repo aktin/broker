@@ -691,20 +691,6 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		}
 	}
 	@Override
-	public String getNodeStatusContent(int nodeId) throws SQLException {
-		String status = null;
-		try( Connection dbc = brokerDB.getConnection() ){
-			Statement st = dbc.createStatement();
-			ResultSet rs = st.executeQuery("SELECT status_content FROM nodes WHERE id="+nodeId);
-			if( rs.next() ){
-				status = rs.getString(1);
-			}
-			rs.close();
-			st.close();
-		}
-		return status;
-	}
-	@Override
 	public void setRequestTargets(int requestId, int[] nodes) throws SQLException {
 		Objects.requireNonNull(nodes);
 		try( Connection dbc = brokerDB.getConnection() ){
