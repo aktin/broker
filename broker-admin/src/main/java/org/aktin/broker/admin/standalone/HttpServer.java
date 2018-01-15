@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.sql.DataSource;
 
@@ -43,7 +45,7 @@ public class HttpServer {
 	private ResourceConfig rc;
 	private Server jetty;
 	private DataSource ds;
-	
+
 	public HttpServer(Configuration config) throws SQLException, IOException{
 		this.config = config;
 		ds = new HSQLDataSource(config.getDatabasePath());
@@ -56,6 +58,7 @@ public class HttpServer {
 		}
 		if( System.getProperty("rewriteNodeDN") != null ){
 			BrokerImpl.updatePrincipalDN(ds, keys.getMap());
+			// TODO output/log what happened, use count returned from above method
 		}
 		rc.register(keys);
 		// register broker services
@@ -124,7 +127,18 @@ public class HttpServer {
 		jetty.join();
 	}
 	public void destroy() throws Exception{
+		System.out.println("Shutting down database..");
+		try( Connection dbc = ds.getConnection();
+				Statement st = dbc.createStatement() ){
+			st.executeUpdate("SHUTDOWN");
+		}
+		System.out.println("Cleanup jetty..");
+		System.out.flush();
 		jetty.destroy();
+		// release threads waiting for termination
+		synchronized( this ){
+			this.notifyAll();
+		}
 	}
 	public void stop() throws Exception{
 		jetty.stop();
@@ -165,7 +179,28 @@ public class HttpServer {
 		Class.forName("org.hsqldb.jdbcDriver");
 		
 		// start server
-		HttpServer server = new HttpServer(new DefaultConfiguration());
+		final HttpServer server = new HttpServer(new DefaultConfiguration());
+		
+		// add shutdown hook
+		Runtime.getRuntime().addShutdownHook(new Thread(){
+			@Override
+			public void run() {
+				try {
+					System.out.println("Executing shutdown hook..");
+					System.out.flush();
+					server.stop();
+					// wait for cleanup to finish
+					synchronized( server ){
+						server.wait(3000);
+					}
+					System.out.println("Shutdown completed.");
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println("Failed to stop jetty during shutdown hook.");
+				}
+			}
+		});
+
 		try{
 			server.start(new InetSocketAddress(bindaddr, port));
 			System.err.println("Broker service at: "+server.getBrokerServiceURI());

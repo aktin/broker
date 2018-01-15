@@ -54,7 +54,7 @@ public class HSQLDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-		return DriverManager.getConnection("jdbc:hsqldb:file:"+dbpath+";shutdown=true", "sa", "");
+		return DriverManager.getConnection("jdbc:hsqldb:file:"+dbpath+";shutdown=false", "sa", "");
 	}
 
 	@Override
