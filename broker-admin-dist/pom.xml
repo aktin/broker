@@ -25,6 +25,12 @@
 			<artifactId>cdi-api</artifactId>
 			<version>1.2</version>
 		</dependency>
+		<!-- for SQL management -->
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>sqltool</artifactId>
+			<version>2.4.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
