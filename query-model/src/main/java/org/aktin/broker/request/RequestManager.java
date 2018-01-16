@@ -1,5 +1,6 @@
 package org.aktin.broker.request;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -54,7 +55,13 @@ public interface RequestManager {
 
 	BrokerQueryRule createDefaultRule(String userId, QueryRuleAction action)throws IOException;
 	BrokerQueryRule createQueryRule(RetrievedRequest request, String userId, QueryRuleAction action)throws IOException;
-	void deleteQueryRule(Integer queryId)throws IOException;
+	/**
+	 * Delete the query rule with the given query id
+	 * @param queryId query id or {@code null} for default rule
+	 * @throws FileNotFoundException no rule found with the given queryId
+	 * @throws IOException other IO error
+	 */
+	void deleteQueryRule(Integer queryId)throws FileNotFoundException, IOException;
 
 	
 }
