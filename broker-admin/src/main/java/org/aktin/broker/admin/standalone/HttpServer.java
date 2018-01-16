@@ -57,8 +57,9 @@ public class HttpServer {
 			keys = new PropertyFileAPIKeys(in);
 		}
 		if( System.getProperty("rewriteNodeDN") != null ){
-			BrokerImpl.updatePrincipalDN(ds, keys.getMap());
-			// TODO output/log what happened, use count returned from above method
+			int count = BrokerImpl.updatePrincipalDN(ds, keys.getMap());
+			// output/log what happened, use count returned from above method
+			System.out.println("Rewritten "+count+" node DN strings.");
 		}
 		rc.register(keys);
 		// register broker services
