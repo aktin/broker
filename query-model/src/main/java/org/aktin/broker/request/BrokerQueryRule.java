@@ -1,6 +1,10 @@
 package org.aktin.broker.request;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+
+import org.aktin.broker.query.xml.QueryRequest;
 
 public interface BrokerQueryRule {
 
@@ -28,4 +32,13 @@ public interface BrokerQueryRule {
 
 	public QueryRuleAction getAction();
 	
+
+	/**
+	 * Verify the signature with the query request.
+	 * @param request request to verify the signature for
+	 * @return {@code true} for a matching signature, {@code false} otherwise.
+	 * @throws NoSuchAlgorithmException signature algorithm not supported by the JRE
+	 * @throws IOException IO error during signature calculation
+	 */
+	public boolean verifySignature(QueryRequest request) throws NoSuchAlgorithmException, IOException;
 }
