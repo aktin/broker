@@ -67,9 +67,15 @@ public class TestServer implements Configuration{
 			try( InputStream in = TestServer.class.getResourceAsStream("/stats-example1.xml") ){
 				c.putMyResource("stats", "application/xml", in);
 			}
+			try( InputStream in = TestServer.class.getResourceAsStream("/properties-example1.xml") ){
+				c.putMyResource("versions", "application/xml", in);
+			}
 			c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey567"));
 			try( InputStream in = TestServer.class.getResourceAsStream("/stats-example2.xml") ){
 				c.putMyResource("stats", "application/xml", in);
+			}
+			try( InputStream in = TestServer.class.getResourceAsStream("/properties-example2.xml") ){
+				c.putMyResource("versions", "application/xml", in);
 			}
 			server.join();
 		}finally{

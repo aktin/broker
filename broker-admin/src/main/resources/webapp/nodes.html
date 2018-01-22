@@ -11,52 +11,76 @@ function init(){
 	getNodes(function(nodes){
 		for( var i=0; i<nodes.length; i++ ){
 			var node = nodes[i];
-			$('#nodes tbody').append('<tr data-node-id="'+node.id+'"><td><a href="#'+node.id+'">'+node.id+'</a></td><td>'+node.dn+'</td><td>'+node.seen+'</td></tr>');
+			$('#nodes tbody').append('<tr data-node-id="'+node.id+'"><td>'+node.id+'</td><td>'+node.dn+'</td><td>'+node.seen+'</td><td><a href="#'+node.id+'/stats">stats</a>|<a href="#'+node.id+'/versions">versions</a></td></tr>');
 		}
 		// check if node is selected by url hash
 		if( window.location.hash != '' ){
 			// trigger hashchange
 			$(window).trigger('hashchange');
 		}
-
+		
 	},function(){
 		alert('DWH-Knoten konnten nicht geladen werden.');
 	});
-	// load XSLTs to display stats/versions
+	// load XSLT to display stats
+	window.xslt = [];
+	// TODO use generic configuration for available xslt and resource names
 	$.get({
 		url: 'xslt/stats-fragment.xsl',
 		success: function(data) {
 			var xp = new XSLTProcessor();
 		  	xp.importStylesheet(data);
 			// store for later use
-			window.xps = xp;
+			window.xslt['stats'] = xp;
+		},
+		dataType: "xml"
+	});
+	// load XSLT to display properties
+	$.get({
+		url: 'xslt/props-fragment.xsl',
+		success: function(data) {
+			var xp = new XSLTProcessor();
+		  	xp.importStylesheet(data);
+			// store for later use
+			window.xslt['versions'] = xp;
 		},
 		dataType: "xml"
 	});
 	$(window).on('hashchange',function(){
 		// if id provided..
 		if( window.location.hash != '' ){
+			// parse id and resource from string
 			// ..load node description
-			var id=window.location.hash.substring(1);
-			setTimeout(function(){showNodeStats(id);});
+			var a=window.location.hash.substring(1).split('/');
+			var id;
+			var res='stats';
+			if( a.length == 1 ){
+				// only id provided, use default resource
+				id = a[0];
+			}else{
+				id = a[0];
+				res = a[1];
+			}
+			setTimeout(function(){showNodeResource(id, res);});
 		}
 	});
 }
-function showNodeStats(id){
+function showNodeResource(id,res){
 	var name=$('#nodes tbody tr[data-node-id="'+id+'"] td:first-child').next().text();
 	
 	$('#info').empty();
-	$('#nhead').text('Loading '+id+'...');
+	$('#nhead').text('Loading '+id+' '+res+'...');
+	var xslt = window.xslt[res];
 	$.get({
-		url: rest_base+'/broker/node/'+id+'/stats',
+		url: rest_base+'/broker/node/'+id+'/'+res,
 		success: function(data) {
 			$('#nhead').text(name);
 			$('#info').empty();
-			var frag = window.xps.transformToFragment(data, document);
+			var frag = xslt.transformToFragment(data, document);
 			document.getElementById("info").appendChild(frag);
 		},
 		error: function(xhr, s, e){
-			$('#nhead').text("Unable to load node info");
+			$('#nhead').text("Unable to load node resource "+res);
 			$('#info').text("Error: "+s);
 		},
 		complete: function(){
@@ -66,6 +90,8 @@ function showNodeStats(id){
 		dataType: "xml"
 	});
 }
+
+
 </script>
 	</head>
 	<body>
@@ -81,11 +107,12 @@ function showNodeStats(id){
 					<td>Node</td>
 					<td>DN</td>
 					<td>Last contact</td>
+					<td>Resources</td>
 				</tr>
 			</thead>
 			<tbody></tbody>
 		</table>
-		<h2 id="nhead">Click on node id for more info</h2>
+		<h2 id="nhead">For more info, click links on the right</h2>
 		<div id="info">
 		</div>
 	</body>
