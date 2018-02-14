@@ -21,7 +21,13 @@
 		</section>
 		<hr/>
 		<section id="create">
-			<h1>Neue Anfrage</h1>
+			<h1>From existing template</h1>
+			<form id="load_template">
+				<legend>Von Vorlage laden <input type="text" id="template" /></legend>
+				<button onclick="fillFormFromTemplate($('#template').val());return false;">laden</button>
+			</form>
+			<hr/>
+			<h1>New request</h1>
 			<form id="new_request">
 				<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
 				<legend>Geplante Ausführung <input type="date" name="scheduled" required="yes" /></legend>
