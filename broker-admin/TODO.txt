@@ -1,3 +1,5 @@
+- Zeiträume bei Abfrageerstellung zusätzlich: +/- P3M, P6M, P1Y
+
 - Add interceptor method for adding request content. request/id in content must be the same as the URL id
 
 Simulate result upload:
