@@ -65,7 +65,7 @@ public class AuthCache implements Flushable{
 			}
 		}
 	}
-	// TODO also flush sometimes before close
+	// TODO also flush sometimes before close, e.g. using timer
 
 	@PreDestroy
 	@Override
