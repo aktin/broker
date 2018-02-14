@@ -30,7 +30,6 @@ function init(){
 	});
 	$('#limit_target_a').prop("checked", true).trigger("click");
 	$('#limit_target_s').click(function(){
-		// clear selection
 		$("#target").prop("disabled", false);
 	});
 	// hide new request form
