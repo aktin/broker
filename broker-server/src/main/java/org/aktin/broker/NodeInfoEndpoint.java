@@ -15,7 +15,10 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -33,6 +36,9 @@ public class NodeInfoEndpoint {
 	@Inject
 	private AuthCache auth; // for cached last contact timestamp
 
+	@Context
+	private Request request;
+	
 	/**
 	 * Retrieve a list of registered nodes with the
 	 * broker.
@@ -95,14 +101,27 @@ public class NodeInfoEndpoint {
 		if( ds == null ){
 			throw new NotFoundException();
 		}
-		ResponseBuilder resp = Response.ok(ds, ds.getContentType());
-		// set etag
+		Date lastModified = Date.from(ds.getLastModified());
+		ResponseBuilder resp = request.evaluatePreconditions(lastModified);
+		if( resp == null ){
+			// timestamps different, resource modified
+			resp = Response.ok(ds, ds.getContentType());
+			// set etag
+		}else{
+			log.info("Resource not changed "+nodeId+"/"+resourceId);
+		}
 		if( ds instanceof DigestPathDataSource ){
 			resp.tag(Base64.getUrlEncoder().encodeToString(((DigestPathDataSource)ds).sha256));
 			resp.header("Content-MD5", Base64.getUrlEncoder().encodeToString(((DigestPathDataSource)ds).md5));
 		}
 		// set last modified
-		resp.lastModified(Date.from(ds.getLastModified()));
+		resp.lastModified(lastModified);
+		// add cache control header
+		CacheControl cc = new CacheControl();
+		cc.setMustRevalidate(true);
+		cc.setMaxAge(60*5); // may cache for 5 minutes
+		resp.cacheControl(cc);
+
 		return resp.build();
 	}
 	
