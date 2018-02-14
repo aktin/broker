@@ -32,6 +32,7 @@ function annotateStatusMessage(requestId, nodeId){
 	});
 }
 
+
 function init(){
 	
 	var id=window.location.hash.substring(1);
@@ -92,7 +93,7 @@ function init(){
 					$('#target p').text('Unable to load node restriction: '+m);
 				}
 			}
-		}),
+		}).catch(function(){return $.Deferred().resolve({}).promise();}),
 		// list results
 		$.get({ 
 			url: rest_base+'/aggregator/request/'+id+'/result',
@@ -107,7 +108,7 @@ function init(){
 					$('#results tbody').append('<tr data-node-id="'+node_id+'"><td>'+node_id+'</td><td><a href="/aggregator/request/'+id+'/result/'+node_id+'">'+$(this).find('type').text()+'</a></td></tr>');
 				});
 			}
-		})
+		}).catch(function(){return $.Deferred().resolve({}).promise();})
 	).always(function(){
 		// update node names
 		if( !window.nodes ){
