@@ -6,9 +6,9 @@ function init(){
 	});
 	loadRequestList();
 	$('#new_request input[name="scheduled"]').val(new Date().toDateInputValue());
-	$('#new_request input[name="p_name"]').val('Ihr Name')
-	$('#new_request input[name="p_email"]').val('ihre.email@addres.se');
-	$('#new_request input[name="title"]').val('Titel der Abfrage')
+	$('#new_request input[name="p_name"]').val('')
+	$('#new_request input[name="p_email"]').val('');
+	$('#new_request input[name="title"]').val('')
 	$('#new_request input[name="x_ts"]').val(new Date().toDateInputValue()+"T00:00");
 	// load nodes
 	getNodes(function(nodes){
