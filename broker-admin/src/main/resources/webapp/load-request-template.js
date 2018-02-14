@@ -15,14 +15,13 @@ function fillFormFromRequestXml(xml){
 	});
 
 	// compile query contents
-	var query = $(xml).find('query')[0];
-	console.log('Query element:', query);
 	var frag = '';
 	var xs = new XMLSerializer();
-	for( var i=0; i<query.childNodes.length; i++ ){
-		frag += xs.serializeToString(query.childNodes[i]);
+	// start with first element following query/schedule
+	var el = $(xml).find('query schedule')[0].nextElementSibling;
+	for( ; el != null; el = el.nextElementSibling ){
+		frag += xs.serializeToString(el);
 	}
-	
 	$('#new_request textarea[name="xml"]').val(frag);
 
 	// fill datetime fields
