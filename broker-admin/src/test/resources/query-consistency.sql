@@ -40,10 +40,16 @@ SELECT COUNT(c) FROM (SELECT f.patient_num, f.encounter_num, COUNT(*) AS c
 ));
 
 
--- Anzahl CDAs nach Softwarversion
+-- Anzahl CDAs nach Software-Version
 INSERT INTO temp_analysis(name,value) SELECT concept_cd, count(*)
 from i2b2crcdata.observation_fact 
 where concept_cd LIKE 'AKTIN:IPVI:%'
+ group by concept_cd;
+
+-- Anzahl CDAs nach Template-Version
+INSERT INTO temp_analysis(name,value) SELECT concept_cd, count(*)
+from i2b2crcdata.observation_fact 
+where concept_cd LIKE 'AKTIN:ITTI:%'
  group by concept_cd;
 
 
@@ -69,6 +75,11 @@ SELECT MIN(start_date) FROM i2b2crcdata.observation_fact
 INSERT INTO temp_analysis(name,value) VALUES('fact_start_last', (
 SELECT MAX(start_date) FROM i2b2crcdata.observation_fact
 ));
+
+-- TODO count facts mit start-date > nächstes Jahr, oder start-date < 10 Jahren
+
+-- TODO count visits with birth-date > start-date
+
 
 -- Postgres software version
 INSERT INTO temp_analysis(name,value) VALUES('pg_version', (
