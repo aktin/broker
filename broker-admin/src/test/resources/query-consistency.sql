@@ -1,5 +1,5 @@
 CREATE TEMPORARY TABLE temp_analysis(name VARCHAR(20), value VARCHAR(255));
-INSERT INTO temp_analysis(name,value) VALUES('version','0.1');
+INSERT INTO temp_analysis(name,value) VALUES('version','0.2');
 INSERT INTO temp_analysis(name,value) VALUES('pat_total', (
  SELECT COUNT(*) FROM i2b2crcdata.patient_dimension
 ));
@@ -76,10 +76,32 @@ INSERT INTO temp_analysis(name,value) VALUES('fact_start_last', (
 SELECT MAX(start_date) FROM i2b2crcdata.observation_fact
 ));
 
--- TODO count facts mit start-date > nächstes Jahr, oder start-date < 10 Jahren
+
+-- count facts in far future
+INSERT INTO temp_analysis(name,value) VALUES('fact_far_future', (
+SELECT COUNT(*) FROM i2b2crcdata.observation_fact
+ WHERE EXTRACT(YEAR FROM start_date) > EXTRACT(YEAR FROM CURRENT_DATE) + 1
+));
+-- count facts in far past
+INSERT INTO temp_analysis(name,value) VALUES('fact_far_past', (
+SELECT COUNT(*) FROM i2b2crcdata.observation_fact
+ WHERE EXTRACT(YEAR FROM start_date) < EXTRACT(YEAR FROM CURRENT_DATE) - 15
+));
+
 
 -- TODO count visits with birth-date > start-date
+INSERT INTO temp_analysis(name,value) VALUES('adm_before_birth', (
+SELECT COUNT(*) 
+ FROM i2b2crcdata.visit_dimension v 
+  INNER JOIN i2b2crcdata.patient_dimension p 
+   ON p.patient_num=v.patient_num
+  WHERE p.birth_date > v.start_date
+));
 
+-- timestamp
+INSERT INTO temp_analysis(name,value) VALUES('current_timestamp', (
+SELECT NOW()
+));
 
 -- Postgres software version
 INSERT INTO temp_analysis(name,value) VALUES('pg_version', (
