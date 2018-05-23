@@ -14,7 +14,7 @@
 	</head>
 	<body>
 		<section>
-			<h1>Anfragen</h1>
+			<h1>Requests</h1>
 			<a href="nodes.html">View nodes</a>
 			<div id="requests">
 			</div>
@@ -23,43 +23,45 @@
 		<section id="create">
 			<h1>From existing template</h1>
 			<form id="load_template">
-				<legend>Von Vorlage laden <input type="text" id="template" /></legend>
+				<legend>Load from existing template <input type="text" id="template" /></legend>
 				<button onclick="fillFormFromTemplate($('#template').val());return false;">laden</button>
 			</form>
 			<hr/>
 			<h1>New request</h1>
 			<form id="new_request">
 				<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
-				<legend>Geplante Ausführung <input type="date" name="scheduled" required="yes" /></legend>
-				<legend>Titel <input type="text" name="title" data-jpath="title" required="yes" /></legend>
-				<legend>Beschreibung <br/><textarea name="description" data-jpath="description"></textarea></legend>
+				<legend>Planned execution <input type="date" name="scheduled" required="yes" /></legend>
+				<legend>Title <input type="text" name="title" data-jpath="title" required="yes" /></legend>
+				<legend>Description <br/><textarea name="description" data-jpath="description"></textarea></legend>
 				<fieldset>
-					<legend>Auftraggeber</legend>
+					<legend>Sponsor/Customer</legend>
 					<legend>Name <input type="text" name="p_name" data-jpath="principal name" required="true" /></legend>
-					<legend>Organisation <input type="text" data-jpath="principal organisation" name="p_org"/></legend>
+					<legend>Organization <input type="text" data-jpath="principal organisation" name="p_org"/></legend>
 					<legend>E-Mail <input type="text" name="p_email" data-jpath="principal email" required="true" /></legend>
 				</fieldset>
 				<fieldset id="x_exec">
-					<legend>Zeitraum (einmalige Ausführung)</legend>
+					<legend>Zeitraum (single execution)</legend>
 					<legend>Zeitraum <select name="x_dur" data-jpath="schedule duration">
-						<option value="-P6M">Zurückliegende 6 Monate</option>
-						<option value="-P3M">Zurückliegende 3 Monate</option>
-						<option value="-P1M">Zurückliegender Monat</option>
-						<option value="-P7D">Zurückliegende Woche</option>
-						<option value="P1M">Folgender Monat</option>
-						<option value="P7D">Folgende 7 Tage</option>
+						<option value="-P24M">previous 24 months</option>
+						<option value="-P12M">previous 12 months</option>
+						<option value="-P6M">previous 6 months</option>
+						<option value="-P3M">previous 3 months</option>
+						<option value="-P1M">previous month</option>
+						<option value="-P7D">previous week</option>
+						<option value="P1M">next month</option>
+						<option value="P7D">next 7 days</option>
 					</select></legend>
 				</fieldset>
 				<fieldset>
-					<legend>Notaufnahmen</legend>
-					<legend>alle<input type="radio" id="limit_target_a" name="limit_target" /></legend>
-					<legend>ausgewählte<input type="radio" id="limit_target_s" name="limit_target" /></legend>
+					<legend>Recipients</legend>
+					<legend>all<input type="radio" id="limit_target_a" name="limit_target" /></legend>
+					<legend>selected<input type="radio" id="limit_target_s" name="limit_target" /></legend>
 					<select name="target" id="target" multiple="multiple" style="height:10em">
 					</select>
 				</fieldset>
 				
 				<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>
-				<button>Neue Anfrage</button>
+				<button>New Request</button>
 			</form>
 			<form id="hidden_fields" style="display:none">
 					<legend id="x_intvl">Intervall (ca.)<input type="text" name="x_intvl" data-jpath="schedule interval" pattern="P[0-9]+[DM]" /></legend>
