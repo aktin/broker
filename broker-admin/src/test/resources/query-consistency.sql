@@ -1,4 +1,4 @@
-CREATE TEMPORARY TABLE temp_analysis(name VARCHAR(20), value VARCHAR(255));
+CREATE TEMPORARY TABLE temp_analysis(name VARCHAR(255), value VARCHAR(255));
 INSERT INTO temp_analysis(name,value) VALUES('version','0.2');
 INSERT INTO temp_analysis(name,value) VALUES('pat_total', (
  SELECT COUNT(*) FROM i2b2crcdata.patient_dimension
