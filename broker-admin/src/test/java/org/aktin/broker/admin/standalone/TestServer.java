@@ -1,12 +1,23 @@
 package org.aktin.broker.admin.standalone;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
 
+import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
+import org.aktin.broker.xml.RequestStatus;
 
 public class TestServer implements Configuration{
+	private HttpServer http;
+	
 	@Override
 	public InputStream readAPIKeyProperties() {
 		return getClass().getResourceAsStream("/api-keys.properties");
@@ -51,36 +62,94 @@ public class TestServer implements Configuration{
 			System.exit(-1);
 			return;
 		}
+		// define password for test instance
+		System.setProperty("aktin.broker.password", "test");
 
 		
 		// load hsql driver
 		Class.forName("org.hsqldb.jdbcDriver");
 		
 		// start server
-		HttpServer server = new HttpServer(new TestServer());
+		TestServer server = new TestServer();
+		HttpServer http = new HttpServer(server);
 		try{
-			server.start(new InetSocketAddress(port));
-			System.err.println("Broker service at: "+server.getBrokerServiceURI());
-			// add some nodes
-			BrokerClient c = new BrokerClient(server.getBrokerServiceURI());
-			c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey123"));
-			try( InputStream in = TestServer.class.getResourceAsStream("/stats-example1.xml") ){
-				c.putMyResource("stats", "application/xml", in);
-			}
-			try( InputStream in = TestServer.class.getResourceAsStream("/properties-example1.xml") ){
-				c.putMyResource("versions", "application/xml", in);
-			}
-			c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey567"));
-			try( InputStream in = TestServer.class.getResourceAsStream("/stats-example2.xml") ){
-				c.putMyResource("stats", "application/xml", in);
-			}
-			try( InputStream in = TestServer.class.getResourceAsStream("/properties-example2.xml") ){
-				c.putMyResource("versions", "application/xml", in);
-			}
-			server.join();
+			http.start(new InetSocketAddress(port));
+			server.http = http;
+			System.err.println("Broker service at: "+http.getBrokerServiceURI());
+			
+
+			server.addDemoRequests();
+			server.simulateNodes();
+			http.join();
 		}finally{
-			server.destroy();
+			http.destroy();
 		}
+	}
+
+	private URI getAdminBaseURI() {
+		return http.getBrokerServiceURI().resolve("../admin");
+	}
+
+	private String retrieveAdminAuthToken() throws IOException {
+		HttpURLConnection c = (HttpURLConnection)getAdminBaseURI().resolve("auth/login").toURL().openConnection();
+		c.setRequestMethod("POST");
+		c.setDoOutput(true);
+		c.setDoInput(true);
+		c.setRequestProperty("Content-type", "application/xml");
+		try( OutputStreamWriter out = new OutputStreamWriter(c.getOutputStream()) ){
+			out.write("<credentials><username>admin</username><password>test</password></credentials>");
+		}
+		if( c.getResponseCode() != 200 ) {
+			throw new IOException("Failed to authenticate as admin/test. HTTP response code "+c.getResponseCode());
+		}
+		try( InputStream in = c.getInputStream();
+				BufferedReader reader = new BufferedReader(new InputStreamReader(in))){
+			return reader.readLine();
+		}
+	}
+
+	private void addDemoRequests() throws MalformedURLException, IOException {
+		// get authentication token
+		String authToken = retrieveAdminAuthToken();
+		System.out.println("Retrieved token for admin authentication: "+authToken);
+		BrokerAdmin admin = new BrokerAdmin(http.getBrokerServiceURI());
+		admin.setClientAuthenticator(HttpApiKeyAuth.newBearer(authToken));
+		
+		if( admin.listAllRequests().isEmpty() ) {
+			// make sure at least one test request exists
+			int num = admin.createRequest("application/x.test.request", "test 1");
+			admin.publishRequest(num);
+			
+			num = admin.createRequest("application/x.test.request", "test 2");
+			admin.publishRequest(num);
+		}
+
+	}
+
+	public void simulateNodes() throws IOException {
+		// add some nodes
+		BrokerClient c = new BrokerClient(http.getBrokerServiceURI());
+		c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey123"));
+		try( InputStream in = TestServer.class.getResourceAsStream("/stats-example1.xml") ){
+			c.putMyResource("stats", "application/xml", in);
+		}
+		try( InputStream in = TestServer.class.getResourceAsStream("/properties-example1.xml") ){
+			c.putMyResource("versions", "application/xml", in);
+		}
+		// retrieve request 0
+		c.postRequestStatus(0, RequestStatus.retrieved);
+		c.postRequestFailed(0, "Request failed test", new RuntimeException("Test exception"));
+		
+		c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey567"));
+		try( InputStream in = TestServer.class.getResourceAsStream("/stats-example2.xml") ){
+			c.putMyResource("stats", "application/xml", in);
+		}
+		try( InputStream in = TestServer.class.getResourceAsStream("/properties-example2.xml") ){
+			c.putMyResource("versions", "application/xml", in);
+		}
+		c.postRequestStatus(0, RequestStatus.retrieved);
+		c.postRequestStatus(0, RequestStatus.interaction);
+		
 	}
 
 
