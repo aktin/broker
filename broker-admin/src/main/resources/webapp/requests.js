@@ -4,12 +4,13 @@ function init(){
 		e.preventDefault();
 		addNewRequest();
 	});
+	$('#submit_request').on('submit', function(e){
+		e.preventDefault();
+		addNewRequest();
+	});
+	
 	loadRequestList();
-	$('#new_request input[name="scheduled"]').val(new Date().toDateInputValue());
-	$('#new_request input[name="p_name"]').val('')
-	$('#new_request input[name="p_email"]').val('');
-	$('#new_request input[name="title"]').val('')
-	$('#new_request input[name="x_ts"]').val(new Date().toDateInputValue()+"T00:00");
+	initializeForm();
 	// load nodes
 	getNodes(function(nodes){
 		for( var i=0; i<nodes.length; i++ ){
@@ -38,29 +39,6 @@ function init(){
 		$('#create').show();
 	}));
 	$('#create').hide();
-	// add button to set date
-	$('#new_request input[name="reference"]').after($('<a>Last month</a>').click(function(){
-		var d = new Date();
-		d.setDate(1);
-		console.log('Setting reference date',d);
-		$('#new_request input[name="reference"]').val(d.toDateInputValue()+"T00:00:00");
-	}));
-	// switch between single/repeating executions
-	$('#x_exec legend:first-child').css('cursor','pointer').click(function(){
-		var rep = ($('#x_qid').parent('fieldset').length == 1);
-		var target;
-		if( rep ){
-			// switch to single
-			target = $('#hidden_fields');
-			$(this).text('Single execution (click to change)');
-		}else{
-			// switch to repeating
-			target = $('#x_exec');
-			$(this).text('Repeated execution (click to change)');
-		}
-		$('#x_intvl').detach().appendTo(target);
-		$('#x_qid').detach().appendTo(target);
-	});
 	
 }
 
@@ -91,6 +69,9 @@ function loadRequestList(){
 				}
 				var el = $('<div class="'+cls+'"><span>request id='+id+'</span> <span class="del">x</span> <span class="show">s</span></div>');
 				el.data('id', id);
+				var req_type = $(this).find('type').text();
+				el.data('type', req_type);
+				console.log('Request type for',id,req_type);
 				$('#requests').append( el );
 			});
 			$('#requests .del').click(function(){
@@ -126,21 +107,7 @@ function localTimeToISO(local_str){
 	local_str += "Z"; // XXX 
 	return local_str;
 }
-function buildRequestDefinitionXml(requestId, fragment){
-	var xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
-	$(xml).find('scheduled').text(localTimeToISO($('#new_request input[name="scheduled"]').val()));
-	$(xml).find('reference').text(localTimeToISO($('#new_request input[name="reference"]').val()));
-	var query = $(xml).find('query')[0];
-	// use form elements
-	$('#new_request *').filter(':input').each(function(){
-		var jpath = $(this).data('jpath');
-		if( jpath == '' )return;
-		$(xml).find(jpath).text($(this).val());
-	});
-	// append XML fragment to query
-	$(query).append($(fragment).find('*').eq(0));
-	return xml;
-}
+
 
 function allocateRequestId(success, error){
 			$.post({
@@ -182,13 +149,12 @@ function buildNodesXml(nodeIds){
 function setRequestDefinition(location, id, success_fn, error_fn){
 	// load XML syntax fragment
 	// content was already verified to be valid XML in addNewRequest()
-	var fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
-	var data = buildRequestDefinitionXml(id, fragment);
+	var data = compileForm(id);
 	$.ajax({ 
 		type: 'PUT', 
 		data: data,
 		processData: false,
-		contentType: 'application/vnd.aktin.query.request+xml', // use aktin mime type
+		contentType: getFormMediaType(), // use aktin mime type
 		url: location,
 		success: function() {
 			// definition submitted
@@ -225,27 +191,19 @@ function setRequestDefinition(location, id, success_fn, error_fn){
 	});
 
 }
+
 function addNewRequest(){
-	// validate request syntax
-	try{
-		var fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
-	}catch( e ){
-		try{
-			var ta = $('#new_request textarea[name="xml"]')[0];
-			ta.setCustomValidity("No valid XML!")
-			ta.reportValidity();
-		}catch( e ){
-			// HTML5 form validation reporting failed, display alert box
-			alert('query definition not valid XML');
-		}
+
+	if( validateForm() == false ){
 		return;
 	}
-
 	// disable submit button
-	$('#new_request button').prop('disabled',true);
+	// TODO XXX make sure the form can not be submitted by pressing enter in a field
+	
+	$('#submit_request button').prop('disabled',true);
 	allocateRequestId(function(location, id){
 		// success
-		$('#new_request button').prop('disabled',false);
+		$('#submit_request button').prop('disabled',false);
 		// publish immediately
 		console.log('Publishing request '+location);
 		$.post(location+'/publish');	
@@ -261,4 +219,87 @@ function addNewRequest(){
 		alert('Unable to create new request id');
 	});
 }
+
+
+// executed a single time the template form has been injected
+function initializeForm(){
+	$('#new_request input[name="scheduled"]').val(new Date().toDateInputValue());
+	$('#new_request input[name="p_name"]').val('')
+	$('#new_request input[name="p_email"]').val('');
+	$('#new_request input[name="title"]').val('')
+	$('#new_request input[name="x_ts"]').val(new Date().toDateInputValue()+"T00:00");
+
+	// add button to set date
+	$('#new_request input[name="reference"]').after($('<a>Last month</a>').click(function(){
+		var d = new Date();
+		d.setDate(1);
+		console.log('Setting reference date',d);
+		$('#new_request input[name="reference"]').val(d.toDateInputValue()+"T00:00:00");
+	}));
+	// switch between single/repeating executions
+	$('#x_exec legend:first-child').css('cursor','pointer').click(function(){
+		var rep = ($('#x_qid').parent('fieldset').length == 1);
+		var target;
+		if( rep ){
+			// switch to single
+			target = $('#hidden_fields');
+			$(this).text('Single execution (click to change)');
+		}else{
+			// switch to repeating
+			target = $('#x_exec');
+			$(this).text('Repeated execution (click to change)');
+		}
+		$('#x_intvl').detach().appendTo(target);
+		$('#x_qid').detach().appendTo(target);
+	});
+
+}
+function buildRequestDefinitionXml(requestId, fragment){
+	var xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
+	$(xml).find('scheduled').text(localTimeToISO($('#new_request input[name="scheduled"]').val()));
+	$(xml).find('reference').text(localTimeToISO($('#new_request input[name="reference"]').val()));
+	var query = $(xml).find('query')[0];
+	// use form elements
+	$('#new_request *').filter(':input').each(function(){
+		var jpath = $(this).data('jpath');
+		if( jpath == '' )return;
+		$(xml).find(jpath).text($(this).val());
+	});
+	// append XML fragment to query
+	$(query).append($(fragment).find('*').eq(0));
+	return xml;
+}
+
+// build request XML from form data. use the given requestId
+function compileForm(requestId){
+	var fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
+	var data = buildRequestDefinitionXml(requestId, fragment);
+	return data;
+}
+
+function getFormMediaType(){
+	return 'application/vnd.aktin.query.request+xml';
+}
+
+
+// executed to validate the form (e.g. when submit button is pressed)
+function validateForm(){
+	// validate request syntax
+	try{
+		var fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
+	}catch( e ){
+		try{
+			var ta = $('#new_request textarea[name="xml"]')[0];
+			ta.setCustomValidity("No valid XML!")
+			ta.reportValidity();
+		}catch( e ){
+			// HTML5 form validation reporting failed, display alert box
+			alert('query definition not valid XML');
+		}
+		return false;
+	}
+	return true;
+}
+
+
 

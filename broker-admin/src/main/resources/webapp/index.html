@@ -28,6 +28,15 @@
 			</form>
 			<hr/>
 			<h1>New request</h1>
+			<form id="node_limit">
+				<fieldset>
+					<legend>Recipients</legend>
+					<legend>all<input type="radio" id="limit_target_a" name="limit_target" /></legend>
+					<legend>selected<input type="radio" id="limit_target_s" name="limit_target" /></legend>
+					<select name="target" id="target" multiple="multiple" style="height:10em">
+					</select>
+				</fieldset>
+			</form>
 			<form id="new_request">
 				<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
 				<legend>Planned execution <input type="date" name="scheduled" required="yes" /></legend>
@@ -52,20 +61,15 @@
 						<option value="P7D">next 7 days</option>
 					</select></legend>
 				</fieldset>
-				<fieldset>
-					<legend>Recipients</legend>
-					<legend>all<input type="radio" id="limit_target_a" name="limit_target" /></legend>
-					<legend>selected<input type="radio" id="limit_target_s" name="limit_target" /></legend>
-					<select name="target" id="target" multiple="multiple" style="height:10em">
-					</select>
+				<fieldset id="hidden_fields" style="display:none">
+						<legend id="x_intvl">Intervall (ca.)<input type="text" name="x_intvl" data-jpath="schedule interval" pattern="P[0-9]+[DM]" /></legend>
+						<legend id="x_qid">Query ID<input type="text" id="x_qid" name="x_qid" data-jpath="schedule id" /></legend>
 				</fieldset>
 				
 				<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>
-				<button>New Request</button>
 			</form>
-			<form id="hidden_fields" style="display:none">
-					<legend id="x_intvl">Intervall (ca.)<input type="text" name="x_intvl" data-jpath="schedule interval" pattern="P[0-9]+[DM]" /></legend>
-					<legend id="x_qid">Query ID<input type="text" id="x_qid" name="x_qid" data-jpath="schedule id" /></legend>
+			<form id="submit_request">
+				<button>New Request</button>
 			</form>
 		</section>
 	</body>
