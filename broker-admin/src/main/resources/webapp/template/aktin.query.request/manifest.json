@@ -1,0 +1,4 @@
+{
+	type: 'application/vnd.aktin.query.request+xml',
+	title: 'AKTIN query request'
+}

@@ -5,28 +5,6 @@ function isoToLocalDate(iso){
 	return iso.substring(0,19);
 }
 
-function fillFormFromRequestXml(xml){
-	// fill form elements with xml info
-	$('#new_request *').filter(':input').each(function(){
-		var jpath = $(this).data('jpath');
-		if( jpath == '' )return;
-		$(this).val( $(xml).find(jpath).text() );
-	});
-
-	// compile query contents
-	var frag = '';
-	var xs = new XMLSerializer();
-	// start with first element following query/schedule
-	var el = $(xml).find('query schedule')[0].nextElementSibling;
-	for( ; el != null; el = el.nextElementSibling ){
-		frag += xs.serializeToString(el);
-	}
-	$('#new_request textarea[name="xml"]').val(frag);
-
-	// fill datetime fields
-	$('#new_request input[name="scheduled"]').val(isoToLocalDate($(xml).find('scheduled').text()).substring(0,10));
-	$('#new_request input[name="reference"]').val(isoToLocalDate($(xml).find('reference').text()));
-}
 
 function fillNodeRestrictionFromTemplate(id){
 
@@ -72,7 +50,7 @@ function fillFormFromTemplate(id){
 		success: function(data){
 			var fragment = $.parseXML(data);
 			console.log('Request definition retrieved for '+id, fragment);
-			fillFormFromRequestXml(fragment);
+			fillForm(fragment);
 		},
 		error: function(x, m, t){
 			alert('Unable to load request with id '+id);

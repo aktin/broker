@@ -1,0 +1,29 @@
+				<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
+				<legend>Planned execution <input type="date" name="scheduled" required="yes" /></legend>
+				<legend>Title <input type="text" name="title" data-jpath="title" required="yes" /></legend>
+				<legend>Description <br/><textarea name="description" data-jpath="description"></textarea></legend>
+				<fieldset>
+					<legend>Sponsor/Customer</legend>
+					<legend>Name <input type="text" name="p_name" data-jpath="principal name" required="true" /></legend>
+					<legend>Organization <input type="text" data-jpath="principal organisation" name="p_org"/></legend>
+					<legend>E-Mail <input type="text" name="p_email" data-jpath="principal email" required="true" /></legend>
+				</fieldset>
+				<fieldset id="x_exec">
+					<legend>Zeitraum (single execution)</legend>
+					<legend>Zeitraum <select name="x_dur" data-jpath="schedule duration">
+						<option value="-P24M">previous 24 months</option>
+						<option value="-P12M">previous 12 months</option>
+						<option value="-P6M">previous 6 months</option>
+						<option value="-P3M">previous 3 months</option>
+						<option value="-P1M">previous month</option>
+						<option value="-P7D">previous week</option>
+						<option value="P1M">next month</option>
+						<option value="P7D">next 7 days</option>
+					</select></legend>
+				</fieldset>
+				<fieldset id="hidden_fields" style="display:none">
+						<legend id="x_intvl">Intervall (ca.)<input type="text" name="x_intvl" data-jpath="schedule interval" pattern="P[0-9]+[DM]" /></legend>
+						<legend id="x_qid">Query ID<input type="text" id="x_qid" name="x_qid" data-jpath="schedule id" /></legend>
+				</fieldset>
+				
+				<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>
