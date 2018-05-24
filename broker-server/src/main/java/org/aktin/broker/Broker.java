@@ -7,6 +7,8 @@ public class Broker {
 		MyBrokerEndpoint.class,
 		RequestAdminEndpoint.class,
 		NodeInfoEndpoint.class,
-		AggregatorEndpoint.class
+		AggregatorEndpoint.class,
+		ExportEndpoint.class,
+		DownloadEndpoint.class
 	};
 }
