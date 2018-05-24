@@ -48,9 +48,8 @@ function fillFormFromTemplate(id){
 		url: rest_base+'/broker/request/'+id,
 		dataType: 'text',
 		success: function(data){
-			var fragment = $.parseXML(data);
-			console.log('Request definition retrieved for '+id, fragment);
-			fillForm(fragment);
+			console.log('Request definition retrieved for '+id, data);
+			fillForm(data);
 		},
 		error: function(x, m, t){
 			alert('Unable to load request with id '+id);

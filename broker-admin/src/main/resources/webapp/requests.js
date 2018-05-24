@@ -9,12 +9,7 @@ function init(){
 		addNewRequest();
 	});
 	// load form script first, then the form html, initialize form afterwards
-	$.getScript('template/aktin.query.request/script.js', function(){
-		$('#new_request').load('template/aktin.query.request/form.html', function(){
-			initializeForm();
-		});
-	});
-	
+	loadTemplateTypes();
 	loadRequestList();
 	// load nodes
 	getNodes(function(nodes){
@@ -39,10 +34,18 @@ function init(){
 		$("#target").prop("disabled", false);
 	});
 	// hide new request form
-	$('#create').before($('<button/>',{text:'Show form'}).click(function(){
-		$(this).remove();
-		$('#create').show();
-	}));
+	$('#choose_template button').click(function(e){
+		e.preventDefault();
+		var tt = $('#template_type').val();
+		$(this).parent().remove();
+		$.getScript('template/'+tt+'/script.js', function(){
+			$('#new_request').load('template/'+tt+'/form.html', function(){
+				initializeForm();
+				$('#create').show();
+			});
+		});
+
+	});
 	$('#create').hide();
 	
 }
@@ -55,6 +58,20 @@ Date.prototype.toDateInputValue = (function(){
 	local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
 	return local.toJSON().slice(0,10);
 });
+
+function loadTemplateTypes(){
+	$.getJSON('template/types.json', function(data){
+		$.each(data, function(i, key){
+			$.getJSON('template/'+key+'/manifest.json', function(manifest){
+				$('#template_type').append($('<option>', {
+    				value: key,
+    				text: manifest.title
+				}));
+			});
+		});
+	});
+}
+
 function loadRequestList(){
 	$.get({
 		url: rest_base+'/broker/request',

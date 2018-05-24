@@ -79,7 +79,9 @@ function validateForm(){
 	return true;
 }
 
-function fillForm(xml){
+function fillForm(data){
+	var xml = $.parseXML(data);
+	
 	// fill form elements with xml info
 	$('#new_request *').filter(':input').each(function(){
 		var jpath = $(this).data('jpath');
