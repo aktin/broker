@@ -41,15 +41,33 @@ function fillNodeRestrictionFromTemplate(id){
 	});
 }
 
+function isContentTypeCompatible(contentType, typeSpec){
+	var p = contentType.split(';');
+	if( p.length > 0 ){
+		contentType = p[0];
+	}
+	// TODO compare media type compatibility instead of equality
+	return( contentType == typeSpec );	
+}
+
 // fill form from existing request template
 function fillFormFromTemplate(id){
 	// load request definition
 	$.get({
 		url: rest_base+'/broker/request/'+id,
 		dataType: 'text',
-		success: function(data){
+		success: function(data, status, xhr){
 			console.log('Request definition retrieved for '+id, data);
-			fillForm(data);
+			var contentType = xhr.getResponseHeader('content-type');
+			// remove charset info
+			
+			if( isContentTypeCompatible(contentType,getFormMediaType()) ){
+				fillForm(data, contentType, id);
+				fillNodeRestrictionFromTemplate(id);
+			}else{
+				alert('Form not compatible with request '+id);
+				console.log('Request type',contentType,'Form type',getFormMediaType());
+			}
 		},
 		error: function(x, m, t){
 			alert('Unable to load request with id '+id);
@@ -57,7 +75,6 @@ function fillFormFromTemplate(id){
 		}
 		
 	});
-	fillNodeRestrictionFromTemplate(id);
 }
 
 

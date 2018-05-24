@@ -24,8 +24,8 @@ function validateForm(){
 	return true;
 }
 
-function fillForm(xml){
-	$('#new_request input[name="text"]').val(xml);
+function fillForm(data, contentType, id){
+	$('#new_request input[name="text"]').val(data);
 }
 
 

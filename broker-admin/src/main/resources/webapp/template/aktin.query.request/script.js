@@ -79,7 +79,7 @@ function validateForm(){
 	return true;
 }
 
-function fillForm(data){
+function fillForm(data, contentType, id){
 	var xml = $.parseXML(data);
 	
 	// fill form elements with xml info
