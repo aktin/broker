@@ -1,8 +1,11 @@
 package org.aktin.broker;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
@@ -30,6 +33,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.JAXBException;
 
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.notify.BrokerWebsocket;
@@ -306,4 +310,13 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		return db;
 	}
 
+	@GET
+	@Path("{id}/bundle")
+	@Produces("application/zip")
+	public InputStream downloadBundle(@PathParam("id") int requestId) throws IOException, JAXBException {
+		RequestBundleExport export = new RequestBundleExport(getBroker());
+		java.nio.file.Path path = export.createBundle(requestId);
+		log.info("Export bundle created at "+path);
+		return Files.newInputStream(path, StandardOpenOption.DELETE_ON_CLOSE);
+	}
 }
