@@ -60,15 +60,14 @@ Date.prototype.toDateInputValue = (function(){
 });
 
 function loadTemplateTypes(){
-	$.getJSON('template/types.json', function(data){
-		$.each(data, function(i, key){
-			$.getJSON('template/'+key+'/manifest.json', function(manifest){
+	$.getJSON(rest_base+'/template', function(data){
+		console.log("Template",data);
+		for( key in data ){
 				$('#template_type').append($('<option>', {
     				value: key,
-    				text: manifest.title
-				}));
-			});
-		});
+    				text: data[key].title
+				}));		
+		}
 	});
 }
 

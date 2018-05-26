@@ -14,6 +14,7 @@ import javax.sql.DataSource;
 import org.aktin.broker.Broker;
 import org.aktin.broker.admin.auth.AuthEndpoint;
 import org.aktin.broker.admin.auth.AuthFilter;
+import org.aktin.broker.admin.rest.FormTemplateEndpoint;
 import org.aktin.broker.admin.rest.ValidatorEndpoint;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.db.LiquibaseWrapper;
@@ -68,6 +69,7 @@ public class HttpServer {
 		// register admin endpoints
 		rc.register(AuthEndpoint.class);
 		rc.register(ValidatorEndpoint.class);
+		rc.register(FormTemplateEndpoint.class);
 	}
 
 	private void initialiseDatabase() throws SQLException{
