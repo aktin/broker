@@ -8,6 +8,7 @@ public class ResultInfo {
 
 	/**
 	 * Node id which submitted the result
+	 * XXX change to int?
 	 */
 	public String node;
 	/**
