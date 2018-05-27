@@ -11,10 +11,13 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.xml.bind.JAXBException;
 
 import org.aktin.broker.db.AggregatorBackend;
 import org.aktin.broker.db.BrokerBackend;
+import org.aktin.broker.download.Download;
+import org.aktin.broker.download.DownloadManager;
 
 /**
  * Create export bundles for download
@@ -23,22 +26,23 @@ import org.aktin.broker.db.BrokerBackend;
  */
 @Path("/broker/export")
 public class ExportEndpoint {
-		private static final Logger log = Logger.getLogger(ExportEndpoint.class.getName());
 		@Inject
 		private BrokerBackend broker;
 		@Inject
 		private AggregatorBackend aggregator;
 
+		@Inject
+		private DownloadManager downloads;
 
 		@GET
 		@Path("request-bundle/{id}")
-		@Produces("application/zip")
-		public InputStream downloadBundle(@PathParam("id") int requestId) throws IOException, JAXBException {
+		@Produces(MediaType.TEXT_PLAIN)
+		public String downloadBundle(@PathParam("id") int requestId) throws IOException, JAXBException {
 			RequestBundleExport export = new RequestBundleExport(broker);
 			export.setAggregator(aggregator);
-			java.nio.file.Path path = export.createBundle(requestId);
-			log.info("Export bundle created at "+path);
-			return Files.newInputStream(path, StandardOpenOption.DELETE_ON_CLOSE);
+			Download d = downloads.createTemporaryFile("application/zip");
+			export.createBundle(requestId, d.getOutputStream());
+			return d.getId().toString();
 		}
 
 }

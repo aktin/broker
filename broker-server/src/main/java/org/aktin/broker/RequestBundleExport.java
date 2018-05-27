@@ -77,11 +77,11 @@ public class RequestBundleExport {
 	public void setAggregator(AggregatorBackend aggregator) {
 		this.aggregator = aggregator;
 	}
-	public Path createBundle(int requestId) throws IOException {
-		Path temp = Files.createTempFile("request-bundle", ".zip");
-		createBundle(requestId, temp);
-		return temp;
-	}
+//	public Path createBundle(int requestId) throws IOException {
+//		Path temp = Files.createTempFile("request-bundle", ".zip");
+//		createBundle(requestId, temp);
+//		return temp;
+//	}
 
 	private void writeStatusList(int requestId, ZipOutputStream zip) throws SQLException, JAXBException, IOException {
 		List<RequestStatusInfo> list = backend.listRequestNodeStatus(requestId);
@@ -210,10 +210,10 @@ public class RequestBundleExport {
 		}
 
 	}
-	private void createBundle(int requestId, Path path) throws IOException {
-		
-		try( ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(path)) ){
-			// out.setComment
+
+	public void createBundle(int requestId, OutputStream dest) throws IOException {
+		try( ZipOutputStream out = new ZipOutputStream(dest) ){
+		// out.setComment
 			out.setComment("Bundle for request "+requestId);
 			writeStatusList(requestId, out);
 			// node restrictions
@@ -233,6 +233,12 @@ public class RequestBundleExport {
 			}
 		} catch (SQLException | JAXBException e) {
 			throw new IOException(e);
+		}		
+	}
+	public void createBundle(int requestId, Path path) throws IOException {
+		
+		try( OutputStream out = Files.newOutputStream(path) ){
+			createBundle(requestId, out);
 		}
 	}
 }

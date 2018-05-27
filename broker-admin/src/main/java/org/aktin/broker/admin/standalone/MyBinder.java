@@ -12,6 +12,7 @@ import org.aktin.broker.db.AggregatorBackend;
 import org.aktin.broker.db.AggregatorImpl;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.db.BrokerImpl;
+import org.aktin.broker.download.DownloadManager;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 
@@ -41,7 +42,7 @@ public class MyBinder extends AbstractBinder{
 		bind(aggregator).to(AggregatorBackend.class);
 		bind(new AuthCache(broker)).to(AuthCache.class);
 		bind(new RequestTypeManager()).to(RequestTypeManager.class);
-
+		bind(new DownloadManager()).to(DownloadManager.class);
 
 		bind(new TokenManager()).to(TokenManager.class);
 		// bind 
