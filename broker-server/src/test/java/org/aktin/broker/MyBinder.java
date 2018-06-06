@@ -10,6 +10,7 @@ import org.aktin.broker.db.AggregatorBackend;
 import org.aktin.broker.db.AggregatorImpl;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.db.BrokerImpl;
+import org.aktin.broker.download.DownloadManager;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 
@@ -26,6 +27,11 @@ public class MyBinder extends AbstractBinder{
 		// singleton
 
 		try {
+			// download manager
+			DownloadManager downloads = new DownloadManager();
+			downloads.setTempDirectory(Paths.get("target/download-temp"));
+			bind(downloads).to(DownloadManager.class);
+
 			// broker
 			BrokerBackend backend = new BrokerImpl(ds, Paths.get("target/broker-data"));
 			backend.clearDataDirectory();
