@@ -30,6 +30,10 @@ public class PathDataSource implements DateDataSource {
 	}
 
 	@Override
+	public String toString() {
+		return "PathDataSource(path="+path.toString()+", type="+type+")";
+	}
+	@Override
 	public InputStream getInputStream() throws IOException {
 		return Files.newInputStream(path);
 	}
@@ -57,4 +61,7 @@ public class PathDataSource implements DateDataSource {
 		}
 	}
 
+	public Path getPath() {
+		return path;
+	}
 }
