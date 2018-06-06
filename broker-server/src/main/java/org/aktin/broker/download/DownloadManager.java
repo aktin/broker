@@ -7,7 +7,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Singleton;
@@ -69,8 +68,11 @@ public class DownloadManager {
 		Iterator<Entry<UUID,Download>> i = store.entrySet().iterator();
 		long now = System.currentTimeMillis();
 		while( i.hasNext() ) {
-			if( i.next().getValue().getExpireTimestamp() < now ) {
+			Download entry = i.next().getValue();
+			if( entry.getExpireTimestamp() < now ) {
+				log.info("Expired download "+entry.getId());
 				i.remove();
+				entry.postRemovalCleanup();
 			}
 		}
 	}

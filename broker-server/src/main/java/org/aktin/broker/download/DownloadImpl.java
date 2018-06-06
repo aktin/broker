@@ -1,6 +1,5 @@
 package org.aktin.broker.download;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,9 +7,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DownloadImpl implements Download{
+	private static final Logger log = Logger.getLogger(DownloadImpl.class.getName());
 	boolean deletePath;
 	private Path path;
 	/** unique download id */
@@ -38,7 +39,6 @@ public class DownloadImpl implements Download{
 
 	@Override
 	public Instant getLastModified() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -71,6 +71,20 @@ public class DownloadImpl implements Download{
 	@Override
 	public long getExpireTimestamp() {
 		return expiration;
+	}
+
+	@Override
+	public void postRemovalCleanup() {
+		if( deletePath ) {
+			try {
+				Files.delete(path);
+				log.info("Download "+id+" file "+path+" deleted");
+			} catch (IOException e) {
+				log.log(Level.WARNING, "Doanload "+id+" failed to delete file "+path, e);
+			}
+		}else {
+			log.info("Download "+id+" removed. File remaining: "+path);
+		}
 	}
 
 }
