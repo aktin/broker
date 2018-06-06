@@ -42,13 +42,21 @@ public class DownloadManager {
 		expirationMillis = 1000*60*10; // 10 minutes
 	}
 
+	public DownloadManager(Path tempDir) throws IOException {
+		this();
+		setTempDirectory(tempDir);
+	}
 	/**
 	 * Set the directory where temporary downloads will be
 	 * created and stored before they expire.
+	 * If the specified path does not exist, the directory will
+	 * be created.
 	 * @param dir path to store temporary download files
+	 * @throws IOException 
 	 */
-	public void setTempDirectory(Path dir) {
+	public void setTempDirectory(Path dir) throws IOException {
 		this.tempDir = dir;
+		Files.createDirectories(tempDir);
 	}
 
 	/**
@@ -94,7 +102,14 @@ public class DownloadManager {
 	 * @throws IOException IO error
 	 */
 	public Download createTemporaryFile(String mediaType) throws IOException {
-		Path temp = Files.createTempFile(tempDir, "download",null);
+		Path temp;
+		if( tempDir != null ) {
+			//use specified temporary directory
+			temp = Files.createTempFile(tempDir, "download",null);
+		}else {
+			//use system temporary directory
+			temp = Files.createTempFile("download",null);
+		}
 		PathDataSource ds = new PathDataSource(temp, mediaType, Instant.now());
 		DataSourceDownload download = new DataSourceDownload(ds, true);
 		addDownload(download);

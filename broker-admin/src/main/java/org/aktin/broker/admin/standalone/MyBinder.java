@@ -22,6 +22,7 @@ public class MyBinder extends AbstractBinder{
 	private Configuration config;
 	private BrokerBackend broker;
 	private AggregatorBackend aggregator;
+	private DownloadManager downloads;
 	
 	public MyBinder(DataSource ds,Configuration config){
 		this.ds = ds;
@@ -35,6 +36,8 @@ public class MyBinder extends AbstractBinder{
 			broker = new BrokerImpl(ds, Paths.get(config.getBrokerDataPath()));
 			// set aggregator data directory
 			aggregator = new AggregatorImpl(ds, Paths.get(config.getAggregatorDataPath()));
+			// download manager
+			downloads = new DownloadManager(Paths.get(config.getTempDownloadPath()));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -42,7 +45,7 @@ public class MyBinder extends AbstractBinder{
 		bind(aggregator).to(AggregatorBackend.class);
 		bind(new AuthCache(broker)).to(AuthCache.class);
 		bind(new RequestTypeManager()).to(RequestTypeManager.class);
-		bind(new DownloadManager()).to(DownloadManager.class);
+		bind(downloads).to(DownloadManager.class);
 
 		bind(new TokenManager()).to(TokenManager.class);
 		// bind 

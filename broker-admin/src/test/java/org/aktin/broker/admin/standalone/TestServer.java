@@ -38,6 +38,11 @@ public class TestServer implements Configuration{
 	}
 
 	@Override
+	public String getTempDownloadPath() {
+		return "target/download-temp";
+	}
+
+	@Override
 	public int getPort() {
 		return 8080;
 	}
@@ -139,7 +144,8 @@ public class TestServer implements Configuration{
 		// retrieve request 0
 		c.postRequestStatus(0, RequestStatus.retrieved);
 		c.postRequestFailed(0, "Request failed test", new RuntimeException("Test exception"));
-		
+
+		// second node
 		c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey567"));
 		try( InputStream in = TestServer.class.getResourceAsStream("/stats-example2.xml") ){
 			c.putMyResource("stats", "application/xml", in);
@@ -149,6 +155,16 @@ public class TestServer implements Configuration{
 		}
 		c.postRequestStatus(0, RequestStatus.retrieved);
 		c.postRequestStatus(0, RequestStatus.interaction);
+
+		// third node
+		c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey890"));
+		c.postRequestStatus(0, RequestStatus.retrieved);
+		c.postRequestStatus(0, RequestStatus.queued);
+		c.postRequestStatus(0, RequestStatus.processing);
+		// submit data
+		c.putRequestResult(0, "application/x.test.result", "result 3");
+		c.postRequestStatus(0, RequestStatus.completed);
+
 		
 	}
 

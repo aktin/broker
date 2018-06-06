@@ -29,4 +29,9 @@ public class DefaultConfiguration implements Configuration{
 		return "broker-data";
 	}
 
+	@Override
+	public String getTempDownloadPath() {
+		return "download-temp";
+	}
+
 }

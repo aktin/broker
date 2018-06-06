@@ -9,5 +9,6 @@ public interface Configuration {
 	public String getDatabasePath();
 	public String getAggregatorDataPath();
 	public String getBrokerDataPath();
+	public String getTempDownloadPath();
 	public int getPort();
 }
