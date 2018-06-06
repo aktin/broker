@@ -9,7 +9,6 @@ abstract class AbstractDownload implements Download {
 	/** unique download id */
 	UUID id;
 
-
 	@Override
 	public long getExpireTimestamp() {
 		return expiration;

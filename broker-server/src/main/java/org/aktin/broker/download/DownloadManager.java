@@ -3,13 +3,17 @@ package org.aktin.broker.download;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import javax.activation.DataSource;
 import javax.inject.Singleton;
+
+import org.aktin.broker.PathDataSource;
 
 
 
@@ -36,27 +40,30 @@ public class DownloadManager {
 	 * @param file path to download
 	 * @return Download
 	 */
-	public DownloadImpl createLocalDownload(Path file, String mediaType) {
-		DownloadImpl download = new DownloadImpl(mediaType, System.currentTimeMillis()+expirationMillis);
-		download.setPath(file, false);
-		download.id = UUID.randomUUID();
-		store.put(download.id, download);
-		log.info("Download added with UUID "+download.id);
+	public Download createDataSourceDownload(DataSource ds) {
+		DataSourceDownload download = new DataSourceDownload(ds);
+		addDownload(download);
 		return download;
 	}
 
+	private void addDownload(AbstractDownload download) {
+		download.expiration = System.currentTimeMillis()+expirationMillis;
+		download.id = UUID.randomUUID();
+
+		store.put(download.id, download);
+		log.info("Download added with UUID "+download.id);
+	}
 	/**
 	 * Create a temporary file for download. Once the download
 	 * expires, the file will be deleted.
 	 * @return download
 	 * @throws IOException IO error
 	 */
-	public DownloadImpl createTemporaryFile(String mediaType) throws IOException {
-		DownloadImpl download = new DownloadImpl(mediaType, System.currentTimeMillis()+expirationMillis);
-		download.setPath(Files.createTempFile("download",null), true);
-		download.id = UUID.randomUUID();
-		store.put(download.id, download);
-		log.info("Download added with UUID "+download.id);
+	public Download createTemporaryFile(String mediaType) throws IOException {
+		Path temp = Files.createTempFile("download",null);
+		PathDataSource ds = new PathDataSource(temp, mediaType, Instant.now());
+		DataSourceDownload download = new DataSourceDownload(ds, true);
+		addDownload(download);
 		return download;
 	}
 

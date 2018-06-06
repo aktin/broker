@@ -3,7 +3,6 @@ package org.aktin.broker;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.UUID;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -16,7 +15,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.aktin.broker.download.Download;
-import org.aktin.broker.download.DownloadImpl;
 import org.aktin.broker.download.DownloadManager;
 
 /**
@@ -27,7 +25,7 @@ import org.aktin.broker.download.DownloadManager;
  */
 @Path("/broker/download")
 public class DownloadEndpoint {
-	private static final Logger log = Logger.getLogger(RequestBundleExport.class.getName());
+	private static final Logger log = Logger.getLogger(DownloadEndpoint.class.getName());
 
 	@Inject
 	DownloadManager downloads;
@@ -35,7 +33,7 @@ public class DownloadEndpoint {
 	@GET
 	@Path("{id}")
 	public Response download(@PathParam("id") String id) throws IOException {
-		System.err.println("Download "+id);
+		System.err.println("Download requested for "+id);
 		UUID uuid;
 		Download download;
 		try{
@@ -57,8 +55,9 @@ public class DownloadEndpoint {
 			rb.lastModified(Date.from(download.getLastModified()));
 		}
 		// add content length header if available
-		if( download instanceof DownloadImpl ) {
-			rb.header(HttpHeaders.CONTENT_LENGTH, ((DownloadImpl)download).getContentLength());
+		Long contentLength = download.getContentLength();
+		if( contentLength != null ) {
+			rb.header(HttpHeaders.CONTENT_LENGTH, contentLength);
 		}
 		return rb.build();
 	}
