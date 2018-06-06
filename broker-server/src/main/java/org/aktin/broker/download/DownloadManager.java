@@ -18,7 +18,7 @@ public class DownloadManager {
 	private static final Logger log = Logger.getLogger(DownloadManager.class.getName());
 
 	private long expirationMillis;
-	private Hashtable<UUID, Download> store;
+	private Hashtable<UUID, AbstractDownload> store;
 
 	public DownloadManager() {
 		store = new Hashtable<>();
@@ -65,10 +65,10 @@ public class DownloadManager {
 	 * @throws IOException io error
 	 */
 	public void cleanupExpired() throws IOException{
-		Iterator<Entry<UUID,Download>> i = store.entrySet().iterator();
+		Iterator<Entry<UUID,AbstractDownload>> i = store.entrySet().iterator();
 		long now = System.currentTimeMillis();
 		while( i.hasNext() ) {
-			Download entry = i.next().getValue();
+			AbstractDownload entry = i.next().getValue();
 			if( entry.getExpireTimestamp() < now ) {
 				log.info("Expired download "+entry.getId());
 				i.remove();

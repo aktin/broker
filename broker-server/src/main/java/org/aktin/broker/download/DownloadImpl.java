@@ -6,18 +6,13 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DownloadImpl implements Download{
+public class DownloadImpl extends AbstractDownload{
 	private static final Logger log = Logger.getLogger(DownloadImpl.class.getName());
 	boolean deletePath;
 	private Path path;
-	/** unique download id */
-	UUID id;
-	/** epoch millis when the download expires */
-	long expiration;
 	private String mediaType;
 
 	public DownloadImpl(String mediaType, long expirationTimestamp) {
@@ -63,15 +58,6 @@ public class DownloadImpl implements Download{
 		return Files.newOutputStream(path);
 	}
 
-	@Override
-	public UUID getId() {
-		return id;
-	}
-
-	@Override
-	public long getExpireTimestamp() {
-		return expiration;
-	}
 
 	@Override
 	public void postRemovalCleanup() {
