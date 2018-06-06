@@ -7,4 +7,5 @@ import javax.activation.DataSource;
 public interface DateDataSource extends DataSource{
 
 	Instant getLastModified();
+	Long getContentLength();
 }

@@ -24,9 +24,6 @@ public class DownloadImpl extends AbstractDownload{
 		return mediaType;
 	}
 
-	public long getContentLength() throws IOException {
-		return Files.size(path);
-	}
 	public void setPath(Path path, boolean deleteOnExpiration) {
 		this.path = path;
 		this.deletePath = deleteOnExpiration;
@@ -70,6 +67,16 @@ public class DownloadImpl extends AbstractDownload{
 			}
 		}else {
 			log.info("Download "+id+" removed. File remaining: "+path);
+		}
+	}
+
+	@Override
+	public Long getContentLength() {
+		try {
+			return Files.size(path);
+		} catch (IOException e) {
+			log.log(Level.WARNING, "Unable to determine file size", e);
+			return null;
 		}
 	}
 

@@ -6,11 +6,14 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.aktin.broker.server.DateDataSource;
 
 
 public class PathDataSource implements DateDataSource {
+	private static final Logger log = Logger.getLogger(PathDataSource.class.getName());
 
 	private Path path;
 	private String type;
@@ -43,6 +46,15 @@ public class PathDataSource implements DateDataSource {
 	@Override
 	public Instant getLastModified() {
 		return lastModified;
+	}
+	@Override
+	public Long getContentLength() {
+		try {
+			return Files.size(path);
+		} catch (IOException e) {
+			log.log(Level.WARNING, "Unable to determine file size", e);
+			return null;
+		}
 	}
 
 }
