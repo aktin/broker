@@ -3,13 +3,14 @@ package org.aktin.broker;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -23,6 +24,8 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.AggregatorBackend;
+import org.aktin.broker.download.Download;
+import org.aktin.broker.download.DownloadManager;
 import org.aktin.broker.server.DateDataSource;
 import org.aktin.broker.xml.ResultInfo;
 import org.aktin.broker.xml.ResultList;
@@ -34,6 +37,8 @@ public class AggregatorEndpoint {
 
 	@Inject
 	private AggregatorBackend db;
+	@Inject
+	private DownloadManager downloads;
 
 	private boolean isRequestWritable(int requestId, int nodeId){
 		// TODO check if request is open for writing results
@@ -63,7 +68,7 @@ public class AggregatorEndpoint {
 	}
 	
 //	@Authenticated
-//	@RequireAdmin
+	@RequireAdmin
 	@GET
 	@Path("request/{id}/result")
 	@Produces(MediaType.APPLICATION_XML)
@@ -82,10 +87,11 @@ public class AggregatorEndpoint {
 	}
 
 //	@Authenticated
-//	@RequireAdmin
+	@RequireAdmin
 	@GET
+	@Produces(MediaType.TEXT_PLAIN)
 	@Path("request/{id}/result/{nodeId}")
-	public Response listResultsForRequest(@PathParam("id") String requestId, @PathParam("nodeId") String nodeId){
+	public String listResultsForRequest(@PathParam("id") String requestId, @PathParam("nodeId") String nodeId){
 		int request = Integer.parseInt(requestId);
 		int node = Integer.parseInt(nodeId);
 		DateDataSource data;
@@ -93,13 +99,14 @@ public class AggregatorEndpoint {
 			data = db.getResult(request, node);
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to retrieve data", e);
-			return Response.serverError().build();
+			throw new InternalServerErrorException(e);
 		}
 		if( data == null ){
 			// no data for this request/node combination
-			return Response.status(404).build();
+			throw new NotFoundException();
 		}else{
-			return Response.ok(data).type(data.getContentType()).lastModified(Date.from(data.getLastModified())).build();
+			Download download = downloads.createDataSourceDownload(data);
+			return download.getId().toString();
 		}
 	}
 

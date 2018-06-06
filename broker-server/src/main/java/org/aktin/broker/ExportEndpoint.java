@@ -1,10 +1,6 @@
 package org.aktin.broker;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -24,6 +20,7 @@ import org.aktin.broker.download.DownloadManager;
  * 
  * @author R.W.Majeed
  */
+@RequireAdmin
 @Path("/broker/export")
 public class ExportEndpoint {
 		@Inject
