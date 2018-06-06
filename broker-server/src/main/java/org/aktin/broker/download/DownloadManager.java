@@ -17,18 +17,47 @@ import org.aktin.broker.PathDataSource;
 
 
 
+/**
+ * Creates and manages downloads which expire after
+ * a predefined amount of time.
+ *
+ * This class is useful to separate authentication (needed to
+ * request downloads) from the actual download. The browser does
+ * not send authentication headers (e.g. bearer token) to
+ * download links.
+ *
+ * @author R.W.Majeed
+ *
+ */
 @Singleton
 public class DownloadManager {
 	private static final Logger log = Logger.getLogger(DownloadManager.class.getName());
 
 	private long expirationMillis;
 	private Hashtable<UUID, AbstractDownload> store;
+	private Path tempDir;
 
 	public DownloadManager() {
 		store = new Hashtable<>();
 		expirationMillis = 1000*60*10; // 10 minutes
 	}
 
+	/**
+	 * Set the directory where temporary downloads will be
+	 * created and stored before they expire.
+	 * @param dir path to store temporary download files
+	 */
+	public void setTempDirectory(Path dir) {
+		this.tempDir = dir;
+	}
+
+	/**
+	 * Retrieve a download for the given id. Non-existing
+	 * and expired downloads will return {@code null}.
+	 * @param id id for the download to be retrieved
+	 * @return download or {@code null} if not found or expired
+	 * @throws IOException IO error
+	 */
 	public Download get(UUID id) throws IOException {
 		cleanupExpired();
 		return store.get(id);
@@ -46,6 +75,11 @@ public class DownloadManager {
 		return download;
 	}
 
+	/**
+	 * Set expiration date and unique id and add the download
+	 * to the list.
+	 * @param download download
+	 */
 	private void addDownload(AbstractDownload download) {
 		download.expiration = System.currentTimeMillis()+expirationMillis;
 		download.id = UUID.randomUUID();
@@ -60,7 +94,7 @@ public class DownloadManager {
 	 * @throws IOException IO error
 	 */
 	public Download createTemporaryFile(String mediaType) throws IOException {
-		Path temp = Files.createTempFile("download",null);
+		Path temp = Files.createTempFile(tempDir, "download",null);
 		PathDataSource ds = new PathDataSource(temp, mediaType, Instant.now());
 		DataSourceDownload download = new DataSourceDownload(ds, true);
 		addDownload(download);
