@@ -88,7 +88,7 @@ function loadRequestList(){
 				if( $(this).find('closed').text() != '' ){
 					cls += ' closed';
 				}
-				var el = $('<div class="'+cls+'"><span>request id='+id+'</span> <span class="del">x</span> <span class="show">s</span></div>');
+				var el = $('<div class="'+cls+'"><span>request id='+id+'</span> <span class="del">x</span> <span class="export"></span> <span class="show">s</span></div>');
 				el.data('id', id);
 				var req_type = $(this).find('type').text();
 				el.data('type', req_type);
@@ -111,6 +111,11 @@ function loadRequestList(){
 			$('#requests .show').click(function(){
 				var req_el = $(this).parent();
 				window.location.href = 'request.html#'+req_el.data('id');
+			});
+			$('#requests .export').each(function(){
+				var req_el = $(this).parent();
+				var req_id = req_el.data('id');
+				$(this).append('<a class="indirectDownload" data-url="'+rest_base+'/broker/export/request-bundle/'+req_id+'" href="about:blank">e</a>');
 			});
 		},
 		dataType: "xml"
