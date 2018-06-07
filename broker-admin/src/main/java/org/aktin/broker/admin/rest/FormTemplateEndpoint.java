@@ -4,34 +4,53 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 
 @Path("template")
 public class FormTemplateEndpoint {
 	private static final Logger log = Logger.getLogger(FormTemplateEndpoint.class.getName());
 
+	/**
+	 * Retrieve list/details of available request templates.
+	 * @return JSON string
+	 * @throws IOException IO error
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public String listTemplates() throws IOException {
 		StringBuilder b = new StringBuilder();
 		b.append("{\n");
 		String templateRoot = "/webapp/template";
-		try( InputStream in = getClass().getResourceAsStream(templateRoot);
+		URL templateUrl = getClass().getResource(templateRoot+"/index.txt");
+		if( templateUrl == null ) {
+			log.severe("Template resource folder not found");
+			throw new NotFoundException();
+		}
+		try( InputStream in = templateUrl.openStream();
 				BufferedReader r = new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8))){
 			String name;
 			boolean firstTemplate = true;
 			while( (name = r.readLine()) != null ) {
+				if( name.trim().length() == 0 || name.startsWith("#") ) {
+					// skip empty lines or comments
+					continue;
+				}
 				Properties props = new Properties();
-				try( InputStream pin = getClass().getResourceAsStream(templateRoot+"/"+name+"/template.properties") ){
+				URL purl = getClass().getResource(templateRoot+"/"+name+"/template.properties");
+				try( InputStream pin = purl.openStream() ){
 					if( pin == null ) {
 						continue;
 					}
@@ -61,4 +80,13 @@ public class FormTemplateEndpoint {
 		b.append("\n}");
 		return b.toString();
 	}
+
+	@GET
+	@Path("script")
+	public Response getScript(@QueryParam("mediaType") String mediaType) {
+		// TODO send redirect to resource
+		return null;
+		
+	}
+	
 }
