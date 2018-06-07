@@ -102,18 +102,11 @@ function loadRequestList(){
 		$.get({url: 'xslt/request-list.xsl', dataType: "xml"}),
 		$.get({url: rest_base+'/broker/request', dataType: "xml"})
 	).done(function(xsl, xml){
-			console.log('list.done', xsl, xml);
 			var xp = new XSLTProcessor();
 		  	xp.importStylesheet(xsl[0]);
 			var frag = xp.transformToFragment(xml[0], document);
 			$('#requests').empty();
 			document.getElementById("requests").appendChild(frag);
-			// add handlers
-			$('#requests .export').each(function(){
-				var req_el = $(this).parent();
-				var req_id = req_el.data('id');
-				$(this).append('<a class="indirectDownload" data-url="'++'" href="about:blank">e</a>');
-			});
 	});
 }
 function localTimeToISO(local_str){
