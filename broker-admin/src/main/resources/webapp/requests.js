@@ -71,54 +71,39 @@ function loadTemplateTypes(){
 	});
 }
 
+function deleteRequest(id){
+	if( confirm('Please confirm to delete request id '+id) ){				
+		$.ajax({
+			type: 'DELETE',
+			url: rest_base+'/broker/request/'+id,
+			success: function(){
+				$('.req[data-id="'+id+'"]').remove();
+			}
+		});
+	}
+}
+
 function loadRequestList(){
-	$.get({
-		url: rest_base+'/broker/request',
-		success: function(data) {
-			// clear list
+	// show info loading
+	$('#requests').empty();
+	$('#requests').append('<p>Loading ...</p>');
+	// load resources
+	$.when(
+		$.get({url: 'xslt/request-list.xsl', dataType: "xml"}),
+		$.get({url: rest_base+'/broker/request', dataType: "xml"})
+	).done(function(xsl, xml){
+			console.log('list.done', xsl, xml);
+			var xp = new XSLTProcessor();
+		  	xp.importStylesheet(xsl[0]);
+			var frag = xp.transformToFragment(xml[0], document);
 			$('#requests').empty();
-			// TODO render request list
-			xml = $(data);
-			xml.find('request').each(function(){
-				var id = $(this).attr('id');
-				var cls = 'req';
-				if( $(this).find('published').text() != '' ){
-					cls += ' published';
-				}
-				if( $(this).find('closed').text() != '' ){
-					cls += ' closed';
-				}
-				var el = $('<div class="'+cls+'"><span>request id='+id+'</span> <span class="del">x</span> <span class="export"></span> <span class="show">s</span></div>');
-				el.data('id', id);
-				var req_type = $(this).find('type').text();
-				el.data('type', req_type);
-				console.log('Request type for',id,req_type);
-				$('#requests').append( el );
-			});
-			$('#requests .del').click(function(){
-				var req_el = $(this).parent();
-				if( confirm('Please confirm to delete request id '+req_el.data('id')) ){				
-					$.ajax({
-						type: 'DELETE',
-						url: rest_base+'/broker/request/'+req_el.data('id'),
-						success: function(){
-							req_el.remove();
-							//$('.req[data-id="'+id+'"]').remove();
-						}
-					});
-				}
-			});
-			$('#requests .show').click(function(){
-				var req_el = $(this).parent();
-				window.location.href = 'request.html#'+req_el.data('id');
-			});
+			document.getElementById("requests").appendChild(frag);
+			// add handlers
 			$('#requests .export').each(function(){
 				var req_el = $(this).parent();
 				var req_id = req_el.data('id');
 				$(this).append('<a class="indirectDownload" data-url="'+rest_base+'/broker/export/request-bundle/'+req_id+'" href="about:blank">e</a>');
 			});
-		},
-		dataType: "xml"
 	});
 }
 function localTimeToISO(local_str){
