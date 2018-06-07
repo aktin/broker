@@ -4,27 +4,14 @@
 // these links will be resolved when clicked. Future clicks will directly proceed
 // to the resolved url.
 
-$(document).on("click","a.indirectDownload", function () {
-	// reference to clicked a element
-	var a = $(this);
-   	var url = a.data('url');
-   	console.log('Clicked on indirect download '+ url);
-   	// resolve download
+function resolveIndirectDownload(url, success){
 	$.get({
 		url: url,
 		dataType: 'text',
 		success: function(data){
 			console.log('Resolved download to '+data);
 			var new_url = rest_base+'/broker/download/'+data;
-			// retrieved download id
-			// replace the href for subsequent clicks
-			a.attr('href', new_url);
-			// remove class, so this method is not called again
-			a.removeClass('indirectDownload');
-			// redirect to the resolved download url
-			setTimeout(function(){
-				window.location.href = new_url;
-			}, 500); // redirect after 500 milliseconds
+			success( new_url );
 		},
 		error: function(x,m,t){
 			if( x.status == 404 ){
@@ -35,6 +22,24 @@ $(document).on("click","a.indirectDownload", function () {
 			}
 		}
 	});
+}
 
+$(document).on("click","a.indirectDownload", function () {
+	// reference to clicked a element
+	var a = $(this);
+   	var url = a.data('url');
+   	console.log('Clicked on indirect download '+ url);
+   	// resolve download
+   	resolveIndirectDownload(url, function(new_url){
+		// retrieved download id
+		// replace the href for subsequent clicks
+		a.attr('href', new_url);
+		// remove class, so this method is not called again
+		a.removeClass('indirectDownload');
+		// redirect to the resolved download url
+		setTimeout(function(){
+			window.location.href = new_url;
+		}, 500); // redirect after 500 milliseconds
+   	});
 	return false;
 });

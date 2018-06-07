@@ -83,6 +83,16 @@ function deleteRequest(id){
 	}
 }
 
+function exportRequest(id){
+	var url = rest_base+'/broker/export/request-bundle/'+id;
+	resolveIndirectDownload(url, function(new_url){
+		// change href
+		$('.req[data-id="'+id+'"] .export a').attr('href', new_url);
+		// forward to download
+		window.location.href = new_url;
+	});
+}
+
 function loadRequestList(){
 	// show info loading
 	$('#requests').empty();
@@ -102,7 +112,7 @@ function loadRequestList(){
 			$('#requests .export').each(function(){
 				var req_el = $(this).parent();
 				var req_id = req_el.data('id');
-				$(this).append('<a class="indirectDownload" data-url="'+rest_base+'/broker/export/request-bundle/'+req_id+'" href="about:blank">e</a>');
+				$(this).append('<a class="indirectDownload" data-url="'++'" href="about:blank">e</a>');
 			});
 	});
 }
