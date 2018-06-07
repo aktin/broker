@@ -185,5 +185,22 @@ public class AggregatorImpl implements AggregatorBackend {
 			dbc.commit();
 		}
 	}
+	@Override
+	public String[] getDistinctResultTypes(int requestId) throws SQLException {
+		List<String> list = new ArrayList<>();
+		try( Connection dbc = ds.getConnection() ){
+			// find is result is already present
+			Statement st = dbc.createStatement();
+			ResultSet rs = st.executeQuery("SELECT DISTINCT media_type FROM request_node_results WHERE request_id="+requestId);
+			
+			// compile list
+			while( rs.next() ){
+				list.add(rs.getString(1));
+			}
+			rs.close();
+			st.close();
+		}
+		return list.toArray(new String[list.size()]);
+	}
 
 }

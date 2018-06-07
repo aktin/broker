@@ -8,5 +8,7 @@ import org.aktin.broker.xml.ResultInfo;
 public interface Aggregator {
 	List<ResultInfo> listResults(int requestId) throws SQLException;
 
+	String[] getDistinctResultTypes(int requestId) throws SQLException;
+
 	DateDataSource getResult(int requestId, int nodeId) throws SQLException;
 }

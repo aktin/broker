@@ -107,10 +107,21 @@ public class RequestBundleExport {
 
 	private void writeAggregatorResults(int requestId, ZipOutputStream zip) throws SQLException, IOException {
 		Objects.requireNonNull(aggregator);
+		int numTypes = aggregator.getDistinctResultTypes(requestId).length;
 		for( ResultInfo info : aggregator.listResults(requestId) ) {
 			String type = info.type;
 			String ext = guessFileExtension(type);
-			ZipEntry entry = new ZipEntry(info.node+"_"+URLEncoder.encode(type, charset.name())+ext);
+			String name;
+			if( numTypes == 1 ) {
+				// only one type of result.
+				// use simple name
+				name = info.node+"_result"+ext;
+			}else {
+				// multiple result types
+				// differentiate by type
+				name = info.node+"_"+URLEncoder.encode(type, charset.name())+ext;
+			}
+			ZipEntry entry = new ZipEntry(name);
 			DateDataSource dds = aggregator.getResult(requestId, Integer.parseInt(info.node));
 			entry.setTime(dds.getLastModified().toEpochMilli());
 			zip.putNextEntry(entry);
@@ -136,6 +147,8 @@ public class RequestBundleExport {
 		}
 		else if( mediaType.startsWith("text") ) {
 			return ".txt";
+		}else if( mediaType.equals("application/zip") ) {
+			return ".zip";
 		}
 		else return "";
 	}
