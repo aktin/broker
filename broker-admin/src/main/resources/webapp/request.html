@@ -41,7 +41,8 @@ function init(){
 	$.get({
 		url: rest_base+'/broker/request/'+id,
 		dataType: 'text',
-		success: function(data){
+		success: function(data, status, xhr){
+			// TODO parse response media type and load script for display/formatting
 			$('#request').text(data);
 		}
 	});
