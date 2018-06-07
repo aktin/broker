@@ -10,7 +10,6 @@
 					<tr>
 						<td>ID</td>
 						<td>Published</td>
-						<td>Closed</td>
 						<td colspan="3">Actions</td>
 					</tr>
 				</thead>
@@ -25,7 +24,6 @@
 	<tr class="req" data-id="{@id}">
 		<td class="show"><xsl:value-of select="@id"/></td>
 		<td><xsl:value-of select="b:published"/></td>
-		<td><xsl:value-of select="b:closed"/></td>
 		<td class="export"><a href="javascript:exportRequest({@id})">export</a></td>
 		<td class="delete"><a href="javascript:deleteRequest({@id})">delete</a></td>
 		<td class="show"><a href="request.html#{@id}">details</a></td>
