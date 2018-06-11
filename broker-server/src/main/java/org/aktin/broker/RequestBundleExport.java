@@ -132,7 +132,7 @@ public class RequestBundleExport {
 		}
 	}
 
-	private String guessFileExtension(String mediaType) {
+	public static String guessFileExtension(String mediaType) {
 		// remove encoding and other arguments from media type
 		String[] parts = mediaType.split(";");
 		if( parts.length > 1 ) {

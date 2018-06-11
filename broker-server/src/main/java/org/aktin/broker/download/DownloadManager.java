@@ -74,12 +74,16 @@ public class DownloadManager {
 	/**
 	 * Create download to a given local path. The path
 	 * will not be deleted once the download expires.
-	 * @param file path to download
+	 * @param ds data source for download
+	 * @param name optional name for download
 	 * @return Download
 	 */
-	public Download createDataSourceDownload(DataSource ds) {
+	public Download createDataSourceDownload(DataSource ds, String name) {
 		DataSourceDownload download = new DataSourceDownload(ds);
 		addDownload(download);
+		if( name != null ) {
+			download.setName(name);
+		}
 		return download;
 	}
 
@@ -98,10 +102,12 @@ public class DownloadManager {
 	/**
 	 * Create a temporary file for download. Once the download
 	 * expires, the file will be deleted.
+	 * @param mediaType media type for the download
+	 * @param name optional file name for the download, {@code null} to omit
 	 * @return download
 	 * @throws IOException IO error
 	 */
-	public Download createTemporaryFile(String mediaType) throws IOException {
+	public Download createTemporaryFile(String mediaType, String name) throws IOException {
 		Path temp;
 		if( tempDir != null ) {
 			//use specified temporary directory
@@ -112,6 +118,7 @@ public class DownloadManager {
 		}
 		PathDataSource ds = new PathDataSource(temp, mediaType, Instant.now());
 		DataSourceDownload download = new DataSourceDownload(ds, true);
+		download.setName(name);
 		addDownload(download);
 		return download;
 	}

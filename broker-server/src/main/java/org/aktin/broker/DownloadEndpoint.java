@@ -59,6 +59,10 @@ public class DownloadEndpoint {
 		if( contentLength != null ) {
 			rb.header(HttpHeaders.CONTENT_LENGTH, contentLength);
 		}
+		// add file name if available
+		if( download.getName() != null ) {
+			rb.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\""+download.getName()+"\"");
+		}
 		return rb.build();
 	}
 }

@@ -37,7 +37,7 @@ public class ExportEndpoint {
 		public String downloadBundle(@PathParam("id") int requestId) throws IOException, JAXBException {
 			RequestBundleExport export = new RequestBundleExport(broker);
 			export.setAggregator(aggregator);
-			Download d = downloads.createTemporaryFile("application/zip");
+			Download d = downloads.createTemporaryFile("application/zip", "export_"+Integer.toString(requestId)+".zip");
 			export.createBundle(requestId, d.getOutputStream());
 			return d.getId().toString();
 		}

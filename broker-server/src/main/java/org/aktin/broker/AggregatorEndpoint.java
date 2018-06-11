@@ -105,7 +105,11 @@ public class AggregatorEndpoint {
 			// no data for this request/node combination
 			throw new NotFoundException();
 		}else{
-			Download download = downloads.createDataSourceDownload(data);
+			String ext = RequestBundleExport.guessFileExtension(data.getContentType());
+			if( ext == null ) {
+				ext = "";
+			}
+			Download download = downloads.createDataSourceDownload(data, requestId+"_result_"+nodeId+ext);
 			return download.getId().toString();
 		}
 	}

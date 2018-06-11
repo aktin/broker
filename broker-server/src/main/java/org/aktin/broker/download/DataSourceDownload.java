@@ -25,6 +25,7 @@ public class DataSourceDownload extends AbstractDownload {
 
 	private DataSource ds;
 	private boolean deletePath;
+	private String name;
 
 	public DataSourceDownload(DataSource ds) {
 		this.ds = ds;
@@ -34,6 +35,15 @@ public class DataSourceDownload extends AbstractDownload {
 		this.deletePath = deletePath;
 	}
 
+	/**
+	 * Override the name used for the download. If unset or {@code null}
+	 * then the {@link DataSource#getName()} method of the underlying
+	 * {@link DataSource} is used.
+	 * @param name name
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
 	@Override
 	public Instant getLastModified() {
 		if( ds instanceof DateDataSource ) {
@@ -53,9 +63,17 @@ public class DataSourceDownload extends AbstractDownload {
 		return ds.getInputStream();
 	}
 
+	/**
+	 * return the name set via {@link #setName(String)}. If this is
+	 * undefined, returns the {@link DataSource#getName()}.
+	 */
 	@Override
 	public String getName() {
-		return ds.getName();
+		if( this.name != null ) {
+			return this.name;
+		}else {
+			return ds.getName();
+		}
 	}
 
 	@Override
