@@ -100,6 +100,7 @@ public class BrokerClient extends AbstractBrokerClient{
 	}
 	/**
 	 * Get info for a single request
+	 * @param id request id
 	 * @return request list
 	 * @throws IOException error
 	 */

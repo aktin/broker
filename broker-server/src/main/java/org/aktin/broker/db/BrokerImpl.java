@@ -874,8 +874,10 @@ public class BrokerImpl implements BrokerBackend, Broker {
 
 	/**
 	 * Update the clientDN string for the nodes given in the provided map.
+	 * @param ds data source
 	 * @param mapNodeDN Map of node keys pointing to clientDN strings
 	 * @return number of updated nodes
+	 * @throws SQLException SQL error
 	 */
 	public static int updatePrincipalDN(DataSource ds, Map<String, String> mapNodeDN) throws SQLException {
 		int updated = 0;

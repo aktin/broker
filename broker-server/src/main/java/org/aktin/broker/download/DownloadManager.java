@@ -52,7 +52,7 @@ public class DownloadManager {
 	 * If the specified path does not exist, the directory will
 	 * be created.
 	 * @param dir path to store temporary download files
-	 * @throws IOException 
+	 * @throws IOException IO error because directories could not be created
 	 */
 	public void setTempDirectory(Path dir) throws IOException {
 		this.tempDir = dir;

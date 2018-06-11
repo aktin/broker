@@ -104,6 +104,8 @@ public interface Broker {
 	 * @param requestId request id
 	 * @param nodeId node id
 	 * @return reader for the status message
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
 	 */
 	Reader getRequestNodeStatusMessage(int requestId, int nodeId) throws SQLException, IOException;
 	DateDataSource getNodeResource(int nodeId, String resourceId) throws SQLException;
