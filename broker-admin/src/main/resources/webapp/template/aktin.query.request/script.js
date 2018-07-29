@@ -1,4 +1,27 @@
 
+function isRepeatingExecution(){
+	return $('#x_qid').parent('fieldset').attr('id') == 'x_exec';
+}
+function switchExecutionForm(repeating){
+		var target;
+		if( repeating ){
+			// switch to repeating
+			target = $('#x_exec');
+			$(this).text('Repeated execution (click to change)');
+			// add validation rules
+		}else{
+			// switch to single
+			target = $('#hidden_fields');
+			$(this).text('Single execution (click to change)');
+		}
+		
+		$('#x_intvl').prop('required',repeating);
+		$('#x_qid').prop('required',repeating);
+		$('#x_intvl').detach().appendTo(target);
+		$('#x_qid').detach().appendTo(target);
+
+}
+
 // executed a single time the template form has been injected
 function initializeForm(){
 	$('#new_request input[name="scheduled"]').val(new Date().toDateInputValue());
@@ -16,24 +39,22 @@ function initializeForm(){
 	}));
 	// switch between single/repeating executions
 	$('#x_exec legend:first-child').css('cursor','pointer').click(function(){
-		var rep = ($('#x_qid').parent('fieldset').length == 1);
-		var target;
-		if( rep ){
-			// switch to single
-			target = $('#hidden_fields');
-			$(this).text('Single execution (click to change)');
-		}else{
-			// switch to repeating
-			target = $('#x_exec');
-			$(this).text('Repeated execution (click to change)');
-		}
-		$('#x_intvl').detach().appendTo(target);
-		$('#x_qid').detach().appendTo(target);
+		var rep = isRepeatingExecution();
+		console.log("qid parent fieldset length", rep);
+		switchExecutionForm(!rep);
 	});
 
+	// XML validation
+	
 }
 function buildRequestDefinitionXml(requestId, fragment){
-	var xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
+	// check for single or multiple execution
+	var xml;
+	if( isRepeatingExecution() ){
+		xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="repeatedExecution"><duration/><interval/><id/></schedule></query></queryRequest>');	
+	}else{
+		xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
+	}
 	$(xml).find('scheduled').text(localTimeToISO($('#new_request input[name="scheduled"]').val()));
 	$(xml).find('reference').text(localTimeToISO($('#new_request input[name="reference"]').val()));
 	var query = $(xml).find('query')[0];
@@ -62,12 +83,21 @@ function getFormMediaType(){
 
 // executed to validate the form (e.g. when submit button is pressed)
 function validateForm(){
+	// perform html5 validation
+	console.log('validating..');
+	if( false == $('#new_request')[0].checkValidity() ){
+		$('#new_request')[0].reportValidity();
+		return false;
+	}
 	// validate request syntax
+	var ta = $('#new_request textarea[name="xml"]')[0];
 	try{
-		var fragment = $.parseXML($('#new_request textarea[name="xml"]').val());
+		var fragment = $.parseXML(ta.value);
+		// validation successful since no error was thrown
+		ta.setCustomValidity(''); // clear error message
+		ta.reportValidity();
 	}catch( e ){
 		try{
-			var ta = $('#new_request textarea[name="xml"]')[0];
 			ta.setCustomValidity("No valid XML!")
 			ta.reportValidity();
 		}catch( e ){
@@ -102,6 +132,9 @@ function fillForm(data, contentType, id){
 	// fill datetime fields
 	$('#new_request input[name="scheduled"]').val(isoToLocalDate($(xml).find('scheduled').text()).substring(0,10));
 	$('#new_request input[name="reference"]').val(isoToLocalDate($(xml).find('reference').text()));
+
+	// check if xml was repeating
+	switchExecutionForm($(xml).find('schedule id').text() != '');
 }
 
 
