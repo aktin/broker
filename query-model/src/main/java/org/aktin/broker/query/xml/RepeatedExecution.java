@@ -1,6 +1,6 @@
 package org.aktin.broker.query.xml;
 
-import java.time.Duration;
+import java.time.Period;
 
 /**
  * Repeated execution schedule for a query.
@@ -18,6 +18,6 @@ public class RepeatedExecution extends QuerySchedule{
 	 * This property will not cause any execution on the data warehouse side.
 	 * It is solely for information purposes.
 	 */
-	public Duration interval;
+	public Period interval;
 	public int id;
 }
