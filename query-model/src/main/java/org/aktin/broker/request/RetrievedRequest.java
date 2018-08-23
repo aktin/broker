@@ -12,9 +12,9 @@ public interface RetrievedRequest {
 	public int getRequestId();
 	public QueryRequest getRequest();
 	public RequestStatus getStatus();
-	public Iterable<ActionLogEntry> getActionLog();
+	public Iterable<ActionLogEntry> getActionLog() throws IOException;
 	public boolean hasAutoSubmit();
-	public void setAutoSubmit(boolean autoSubmit);
+	public void setAutoSubmit(boolean autoSubmit) throws IOException;
 
 	public Marker getMarker();
 	public void setMarker(Marker marker)throws IOException;
