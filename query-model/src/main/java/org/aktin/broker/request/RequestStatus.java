@@ -35,4 +35,6 @@ public enum RequestStatus {
 	Submitted,
 	/** Unexpected failure occurred at some point during processing or transfer. */
 	Failed,
+	/** The request was closed by the broker or deleted from it. */
+	Expired
 }

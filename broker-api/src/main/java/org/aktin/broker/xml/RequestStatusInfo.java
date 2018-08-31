@@ -32,6 +32,7 @@ public class RequestStatusInfo {
 	public Instant completed;
 	public Instant rejected;
 	public Instant failed;
+	public Instant expired;
 	/**
 	 * The interaction timestamp is handled specially.
 	 * When any other timestamp is updated, the interaction 
@@ -51,6 +52,8 @@ public class RequestStatusInfo {
 	public RequestStatus getStatus(){
 		if( failed != null ){
 			return RequestStatus.failed;
+		} else if(expired != null) {
+			return RequestStatus.expired;
 		}else if( rejected != null ){
 			return RequestStatus.rejected;
 		}else if( completed != null ){
