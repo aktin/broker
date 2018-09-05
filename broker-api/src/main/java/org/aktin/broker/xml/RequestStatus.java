@@ -17,5 +17,7 @@ public enum RequestStatus {
 	/** The request was rejected and will not be processed */
 	rejected,
 	/** An error occurred during request processing at the node */
-	failed; 
+	failed,
+	/** The request was closed by the broker or deleted from it. */
+	expired;
 }
