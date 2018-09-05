@@ -45,6 +45,8 @@ public class TestRequest {
 		Assert.assertNotNull(q.query);
 		Assert.assertNotNull(q.getScheduledTimestamp());
 		Assert.assertNotNull(q.getReferenceTimestamp());
+		Assert.assertNotNull(q.signatures);
+		Assert.assertEquals(1, q.signatures.length);
 		
 	}
 

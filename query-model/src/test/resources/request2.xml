@@ -59,4 +59,6 @@
 			<export table="temp_diag" destination="diag.txt"/>
 		</sql>
 	</query>
+	<signature from="a" algorithm="rsa">XXX
+	</signature>
 </queryRequest>
