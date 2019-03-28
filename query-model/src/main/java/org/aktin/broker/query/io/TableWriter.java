@@ -1,4 +1,4 @@
-package org.aktin.broker.query.sql;
+package org.aktin.broker.query.io;
 
 import java.io.IOException;
 

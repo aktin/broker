@@ -1,6 +1,7 @@
 package org.aktin.broker.query.io;
 
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -14,7 +15,7 @@ import java.nio.charset.Charset;
  * @author R.W.Majeed
  *
  */
-public interface MultipartOutputStream extends AutoCloseable{
+public interface MultipartOutputStream extends Closeable{
 
 	/**
 	 * Open a new part for writing.

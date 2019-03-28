@@ -9,7 +9,8 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.aktin.broker.query.util.ZipFileExport;
+import org.aktin.broker.query.io.TableWriter;
+import org.aktin.broker.query.io.ZipArchiveWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +22,7 @@ public class TestZipExport {
 		System.out.println("Writing to "+temp.toString());
 		// write ZIP file
 		try( OutputStream out = Files.newOutputStream(temp) ){
-			ZipFileExport z = new ZipFileExport(out, StandardCharsets.UTF_8);
+			ZipArchiveWriter z = new ZipArchiveWriter(out, StandardCharsets.UTF_8);
 			TableWriter t = z.exportTable("patients");
 			t.header("id","sex");
 			t.row("1","m");

@@ -13,13 +13,6 @@ import java.io.IOException;
  */
 public class TextTableWriter implements AutoCloseable{
 
-	public static final String MEDIA_TYPE_CSV = "text/comma-separated-values";
-	public static final String MEDIA_TYPE_TAB = "text/tab-separated-values";
-
-	private String fieldSeparator;
-	private String recordSeparator;
-	/** String to write to the file instead of a {@code null} value. Defaults to empty string. */
-	private String nullString;
 	private BufferedWriter writer;
 	/**
 	 * Create a ZIP file export.
@@ -28,23 +21,6 @@ public class TextTableWriter implements AutoCloseable{
 	 * @param charset charset used for CSV data, zip entry names, zip comments
 	 */
 	public TextTableWriter(BufferedWriter writer) {
-		fieldSeparator = "\t";
-		recordSeparator = "\r\n";//System.lineSeparator();
-		nullString = "";
-	}
-
-	public void writeRecord(String[] values) throws IOException{
-		for( int i=0; i<values.length; i++ ){
-			if( i != 0 ){
-				writer.write(fieldSeparator);
-			}
-			if( values[i] != null ){
-				writer.write(values[i]);
-			}else{
-				writer.write(nullString);
-			}
-		}
-		writer.write(recordSeparator);
 	}
 
 	@Override

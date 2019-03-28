@@ -2,6 +2,9 @@ package org.aktin.broker.query.sql;
 
 import java.io.IOException;
 
+import org.aktin.broker.query.io.TableExport;
+import org.aktin.broker.query.io.TableWriter;
+
 public class ConsoleTableExport implements TableExport, TableWriter {
 
 	@Override

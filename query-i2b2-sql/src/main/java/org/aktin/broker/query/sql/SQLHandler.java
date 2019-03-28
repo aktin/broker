@@ -2,7 +2,6 @@ package org.aktin.broker.query.sql;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,9 +10,10 @@ import java.util.zip.ZipInputStream;
 
 import javax.activation.DataSource;
 
-import org.aktin.broker.query.MultipartOutputStream;
 import org.aktin.broker.query.QueryHandler;
-import org.aktin.broker.query.util.ZipFileExport;
+import org.aktin.broker.query.io.MultipartOutputStream;
+import org.aktin.broker.query.io.MultipartTableWriter;
+import org.aktin.broker.query.io.TableExport;
 
 public class SQLHandler implements QueryHandler {
 	private SQLHandlerFactory factory;
@@ -46,11 +46,9 @@ public class SQLHandler implements QueryHandler {
 			throw new IOException(e);
 		}
 		try( Connection dbc = factory.openConnection() ){
-			try{
+			try( TableExport export = new MultipartTableWriter(target, factory.getExportCharset()) ){
 				ex.generateTables(dbc);
-				TableExport export = new ZipFileExport(target, factory.getExportCharset());
 				ex.exportTables(export);
-				export.close();
 			}finally{
 				ex.removeTables();
 			}
