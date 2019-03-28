@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import org.aktin.broker.query.io.table.TableExport;
+import org.aktin.broker.query.io.table.TableWriter;
+
 /**
  * Write text table data into a {@link MultipartOutputStream}.
  *
