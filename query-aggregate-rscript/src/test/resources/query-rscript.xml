@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<r-script xmlns="http://aktin.org/ns/rscript">
+	<source type="application/r-script"  timeout="30s">
+<![CDATA[
+	enc <- read.delim(file="temp_encounters.txt")
+	pat <- read.delim(file="temp_patients.txt")
+	dia <- read.delim(file="temp_diage.txt")
+	df <- data.frame(Param="Sex", table(pat$sex))
+	# TODO more counts
+	write.table(x=df, file="counts.txt", row.names=FALSE, eol="\r\n", sep="\t" fileEncoding="UTF-8");
+]]>
+	</source>
+	<!--  additional resource files to be placed in the directory
+	  before execution of the script. e.g. lookup tables, additional script modules, etc. -->
+	<resource file="module1.R" type="text/plain">
+
+	</resource>
+
+	<result file="counts.txt" type="text/tab-separated-values"/>
+	<result file="test.svg" type="image/svg"/>
+</r-script>

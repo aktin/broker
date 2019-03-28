@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<sql xmlns="http://aktin.org/ns/i2b2/sql">
+	<temporary-table name="temp_encounters"/>
+	<temporary-table name="temp_patients"/>
+	<temporary-table name="temp_diag"/>
+	
+	<source type="application/sql" date-format="...">
+	<![CDATA[
+			CREATE TEMPORARY TABLE temp_encounters(id, patient, start) 
+			 AS SELECT encounter_num, patient_num, start_date 
+			 FROM  visit_dimension
+			  WHERE start_date >= '${data.start}' AND start_date < '${data.end}';
+
+			CREATE TEMPORARY TABLE temp_patients(id, sex) 
+			 AS SELECT patient_num, sex_cd 
+			  FROM patient_dimension p, temp_encounters e
+			  WHERE p.patient_num=e.patient;
+
+			CREATE TEMPORARY TABLE temp_diag(patient, encounter, diag)
+			 AS SELECT f.patient_num, f.encounter_num, f.concept_cd 
+			  FROM observation_fact f, temp_encounters e
+			  WHERE f.encounter_num=e.id AND f.concept_cd LIKE 'ICD10GM:%';
+			
+			]]><!-- 
+			Commands must end with ";" at end of line. 
+			Comments must start with two dashes at beginning of line
+			-->
+	</source>
+	<anonymize>
+		<key table="temp_patients" column="id" />
+		<ref table="temp_encounters" column="patient" />
+		<ref table="temp_diag" column="patient" />
+		<!-- PRODUCES: CREATE TEMPORARY TABLE anon_map AS SELECT id FROM temp_patients 
+			WHERE FALSE; ALTER TABLE anon_map ADD COLUMN target(INTEGER NOT NULL AUTO_INCREMENT); 
+			INSERT INTO anon_map(id) (SELECT DISTINCT id FROM temp_patients); ALTER TABLE 
+			temp_patients ADD COLUMN a_id(INTEGER NOT NULL); UPDATE temp_patients SET 
+			a_id=map.target WHERE id=map.id (FROM anon_Map map); ALTER TABLE temp_patients 
+			DROP COLUMN id; ... also for ref tables -->
+	</anonymize>
+	<anonymize>
+		<key table="temp_encounters" column="id" />
+		<ref table="temp_diag" column="encounter" />
+	</anonymize>
+	<export table="temp_patients" destination="patients" />
+	<export table="temp_encounters" destination="encounters" />
+	<export table="temp_diag" destination="diag" />
+</sql>

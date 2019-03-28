@@ -19,6 +19,7 @@
 		<module>broker-api</module>
 		<module>query-model</module>
 		<module>query-i2b2-sql</module>
+		<module>query-aggregate-rscript</module>
 		<module>broker-client</module>
 		<module>broker-client-websocket</module>
 		<module>broker-server</module>
