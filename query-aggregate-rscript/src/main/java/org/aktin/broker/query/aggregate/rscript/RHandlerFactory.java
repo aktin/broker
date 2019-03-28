@@ -43,27 +43,27 @@ public class RHandlerFactory implements QueryHandlerFactory{
 	}
 	@Override
 	public String getElementName() {
-		return RScript.XML_ELEMENT;
+		return RSource.XML_ELEMENT;
 	}
 
 	@Override
 	public String getNamespace() {
-		return RScript.XML_NAMESPACE;
+		return RSource.XML_NAMESPACE;
 	}
 
 	@Override
 	public RHandler parse(Element element, Function<String,String> propertyLookup) {
-		RScript q;
+		RSource q;
 		try {
-			JAXBContext c = JAXBContext.newInstance(RScript.class);
-			q = (RScript)c.createUnmarshaller().unmarshal(element);
+			JAXBContext c = JAXBContext.newInstance(RSource.class);
+			q = (RSource)c.createUnmarshaller().unmarshal(element);
 		} catch (JAXBException e) {
 			throw new IllegalArgumentException("Unable to parse query XML", e);
 		}
 		return wrap(q, propertyLookup);
 	}
 
-	public RHandler wrap(RScript query, Function<String,String> propertyLookup){
+	public RHandler wrap(RSource query, Function<String,String> propertyLookup){
 		return new RHandler(this, query, propertyLookup);
 	}
 	@Override

@@ -9,6 +9,8 @@ import javax.xml.bind.annotation.XmlValue;
 public class Source {
 	@XmlAttribute
 	String type;
+	@XmlAttribute
+	String timeout;
 	@XmlValue
 	String value;
 }

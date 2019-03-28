@@ -5,7 +5,7 @@
  * @author R.W.Majeed
  *
  */
-@XmlSchema(namespace=RScript.XML_NAMESPACE,
+@XmlSchema(namespace=RSource.XML_NAMESPACE,
 elementFormDefault=XmlNsForm.QUALIFIED,
 	xmlns = {
 			

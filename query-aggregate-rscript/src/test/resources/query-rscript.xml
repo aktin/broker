@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<r-script xmlns="http://aktin.org/ns/rscript">
+<r-script xmlns="http://aktin.org/ns/aggregate/r">
 	<source type="application/r-script"  timeout="30s">
 <![CDATA[
 	enc <- read.delim(file="temp_encounters.txt")

@@ -9,17 +9,17 @@ import org.aktin.broker.query.io.MultipartOutputStream;
 
 public class RHandler implements QueryHandler {
 	private RHandlerFactory factory;
-	private RScript query;
+	private RSource script;
 	private Function<String,String> propertyLookup;
 
-	RHandler(RHandlerFactory factory, RScript query, Function<String,String> propertyLookup){
+	RHandler(RHandlerFactory factory, RSource query, Function<String,String> propertyLookup){
 		this.factory = factory;
-		this.query = query;
+		this.script = query;
 		this.propertyLookup = propertyLookup;
 	}
 
 	@Override
 	public void execute(MultipartDirectory input, MultipartOutputStream target) throws IOException {
-		Execution ex = new Execution(query);
+		Execution ex = new Execution(script);
 	}
 }

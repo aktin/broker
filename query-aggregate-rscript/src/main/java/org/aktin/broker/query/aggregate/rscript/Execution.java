@@ -19,9 +19,9 @@ import java.util.logging.Logger;
 public class Execution{
 	private static final Logger log = Logger.getLogger(Execution.class.getName());
 
-	private RScript query;
+	private RSource query;
 
-	public Execution(RScript query){
+	public Execution(RSource query){
 		this.query = query;
 	}
 	

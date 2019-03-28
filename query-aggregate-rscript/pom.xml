@@ -33,6 +33,13 @@
 			<version>0.7-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>r-script</artifactId>
+			<version>0.7-SNAPSHOT</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
