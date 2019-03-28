@@ -11,6 +11,7 @@ import java.util.zip.ZipInputStream;
 import javax.activation.DataSource;
 
 import org.aktin.broker.query.QueryHandler;
+import org.aktin.broker.query.io.MultipartDirectory;
 import org.aktin.broker.query.io.MultipartOutputStream;
 import org.aktin.broker.query.io.MultipartTableWriter;
 import org.aktin.broker.query.io.table.TableExport;
@@ -38,7 +39,7 @@ public class SQLHandler implements QueryHandler {
 	}
 
 	@Override
-	public void execute(MultipartOutputStream target) throws IOException {
+	public void execute(MultipartDirectory input, MultipartOutputStream target) throws IOException {
 		Execution ex = new Execution(query);
 		try {
 			ex.prepareStatements(propertyLookup);

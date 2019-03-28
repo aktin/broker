@@ -30,7 +30,7 @@ public class TestSQLHandler {
 		// write ZIP file
 		try( OutputStream out = Files.newOutputStream(temp);
 				ZipArchiveWriter zip = new ZipArchiveWriter(out, StandardCharsets.UTF_8)){
-			h.execute(zip);
+			h.execute(null, zip);
 		}
 	}
 }
