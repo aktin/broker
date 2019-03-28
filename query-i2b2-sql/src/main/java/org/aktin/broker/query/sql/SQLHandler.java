@@ -27,16 +27,7 @@ public class SQLHandler implements QueryHandler {
 		this.query = query;
 		this.propertyLookup = propertyLookup;
 	}
-	@Override
-	public DataSource getQueryVisualisation(String mediaType) throws IOException{
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	@Override
-	public String getResultMediaType() {
-		return "application/zip";
-	}
 
 	@Override
 	public void execute(MultipartDirectory input, MultipartOutputStream target) throws IOException {
@@ -56,26 +47,6 @@ public class SQLHandler implements QueryHandler {
 		} catch (SQLException e) {
 			throw new IOException(e);
 		}
-	}
-
-	@Override
-	public String[] getResultDisplayTypes() {
-		return new String[]{"text/plain"};
-	}
-
-	@Override
-	public DataSource getResultVisualisation(DataSource result, String mediaType) throws IOException {
-		if( resultDisplay == null ){
-			// TODO create temporary file and store in resultDisplay
-			try( InputStream in = result.getInputStream();
-				ZipInputStream z = new ZipInputStream(result.getInputStream()) )
-			{
-				
-			}
-		}
-		// already created, return existing data
-
-		return null;
 	}
 
 }
