@@ -13,8 +13,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-import org.aktin.broker.query.io.TableExport;
-import org.aktin.broker.query.io.TableWriter;
+import org.aktin.broker.query.io.table.TableExport;
+import org.aktin.broker.query.io.table.TableWriter;
 
 /**
  * SQL export execution.

@@ -10,8 +10,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.aktin.broker.query.io.MultipartTableWriter;
-import org.aktin.broker.query.io.TableWriter;
 import org.aktin.broker.query.io.ZipArchiveWriter;
+import org.aktin.broker.query.io.table.TableWriter;
 import org.junit.Assert;
 import org.junit.Test;
 

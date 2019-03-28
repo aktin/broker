@@ -13,7 +13,7 @@ import javax.activation.DataSource;
 import org.aktin.broker.query.QueryHandler;
 import org.aktin.broker.query.io.MultipartOutputStream;
 import org.aktin.broker.query.io.MultipartTableWriter;
-import org.aktin.broker.query.io.TableExport;
+import org.aktin.broker.query.io.table.TableExport;
 
 public class SQLHandler implements QueryHandler {
 	private SQLHandlerFactory factory;
