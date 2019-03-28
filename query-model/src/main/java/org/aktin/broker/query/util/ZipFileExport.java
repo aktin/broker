@@ -1,4 +1,4 @@
-package org.aktin.broker.query.sql;
+package org.aktin.broker.query.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,6 +8,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.aktin.broker.query.sql.TableExport;
+import org.aktin.broker.query.sql.TableWriter;
 
 // TODO move to request manager
 /**
@@ -63,6 +66,7 @@ public class ZipFileExport implements TableExport {
 	@Override
 	public TableWriter exportTable(String name) throws IOException {
 		ZipEntry ze = new ZipEntry(name + tableFileSuffix);
+		// TODO write data type in comment
 		zip.putNextEntry(ze);
 		return new TableWriter() {
 			

@@ -30,7 +30,7 @@ public interface QueryHandler {
 	 * @param target output stream where the results will be stored
 	 * @throws IOException execution/export failure
 	 */
-	void execute(OutputStream target) throws IOException;
+	void execute(MultipartOutputStream target) throws IOException;
 
 	/**
 	 * Get additional media types to which

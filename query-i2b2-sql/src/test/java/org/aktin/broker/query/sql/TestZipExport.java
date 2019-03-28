@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.aktin.broker.query.util.ZipFileExport;
 import org.junit.Assert;
 import org.junit.Test;
 
