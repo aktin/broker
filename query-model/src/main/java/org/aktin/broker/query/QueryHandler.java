@@ -5,6 +5,8 @@ import java.io.OutputStream;
 
 import javax.activation.DataSource;
 
+import org.aktin.broker.query.io.MultipartOutputStream;
+
 /**
  * Handler for a single query. Allows
  * visualization, execution and result
