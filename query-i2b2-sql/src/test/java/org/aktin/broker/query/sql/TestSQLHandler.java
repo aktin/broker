@@ -2,10 +2,13 @@ package org.aktin.broker.query.sql;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.sql.DataSource;
+
+import org.aktin.broker.query.io.ZipArchiveWriter;
 import org.postgresql.ds.PGSimpleDataSource;
 
 public class TestSQLHandler {
@@ -25,8 +28,9 @@ public class TestSQLHandler {
 		Path temp = Files.createTempFile("queries", ".zip");
 		System.out.println("Writing to "+temp.toString());
 		// write ZIP file
-		try( OutputStream out = Files.newOutputStream(temp) ){
-			h.execute(out);
+		try( OutputStream out = Files.newOutputStream(temp);
+				ZipArchiveWriter zip = new ZipArchiveWriter(out, StandardCharsets.UTF_8)){
+			h.execute(zip);
 		}
 	}
 }

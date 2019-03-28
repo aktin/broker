@@ -49,6 +49,7 @@ public class ZipArchiveWriter implements MultipartOutputStream {
 	public OutputStream writePart(String mediaType, String name) throws IOException {
 		ZipEntry ze = new ZipEntry(name);
 		ze.setComment(mediaType);
+		zip.putNextEntry(ze);
 		return new WrappedOutputStream();
 	}
 
