@@ -21,5 +21,11 @@ public class RHandler implements QueryHandler {
 	@Override
 	public void execute(MultipartDirectory input, MultipartOutputStream target) throws IOException {
 		Execution ex = new Execution(script);
+		ex.setRScriptExecutable(factory.getRExecutablePath());
+		ex.setWorkingDir(input.getBasePath());
+		ex.createFileResources();
+		ex.runRscript();
+		ex.removeFileResources();
+		ex.moveResultFiles(target);
 	}
 }
