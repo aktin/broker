@@ -1,12 +1,16 @@
 package org.aktin.broker.query.aggregate.rscript;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.logging.Logger;
 
+import org.aktin.broker.query.io.MultipartDirectoryWriter;
+import org.aktin.broker.query.io.MultipartOutputStream;
 import org.aktin.scripting.r.RScript;
 
 
@@ -94,6 +98,35 @@ public class Execution{
 	public void runRscript() throws IOException {
 		RScript r = new RScript(rExecPath);
 		r.runRscript(workingDir, workingDir.relativize(mainScript).toString());
-		
+	}
+
+	public void moveResultFiles(MultipartOutputStream target) throws IOException{
+		// if the target directory is the same as the working directory,
+		// then we don't need copy the data
+		if( target instanceof MultipartDirectoryWriter 
+				&& this.workingDir.equals(((MultipartDirectoryWriter)target).getBasePath()) ) {
+			// files already there, just create the entries
+			MultipartDirectoryWriter w = (MultipartDirectoryWriter)target;
+			for( Result r : script.result ) {
+				Path file = resolvePath(r.file);
+				if( Files.exists(file) ) {
+					// file exists, write file entry
+					w.addFileEntry(r.file, r.type);
+				}else if( r.getRequired() ) {
+					// file does not exist but is required
+					throw new FileNotFoundException("Required result file does not exist: "+file);
+				}
+			}
+		}else {
+			// move file data to the target stream
+			for( Result r : script.result ) {
+				Path file = resolvePath(r.file);
+				try( OutputStream out = target.writePart(r.type, r.file) ){
+					Files.copy(file, out);
+				}
+			}
+			// all result files copied, now delete the local data
+			removeResultFiles();
+		}
 	}
 }
