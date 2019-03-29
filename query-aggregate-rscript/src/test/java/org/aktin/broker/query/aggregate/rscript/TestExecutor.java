@@ -39,14 +39,8 @@ public class TestExecutor {
 		// copy test data files
 		for( int i=0; i<testData1.length; i++ ) {
 			String name = testData1[i];
-			try( InputStream in = TestExecutor.class.getResourceAsStream(testDataDir+name);
-					ReadableByteChannel rc = Channels.newChannel(in);
-					FileChannel fc = FileChannel.open(dest.resolve(name), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE) ){
-				long pos = 0,count = 0;
-				do{
-					count = fc.transferFrom(rc, pos, 1024*1024);
-					pos += count;
-				}while( count != 0 );
+			try( InputStream in = TestExecutor.class.getResourceAsStream(testDataDir+name) ){
+				Files.copy(in, dest.resolve(name));
 			}
 		}
 	}
