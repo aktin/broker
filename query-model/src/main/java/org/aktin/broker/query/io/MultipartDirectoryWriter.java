@@ -66,7 +66,7 @@ public class MultipartDirectoryWriter implements MultipartOutputStream, Multipar
 	public OutputStream writePart(String mediaType, String name) throws IOException {
 		Path file = resolveFile(mediaType, name);		
 		OutputStream out = Files.newOutputStream(file, StandardOpenOption.CREATE_NEW);
-		entries.add(new MultipartEntryImpl(name, mediaType));
+		addFileEntry(name, mediaType);
 		return out;
 	}
 
@@ -74,8 +74,12 @@ public class MultipartDirectoryWriter implements MultipartOutputStream, Multipar
 	public BufferedWriter writeTextPart(String mediaType, String name, Charset charset) throws IOException {
 		Path file = resolveFile(mediaType, name);
 		BufferedWriter writer = Files.newBufferedWriter(file, charset, StandardOpenOption.CREATE_NEW);
-		entries.add(new MultipartEntryImpl(name, mediaType+";charset="+charset.name()));
+		addFileEntry(name, mediaType+";charset="+charset.name());
 		return writer;
+	}
+
+	public void addFileEntry(String name, String mediaType) {
+		entries.add(new MultipartEntryImpl(name, mediaType));		
 	}
 
 	@Override
