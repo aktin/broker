@@ -20,6 +20,7 @@ import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.db.LiquibaseWrapper;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -102,8 +103,7 @@ public class HttpServer {
 
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
 		context.setContextPath("/admin/html");
-		
-		context.setHandler(handler);
+		context.insertHandler(handler);
 		
 		return context;
 	}
@@ -116,6 +116,10 @@ public class HttpServer {
 		handlers.addHandler(createStaticResourceHandler());
 		handlers.addHandler(context);
 		jetty.setHandler(handlers);
+
+		ErrorHandler errorHandler = new ErrorHandler();
+		errorHandler.setShowStacks(true);
+		jetty.addBean(errorHandler);
 
 		ServletHolder jersey = new ServletHolder(new ServletContainer(rc));
 //		jersey.setInitOrder(0);
@@ -183,8 +187,8 @@ public class HttpServer {
 		
 		// start server
 		final HttpServer server = new HttpServer(new DefaultConfiguration());
-		
 		// add shutdown hook
+		
 		Runtime.getRuntime().addShutdownHook(new Thread(){
 			@Override
 			public void run() {
