@@ -51,7 +51,7 @@ public class AuthFilter implements ContainerRequestFilter{
 		String token = authHeader.substring("Bearer".length()).trim();
 
 		try{
-			log.info("Authentication token: "+token);
+//			log.info("Authentication token: "+token);
 			Token t = validateToken(token);
 			// renew token with every access
 			t.renew();
@@ -67,8 +67,6 @@ public class AuthFilter implements ContainerRequestFilter{
 		if( t == null ){
 			log.info("Token not found: "+token);//+" (total "+tokens.getTokenCount()+")");
 			throw new IOException("Access denied");
-		}else{
-			log.info("Token found, user="+t.getName());
 		}
 		return t;
 	}
