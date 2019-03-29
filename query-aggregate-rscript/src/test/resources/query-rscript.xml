@@ -2,20 +2,33 @@
 <r-script xmlns="http://aktin.org/ns/aggregate/r">
 	<source type="application/r-script"  timeout="30s">
 <![CDATA[
+	library(lattice)
+	source('module1.R')
 	enc <- read.delim(file="temp_encounters.txt")
-	pat <- read.delim(file="temp_patients.txt")
-	dia <- read.delim(file="temp_diage.txt")
-	df <- data.frame(Param="Sex", table(pat$sex))
+	df <- data.frame(Param="Sex", table(enc$sex))
 	# TODO more counts
-	write.table(x=df, file="counts.txt", row.names=FALSE, eol="\r\n", sep="\t" fileEncoding="UTF-8");
+	# write data table
+	write.table(x=df, file="counts.txt", row.names=FALSE, eol="\r\n", sep="\t", fileEncoding="UTF-8");
+	graph <- histogram(enc$age,xlab="Alter [Jahre]",ylab="Anzahl Patienten",type='count',breaks=seq(0,110,length=12),sub=paste('n =',length(df$age),', Werte größer 110 werden als 110 gewertet'))
+	report.svg(graph,'age');
+
 ]]>
 	</source>
 	<!--  additional resource files to be placed in the directory
 	  before execution of the script. e.g. lookup tables, additional script modules, etc. -->
 	<resource file="module1.R" type="text/plain">
-
+<![CDATA[
+	# write svg graphics
+	gfx.ext <- '.svg'
+	gfx.dev <- 'svg'
+	report.svg <- function(graph, name, width=8, height=4){
+		trellis.device(gfx.dev,file=paste0(name,gfx.ext), width=width,height=height)
+		print(graph)
+		no_output <- dev.off() #silent
+	}
+]]>
 	</resource>
 
 	<result file="counts.txt" type="text/tab-separated-values"/>
-	<result file="test.svg" type="image/svg"/>
+	<result file="age.svg" type="image/svg"/>
 </r-script>

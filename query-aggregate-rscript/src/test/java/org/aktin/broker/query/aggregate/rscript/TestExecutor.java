@@ -2,19 +2,25 @@ package org.aktin.broker.query.aggregate.rscript;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.JAXB;
 
-import org.aktin.scripting.r.RScript;
+import org.aktin.scripting.r.TestRScript;
 import org.junit.Test;
 
 public class TestExecutor {
 
 	public static RSource getRScript() throws IOException{
 		RSource q;
-		try( InputStream in = TestExecutor.class. getResourceAsStream("/query-r.xml") ){
+		try( InputStream in = TestExecutor.class. getResourceAsStream("/query-rscript.xml") ){
 			q = JAXB.unmarshal(in,RSource.class);
 		}
 		return q;
@@ -27,4 +33,48 @@ public class TestExecutor {
 		return m;
 	}
 
+	private static final String testDataDir = "/data/";
+	private static final String[] testData1 = {"temp_encounters.txt"};
+	private void copyInputFiles1(Path dest) throws IOException {
+		// copy test data files
+		for( int i=0; i<testData1.length; i++ ) {
+			String name = testData1[i];
+			try( InputStream in = TestExecutor.class.getResourceAsStream(testDataDir+name);
+					ReadableByteChannel rc = Channels.newChannel(in);
+					FileChannel fc = FileChannel.open(dest.resolve(name), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE) ){
+				long pos = 0,count = 0;
+				do{
+					count = fc.transferFrom(rc, pos, 1024*1024);
+					pos += count;
+				}while( count != 0 );
+			}
+		}
+	}
+	private void deleteInputFiles1(Path base) throws IOException {
+		for( int i=0; i<testData1.length; i++ ) {
+			String name = testData1[i];
+			Files.delete(base.resolve(name));
+		}		
+	}
+	@Test
+	public void executeRScript() throws IOException {
+		RSource rs = getRScript();
+		
+		Execution exec = new Execution(rs);
+		Path testDir = Files.createTempDirectory("aggregate-r");
+		copyInputFiles1(testDir);
+
+		exec.setRScriptExecutable(TestRScript.findR());
+		exec.setWorkingDir(testDir);
+		exec.createFileResources();
+
+
+		exec.runRscript();
+
+		exec.removeFileResources();
+		deleteInputFiles1(testDir);
+		exec.removeResultFiles();
+
+		Files.delete(testDir);
+	}
 }
