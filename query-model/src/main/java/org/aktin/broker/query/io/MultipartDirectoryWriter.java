@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
@@ -58,8 +57,8 @@ public class MultipartDirectoryWriter implements MultipartOutputStream, Multipar
 		public String getMediaType() {return mediaType;}
 
 		@Override
-		public InputStream newInputStream(OpenOption... openOptions) throws IOException {
-			return Files.newInputStream(dir.resolve(name), openOptions);
+		public InputStream newInputStream() throws IOException {
+			return Files.newInputStream(dir.resolve(name));
 		}
 	}
 	@Override
