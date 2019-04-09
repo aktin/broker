@@ -1,6 +1,7 @@
 package org.aktin.broker.request;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 import javax.activation.DataSource;
@@ -43,10 +44,14 @@ public interface RetrievedRequest {
 	 * Set processing properties and change the status
 	 * to {@link RequestStatus#Processing}.
 	 *
-	 * @param properties processing properties
+	 * @param properties processing properties. The properties can vary between processing steps, depending on the step.
+	 * @param stepName name of the processed part. Optional and can be {@code null} if execution contains only one part.
+	 * @param stepNo step number for multiple processing steps. First step will be numbered 1.
+	 * @param numSteps total number of steps. This method should be called for each step
+	 * 
 	 * @throws IOException IO error
 	 */
-	void setProcessing(Map<String,String> properties)throws IOException;
+	void setProcessing(Map<String,String> properties, String stepName, int stepNo, int numSteps)throws IOException;
 
 	/**
 	 * Change the status of the request. This will fire a status change event.
@@ -66,6 +71,14 @@ public interface RetrievedRequest {
 	 * @throws NullPointerException if mediaType is null
 	 */
 	void createResultData(String mediaType) throws IOException, NullPointerException;
+	/**
+	 * Create directory for storing intermediate files. It is the callers responsibility
+	 * to clean and delete the directory after use.
+	 * @param stepNo number differentiating between multiple intermediate stages. Fist step should use {@code 1}.
+	 * @return Path for storing intermediate files
+	 * @throws IOException IO error
+	 */
+	Path createIntermediateDirectory(int stepNo) throws IOException;
 	/**
 	 * Removes the result data. Use this method e.g. if writing
 	 * to the result failed. After a call to this method,
