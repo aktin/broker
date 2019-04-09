@@ -1,14 +1,9 @@
 package org.aktin.broker.query.sql;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Function;
-import java.util.zip.ZipInputStream;
-
-import javax.activation.DataSource;
 
 import org.aktin.broker.query.QueryHandler;
 import org.aktin.broker.query.io.MultipartDirectory;
@@ -20,7 +15,6 @@ public class SQLHandler implements QueryHandler {
 	private SQLHandlerFactory factory;
 	private SQLQuery query;
 	private Function<String,String> propertyLookup;
-	private Path resultDisplay;
 
 	SQLHandler(SQLHandlerFactory factory, SQLQuery query, Function<String,String> propertyLookup){
 		this.factory = factory;

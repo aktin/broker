@@ -2,7 +2,6 @@ package org.aktin.broker.query;
 
 import java.io.IOException;
 
-import javax.activation.DataSource;
 
 import org.aktin.broker.query.io.MultipartDirectory;
 import org.aktin.broker.query.io.MultipartOutputStream;
