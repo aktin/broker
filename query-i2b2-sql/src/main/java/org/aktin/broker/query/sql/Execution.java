@@ -7,6 +7,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -105,6 +107,14 @@ public class Execution{
 		}
 	}
 	
+	private String formatValue(Object value, int type) {
+		// XXX maybe some formatting for date/time columns
+		if( value instanceof Timestamp ) {
+			return ((Timestamp)value).toInstant().toString();
+		}else {
+			return value.toString();
+		}
+	}
 	private void exportTable(ExportTable export, TableWriter writer) throws SQLException, IOException{
 		Statement s = dbc.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		String[] row;
@@ -123,9 +133,8 @@ public class Execution{
 					Object o = rs.getObject(i+1);
 					if( o == null ){
 						row[i] = null;
-					}else{
-						// XXX maybe some formatting for date/time columns
-						row[i] = o.toString();
+					}else {
+						row[i] = formatValue(o, meta.getColumnType(i+1));
 					}
 				}
 				writer.row(row);
