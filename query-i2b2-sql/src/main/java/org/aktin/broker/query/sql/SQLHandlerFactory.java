@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -17,19 +18,31 @@ import org.w3c.dom.Element;
 
 // TODO add qualifier annotation
 
+/**
+ * SQL Handler factory.
+ * @author R.W.Majeed
+ *
+ */
 public class SQLHandlerFactory implements QueryHandlerFactory{
 	private DataSource ds;
 	private Charset exportCharset;
+	private DateTimeFormatter formatter;
+	
 
 	public SQLHandlerFactory() {
 		this.exportCharset = StandardCharsets.UTF_8;
+		this.formatter = DateTimeFormatter.ISO_INSTANT;
 	}
 	public SQLHandlerFactory(DataSource database) {
 		this();
 		this.ds = database;
 	}
-	
 
+
+	/**
+	 * Set the data source used for executing SQL queries
+	 * @param database data source
+	 */
 	public void setDataSource(DataSource database){
 		this.ds = database;
 	}
@@ -37,6 +50,15 @@ public class SQLHandlerFactory implements QueryHandlerFactory{
 		return exportCharset;
 	}
 
+	/**
+	 * Set the formatter used to format timestamps for the SQL execution. Some SQL
+	 * dialects require specific date time formats. Defaults to
+	 * {@code DateTimeFormatter.ISO_INSTANT} if this method is never called.
+	 * @param formatter formatter
+	 */
+	public void setDateTimeFormatter(DateTimeFormatter formatter) {
+		this.formatter = formatter;
+	}
 	Connection openConnection() throws SQLException{
 		Objects.requireNonNull(ds, "datasource not set");
 		return ds.getConnection();
@@ -68,7 +90,7 @@ public class SQLHandlerFactory implements QueryHandlerFactory{
 	}
 	@Override
 	public String formatTimestamp(Instant timestamp) {
-		return timestamp.toString();
+		return formatter.format(timestamp);
 	}
 
 }
