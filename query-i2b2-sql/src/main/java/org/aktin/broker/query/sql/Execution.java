@@ -174,14 +174,18 @@ public class Execution{
 		// batch statements which need to be executed in order
 		List<String> batch = new ArrayList<>();
 		StringBuilder sql = new StringBuilder();
-		sql.append("CREATE TEMPORARY TABLE anon_map AS SELECT ");
+		sql.append("CREATE TEMPORARY TABLE anon_map AS ( SELECT ");
 		sql.append(anonymize.key.column);
 		sql.append(" AS id FROM ");
 		sql.append(anonymize.key.table);
-		sql.append(" WHERE FALSE");
+		// WHERE FALSE will make sure no rows are copied.
+		// the SQL standard allows WITH NO DATA
+		sql.append(" WHERE FALSE ) WITH NO DATA"); 
 		batch.add(sql.toString());
 
 		// add auto increment column
+		// type SERIAL is non-standard and does not work on HSQLDB
+		// TODO add SQL flavor flag to support HSQLDB for testing anonymisation
 		batch.add("ALTER TABLE anon_map ADD COLUMN target SERIAL NOT NULL");
 
 		// fill ids and generate new anonymized ids
