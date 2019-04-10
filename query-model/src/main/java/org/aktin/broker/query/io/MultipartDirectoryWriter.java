@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +30,7 @@ public class MultipartDirectoryWriter implements MultipartOutputStream, Multipar
 	 */
 	public MultipartDirectoryWriter(Path baseDirectory, Charset charset) {
 		this.dir = baseDirectory;
+		entries = new ArrayList<>();
 	}
 
 	@Override
