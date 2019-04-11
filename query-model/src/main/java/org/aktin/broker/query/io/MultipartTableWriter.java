@@ -72,12 +72,32 @@ public class MultipartTableWriter implements TableExport {
 		}
 	}
 	@Override
-	public TableWriter exportTable(String name) throws IOException {
+	public TableWriter exportTable(String name, String mediaType) throws IOException {
 		// make sure filename has extension
-		if( !name.endsWith(".txt") ) {
-			name = name + ".txt";
+		Charset cs = this.charset; // use default charset
+		if( mediaType.startsWith(MEDIA_TYPE_TAB) ) {
+			if( name.endsWith(".txt") || name.endsWith(".tsv") || name.endsWith(".tab") ) {
+				// use provided extension
+			}else {
+				// add file extension
+				name = name + ".txt";
+			}
+			// see if charset provided
+			int pos = mediaType.indexOf("charset=");
+			if( pos != -1 ) {
+				// charset provided, use specified charset
+				int end = mediaType.indexOf(';',pos);
+				if( end == -1 ) {
+					// last argument, use end of string
+					end = mediaType.length();
+				}
+				String encoding = mediaType.substring(pos+"charset=".length(), end);
+				cs = Charset.forName(encoding);
+			}
+		}else {
+			throw new IOException("Export table type unsupported: "+mediaType);
 		}
-		return new TableWriterImpl(output.writeTextPart(MEDIA_TYPE_TAB, name, charset));
+		return new TableWriterImpl(output.writeTextPart(mediaType, name, cs));
 	}
 
 	/**

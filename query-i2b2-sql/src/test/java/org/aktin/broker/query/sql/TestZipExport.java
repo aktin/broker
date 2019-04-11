@@ -25,12 +25,12 @@ public class TestZipExport {
 		try( OutputStream out = Files.newOutputStream(temp);
 				ZipArchiveWriter z = new ZipArchiveWriter(out, StandardCharsets.UTF_8);
 				MultipartTableWriter w = new MultipartTableWriter(z, StandardCharsets.UTF_8) ){
-			TableWriter t = w.exportTable("patients");
+			TableWriter t = w.exportTable("patients", ExportTable.DEFAULT_TYPE_TSV);
 			t.header("id","sex");
 			t.row("1","m");
 			t.row("2","w");
 			t.close();
-			t = w.exportTable("visits");
+			t = w.exportTable("visits", ExportTable.DEFAULT_TYPE_TSV);
 			t.header("id","start", "end");
 			t.row("1","2000-01-01","2000-01-01");
 			t.row("2","2000-01-01","2000-01-01");

@@ -23,7 +23,7 @@ public class ConsoleTableExport implements TableExport, TableWriter {
 	}
 
 	@Override
-	public TableWriter exportTable(String name) throws IOException {
+	public TableWriter exportTable(String name, String type) throws IOException {
 		System.out.println("TABLE("+name+")");
 		System.out.println("-");
 		return this;

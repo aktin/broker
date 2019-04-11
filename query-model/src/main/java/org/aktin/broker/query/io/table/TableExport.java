@@ -5,5 +5,5 @@ import java.io.IOException;
 
 public interface TableExport extends Closeable{
 
-	TableWriter exportTable(String name) throws IOException;
+	TableWriter exportTable(String name, String mediaType) throws IOException;
 }

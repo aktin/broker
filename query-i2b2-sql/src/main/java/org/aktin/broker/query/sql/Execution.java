@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -267,7 +266,11 @@ public class Execution{
 			if( dest == null || dest.length() == 0 ){
 				dest = ex.table;
 			}
-			exportTable(ex, export.exportTable(dest));
+			String mediaType = ex.type;
+			if( mediaType == null ) {
+				mediaType = ExportTable.DEFAULT_TYPE_TSV;
+			}
+			exportTable(ex, export.exportTable(dest, mediaType));
 		}
 	}
 	
