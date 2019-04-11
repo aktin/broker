@@ -7,10 +7,14 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.aktin.broker.query.io.MultipartDirectoryWriter;
 import org.aktin.broker.query.io.MultipartOutputStream;
+import org.aktin.scripting.r.AbnormalTerminationException;
 import org.aktin.scripting.r.RScript;
 
 
@@ -31,6 +35,8 @@ public class Execution{
 	private static final Logger log = Logger.getLogger(Execution.class.getName());
 
 	private RSource script;
+	/** timeout milliseconds for the script */
+	private Integer timeoutMillis;
 	/** working directory, where input data resides and the Rscript command is executed */
 	private Path workingDir;
 
@@ -60,6 +66,30 @@ public class Execution{
 		// TODO verify that the resulting path is still in the workingDir
 		return this.workingDir.resolve(name);
 	}
+
+	private void parseTimeout() throws IOException {
+		if( script.source.timeout != null && script.source.timeout.length() > 0 ) {
+			Matcher m = Pattern.compile("([0-9]+)(m?s)").matcher(script.source.timeout);
+			if( !m.matches() ) {
+				throw new IOException("Script timeout value not parsable: "+script.source.timeout);
+			}
+			int value = Integer.valueOf(m.group(1));
+			switch( m.group(2) ) {
+			case "ms":
+				timeoutMillis = value;
+				break;
+			case "s":
+				timeoutMillis = value*1000;
+				break;
+			default:
+				// should never happen, since the regex already verifies only s or ms is used.
+				throw new IOException("Unsupported timeout unit: "+m.group(2));
+			}
+		}else {
+			// no timeout
+			timeoutMillis = null;
+		}		
+	}
 	/**
 	 * Create the  main script file and additional resources
 	 * in the working directory.
@@ -72,7 +102,7 @@ public class Execution{
 		try( BufferedWriter w = Files.newBufferedWriter(mainScript, StandardOpenOption.TRUNCATE_EXISTING) ){
 			w.write(script.source.value);
 		}
-		
+		parseTimeout();
 		for( Resource r : script.resource ) {
 			try( BufferedWriter w = Files.newBufferedWriter(resolvePath(r.file), StandardOpenOption.CREATE_NEW) ){
 				w.write(r.value);
@@ -95,9 +125,18 @@ public class Execution{
 		}
 	}
 
-	public void runRscript() throws IOException {
+	public void runRscript() throws IOException{
 		RScript r = new RScript(rExecPath);
-		r.runRscript(workingDir, workingDir.relativize(mainScript).toString());
+		try {
+			r.runRscript(workingDir, workingDir.relativize(mainScript).toString(), timeoutMillis);
+		} catch (TimeoutException e) {
+			throw new IOException("R execution timeout expired", e);
+		} catch (AbnormalTerminationException e) {
+			// log full error message
+			log.warning("R execution failed with exit code "+e.getExitCode());
+			log.warning("R stdout: "+e.getErrorOutput());
+			throw new IOException("R execution failed",e);
+		}
 	}
 
 	public void moveResultFiles(MultipartOutputStream target) throws IOException{

@@ -9,6 +9,9 @@ import javax.xml.bind.annotation.XmlValue;
 public class Source {
 	@XmlAttribute
 	String type;
+	/**
+	 * Timeout in seconds or milliseconds. Should match the pattern {@code [0-9]+m?s}
+	 */
 	@XmlAttribute
 	String timeout;
 	@XmlValue
