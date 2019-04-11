@@ -13,6 +13,7 @@ import org.aktin.broker.query.io.MultipartOutputStream;
  * @author R.W.Majeed
  *
  */
+// TODO allow execute method to provide long error message in case of failure (e.g. multi line error message from R)
 public interface QueryHandler {
 	/**
 	 * Execute the query and store the results
