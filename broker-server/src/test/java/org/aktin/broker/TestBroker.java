@@ -138,7 +138,7 @@ public class TestBroker {
 		Assert.assertTrue(l.isEmpty());
 		// add request
 		// TODO use large file
-		String nonAsciiChars = "ÄÖÜß€ê";
+		String nonAsciiChars = "Ã„Ã–ÃœÃŸÃª";
 		int qid = c.createRequest("text/x-test", nonAsciiChars);
 		System.out.println("New request: "+qid);
 		l = c.listAllRequests();
