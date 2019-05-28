@@ -102,27 +102,27 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.4.15.v20190215</version>
+			<version>9.4.18.v20190429</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.eclipse.jetty.websocket/javax-websocket-server-impl -->
 		<dependency>
 		    <groupId>org.eclipse.jetty.websocket</groupId>
 		    <artifactId>javax-websocket-server-impl</artifactId>
-		    <version>9.4.15.v20190215</version>
+		    <version>9.4.18.v20190429</version>
 		    <scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>9.4.15.v20190215</version>
+			<version>9.4.18.v20190429</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<!-- appears to be dependency of jetty-servlet for org.eclipse.jetty.util.Decorator -->
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-util</artifactId>
-			<version>9.4.15.v20190215</version>
+			<version>9.4.18.v20190429</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
