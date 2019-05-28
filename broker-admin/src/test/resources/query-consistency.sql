@@ -151,8 +151,8 @@ from i2b2crcdata.observation_fact
 where concept_cd LIKE 'AKTIN:IPVI:%'
  group by concept_cd;
 
--- Anzahl CDAs nach Template-Version
-INSERT INTO temp_analysis(name,value) SELECT concept_cd, count(*)
+-- Anzahl CDAs nach Template-Version und letzter Impo
+INSERT INTO temp_analysis(name,value) SELECT concept_cd, CONCAT(count(*), ' ', max(import_date))
 from i2b2crcdata.observation_fact 
 where concept_cd LIKE 'AKTIN:ITTI:%'
  group by concept_cd;
