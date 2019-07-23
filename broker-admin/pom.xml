@@ -77,7 +77,7 @@
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
-			<version>2.3.4</version>
+			<version>2.5.0</version>
 		</dependency>
 
 		<!-- dependencies accounting for java12 removal of javax.activation and jaxb -->
@@ -121,32 +121,38 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-server</artifactId>
-			<version>2.23.1</version>
+			<version>2.29</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
-			<version>2.23.1</version>
+			<version>2.29</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-jetty-http</artifactId>
-			<version>2.23.1</version>
+			<version>2.29</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.ext.cdi</groupId>
 			<artifactId>jersey-cdi1x-servlet</artifactId>
-			<version>2.23.1</version>
+			<version>2.29</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>2.29</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.hk2</groupId>
 			<artifactId>hk2-locator</artifactId>
-			<version>2.4.0</version>
+			<version>2.5.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.hk2</groupId>
 			<artifactId>hk2-core</artifactId>
-			<version>2.4.0</version>
+			<version>2.5.0</version>
 		</dependency>
 		<!-- don't need JSON support on server
 		<dependency>
