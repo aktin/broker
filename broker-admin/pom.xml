@@ -9,12 +9,12 @@
 
 	<groupId>org.aktin</groupId>
 	<artifactId>broker-admin</artifactId>
-	<version>0.8-SNAPSHOT</version>
+	<version>0.8</version>
 
 	<parent>
 		<groupId>org.aktin</groupId>
 		<artifactId>broker</artifactId>
-		<version>0.8-SNAPSHOT</version>
+		<version>0.8</version>
 	</parent>
 	<build><!--
 		<plugins>
@@ -59,17 +59,17 @@
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-server</artifactId>
-			<version>0.8-SNAPSHOT</version>
+			<version>0.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aktin.broker</groupId>
 			<artifactId>query-model</artifactId>
-			<version>0.8-SNAPSHOT</version>
+			<version>0.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-client</artifactId>
-			<version>0.8-SNAPSHOT</version>
+			<version>0.8</version>
 			<scope>test</scope>
 		</dependency>
 
