@@ -28,6 +28,7 @@ public class MultipartTableWriter implements TableExport {
 	 * Create an instance by wrapping a {@link MultipartOutputStream}. Important: the underlying
 	 * stream is not closed, when the table export is closed.
 	 * @param output underlying stream, will not be closed by this class.
+	 * @param charset charset to use for producing text files
 	 */
 	public MultipartTableWriter(MultipartOutputStream output, Charset charset) {
 		this.output = output;

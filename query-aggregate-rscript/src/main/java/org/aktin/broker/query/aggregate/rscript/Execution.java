@@ -19,15 +19,8 @@ import org.aktin.scripting.r.RScript;
 
 
 /**
- * SQL export execution.
- * The export is performed in five steps:
- * <ol>
- * 	<li>Prepare SQL</li>
- *  <li>Create tables via {@link #generateTables(Connection)}. 
- *      This step also performs anonymization.</li>
- *  <li>Export tables</li>
- *  <li>Remove tables</li>
- * </ol>
+ * R script execution which can be
+ * applied after data was extracted.
  * @author R.W.Majeed
  *
  */

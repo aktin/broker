@@ -101,6 +101,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	 */
 	@Override
 	public List<Node> getAllNodes() throws SQLException{
+		// TODO read/write nodes to external file
 		List<Node> nl = new ArrayList<>();
 		try( Connection dbc = brokerDB.getConnection() ){
 			// XXX maybe better to add an is_admin column
@@ -702,6 +703,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			// clear nodes
 			st = dbc.createStatement();
 			// TODO issue warning, if the request was already retrieved by a node
+			// TODO 
 			st.executeUpdate("DELETE FROM request_node_status WHERE request_id="+requestId);
 			st.close();
 

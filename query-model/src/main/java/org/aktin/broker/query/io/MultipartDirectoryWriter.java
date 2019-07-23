@@ -25,7 +25,7 @@ public class MultipartDirectoryWriter implements MultipartOutputStream, Multipar
 	/**
 	 * Create a ZIP file export.
 	 * A call to {@link #close()} will also close the output stream.
-	 * @param out output stream to write the ZIP file to
+	 * @param baseDirectory base directory where the files will be stored
 	 * @param charset charset used for CSV data, zip entry names, zip comments
 	 */
 	public MultipartDirectoryWriter(Path baseDirectory, Charset charset) {

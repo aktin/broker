@@ -219,10 +219,25 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 		return new RequestTargetNodes(nodes);
 	}
+	
+
+	/**
+	 * Delete a restriction to certain target nodes. When the delete is successful, the
+	 * request can be retrieved by all nodes.
+	 * @param requestId request id
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
+	 * @throws NotFoundException request not found or request not targeted at specific nodes
+	 */
 	@DELETE
 	@Path("{id}/nodes")
 	@RequireAdmin
 	public void clearRequestTargetNodes(@PathParam("id") Integer requestId) throws SQLException, IOException, NotFoundException{
+		// TODO check for valid requestId and throw NotFoundException otherwise
+		int[] nodes = db.getRequestTargets(requestId);
+		if( nodes == null ){
+			throw new NotFoundException();
+		}
 		db.clearRequestTargets(requestId);
 	}
 	@PUT
@@ -235,6 +250,8 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			log.warning(message);
 			throw new BadRequestException(message);
 		}
+		// TODO replacing / changing nodes deletes all status information for the previous node. Find a way/restrictions to handle this case
+		// XXX 
 		db.setRequestTargets(requestId, nodes.getNodes());
 	}
 
