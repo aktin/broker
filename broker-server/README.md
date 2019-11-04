@@ -13,7 +13,12 @@ endpoint org.aktin.broker.notify.BrokerWebsocket
 Authentication
 ==============
 
-TODO: API-Key authentication
+API-Key authentication
+----------------------
+API-keys can be specified for node access to REST API 
+
+TLS client authentication
+-------------------------
 REST API access is done via TLS client authentication. To use the
 REST API, you need to generate a private key and request a certificate 
 signed by the same CA (or sub CA) as the broker. (`CSR` = certificate signing request)
@@ -35,7 +40,7 @@ Use the REST API from the command line
 --------------------------------------
 
 ```
-curl --cert keystore.p12:xxx123 --cert-type P12 --insecure https://blue.at.struktu.ro/idm/lala.test?asdf
+curl -H 'Accept: application/xml' -H "Authorization: Bearer xxxApiKey123" https://localhost:8080/broker/my/node
 ```
 
 View database contents
