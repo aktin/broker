@@ -31,13 +31,13 @@
 
 	<inceptionYear>2014</inceptionYear>
 	<organization>
-		<name>University of Oldenburg</name>
-		<url>https://www.uni-oldenburg.de/medizininformatik/</url>
+		<name>Uniklinik RWTH Aachen</name>
+		<url>https://www.ukaachen.de/kliniken-institute/institut-fuer-medizinische-informatik/</url>
 	</organization>
 	<developers>
 		<developer>
 			<name>R.W.Majeed</name>
-			<email>raphael.majeed (a) uni-oldenburg.de</email>
+			<email>rmajeed (a) ukaachen.de</email>
 		</developer>
 		<!-- ... -->
 	</developers>
