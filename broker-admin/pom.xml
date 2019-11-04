@@ -106,52 +106,52 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.4.18.v20190429</version>
+			<version>9.4.22.v20191022</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>9.4.18.v20190429</version>
+			<version>9.4.22.v20191022</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-util</artifactId>
-			<version>9.4.18.v20190429</version>
+			<version>9.4.22.v20191022</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-server</artifactId>
-			<version>2.29</version>
+			<version>2.29.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
-			<version>2.29</version>
+			<version>2.29.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-jetty-http</artifactId>
-			<version>2.29</version>
+			<version>2.29.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.ext.cdi</groupId>
 			<artifactId>jersey-cdi1x-servlet</artifactId>
-			<version>2.29</version>
+			<version>2.29.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.inject</groupId>
 			<artifactId>jersey-hk2</artifactId>
-			<version>2.29</version>
+			<version>2.29.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.hk2</groupId>
 			<artifactId>hk2-locator</artifactId>
-			<version>2.5.0</version>
+			<version>2.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.hk2</groupId>
 			<artifactId>hk2-core</artifactId>
-			<version>2.5.0</version>
+			<version>2.6.1</version>
 		</dependency>
 		<!-- don't need JSON support on server
 		<dependency>
@@ -160,6 +160,13 @@
 			<version>2.14</version>
 		</dependency>
 		-->
+		<!-- SLF4j Logging into JUL/JDK framework -->
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14 -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>1.7.28</version>
+		</dependency>
 
 		<!-- test -->
 		<dependency>
