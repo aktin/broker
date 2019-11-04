@@ -1,5 +1,6 @@
 package org.aktin.broker.auth;
 
+import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -7,6 +8,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
@@ -17,7 +19,8 @@ import org.aktin.broker.xml.Node;
 
 
 @Singleton
-public class AuthCache implements Flushable{
+public class AuthCache implements Flushable, Closeable{
+	private static final Logger log = Logger.getLogger(AuthCache.class.getName());
 
 	private Map<String, Principal> cache;
 
@@ -71,6 +74,7 @@ public class AuthCache implements Flushable{
 	@Override
 	public void flush() throws IOException {
 		// collect last accessed timestamps
+		log.info("flushing");
 		int[] nodeIds = new int[cache.size()];
 		long[] timestamps = new long[cache.size()];
 		int i=0;
@@ -84,6 +88,11 @@ public class AuthCache implements Flushable{
 		} catch (SQLException e) {
 			throw new IOException(e);
 		}
+	}
+	@Override
+	public void close() throws IOException {
+		log.info("performing close");
+		flush();
 	}
 
 }

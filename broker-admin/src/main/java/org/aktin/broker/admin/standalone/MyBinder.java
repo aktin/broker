@@ -1,7 +1,11 @@
 package org.aktin.broker.admin.standalone;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
@@ -14,19 +18,24 @@ import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.download.DownloadManager;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
+
 
 
 public class MyBinder extends AbstractBinder{
+	private static final Logger log = Logger.getLogger(MyBinder.class.getName());
 
 	private DataSource ds;
 	private Configuration config;
 	private BrokerBackend broker;
 	private AggregatorBackend aggregator;
 	private DownloadManager downloads;
+	private List<Closeable> closeables;
 	
 	public MyBinder(DataSource ds,Configuration config){
 		this.ds = ds;
 		this.config = config;
+		closeables = new LinkedList<>();
 	}
 	@Override
 	protected void configure() {
@@ -52,5 +61,21 @@ public class MyBinder extends AbstractBinder{
 		//bind(PMService.class).to(AbstractCell.class);
 		//bind(WorkplaceService.class).to(AbstractCell.class);
 	}
+	@Override
+	public <T> ScopedBindingBuilder<T> bind(T service) {
+		if( service instanceof Closeable ) {
+			closeables.add((Closeable)service);
+		}
+		return super.bind(service);
+	}
 
+	public void closeCloseables() {
+		for( Closeable c : closeables ) {
+			try {
+				c.close();
+			} catch (IOException e) {
+				log.log(java.util.logging.Level.WARNING, "Exception during closing of "+c.getClass(), e);
+			}
+		}
+	}
 }

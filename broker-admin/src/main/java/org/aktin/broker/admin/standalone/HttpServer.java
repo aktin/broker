@@ -47,6 +47,7 @@ public class HttpServer {
 	private ResourceConfig rc;
 	private Server jetty;
 	private DataSource ds;
+	private MyBinder binder;
 
 	public HttpServer(Configuration config) throws SQLException, IOException{
 		this.config = config;
@@ -126,8 +127,12 @@ public class HttpServer {
 		context.addServlet(jersey, "/*");
 
 		// initialise query manager
-		rc.register(new MyBinder(ds,config));
+		this.binder = new MyBinder(ds,config);
+		rc.register(this.binder);
 
+		for( Object c : rc.getInstances() ) {
+			System.out.println("Instance:"+c.getClass()+":"+c.toString());
+		}
 		jetty.start();
 	}
 	public void join() throws InterruptedException{
@@ -142,6 +147,8 @@ public class HttpServer {
 		System.out.println("Cleanup jetty..");
 		System.out.flush();
 		jetty.destroy();
+		// help cleanup
+		binder.closeCloseables();
 		// release threads waiting for termination
 		synchronized( this ){
 			this.notifyAll();
