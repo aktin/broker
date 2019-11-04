@@ -85,6 +85,8 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 			throw new InternalServerErrorException(e);
 		}
 	}
+
+	// list requests for the calling node
 	@Authenticated
 	@GET
 	@Path("request")
