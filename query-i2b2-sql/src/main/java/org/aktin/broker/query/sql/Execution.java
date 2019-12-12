@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.logging.Logger;
+import java.util.logging.Level;
 
+import org.aktin.broker.query.Logger;
 import org.aktin.broker.query.io.table.TableExport;
 import org.aktin.broker.query.io.table.TableWriter;
 
@@ -31,14 +32,14 @@ import org.aktin.broker.query.io.table.TableWriter;
  *
  */
 public class Execution{
-	private static final Logger log = Logger.getLogger(Execution.class.getName());
-
+	private static final java.util.logging.Logger javaLog = java.util.logging.Logger.getLogger(Execution.class.getName());
+	private Logger appLog;
 	private Connection dbc;
 	private SQLQuery query;
 	private List<String> batch;
 	private boolean failed;
 
-	public Execution(SQLQuery query){
+	public Execution(SQLQuery query, Logger appLog){
 		this.query = query;
 	}
 
@@ -49,19 +50,32 @@ public class Execution{
 	public boolean isFailed(){
 		return failed;
 	}
-	protected void handleWarning(String sql, SQLWarning warning){
+	protected void handleWarning(String sql, SQLWarning warning, int statementNum){
 		Objects.requireNonNull(warning);
 		// handle warnings same as errors (without aborting)
 		while( warning != null ){
-			handleException(sql, warning);
+			appLog.log(Level.WARNING, warning.getMessage(), locationFromStatementNo(statementNum), null);
+			javaLog.warning("in statement #"+statementNum);
+			javaLog.warning("..with SQL ["+sql+"]:");
+			javaLog.warning("..SQL error: "+warning.getMessage());
+
 			warning = warning.getNextWarning();
 		}
 	}
 
-	protected void handleException(String sql, SQLException e){
-		// TODO pass to caller
-		log.warning("in ["+sql+"]:");
-		log.warning("SQL error: "+e.getMessage());
+	private String locationFromStatementNo(int statementNum) {
+		if( statementNum == -1 ) {
+			return "generated SQL";
+		}else {
+			return "SQL statement #"+statementNum;
+		}
+	}
+	protected void handleException(String sql, SQLException e, int statementNum){
+		// pass to caller
+		appLog.log(Level.SEVERE, "in ["+sql+"]", locationFromStatementNo(statementNum), e);
+		javaLog.warning("in statement #"+statementNum);
+		javaLog.warning("..with SQL ["+sql+"]:");
+		javaLog.warning("..SQL error: "+e.getMessage());
 	}
 
 	/**
@@ -76,32 +90,33 @@ public class Execution{
 		}
 	}
 	private void runStatements() throws SQLException{
-		for( String sql : batch ){
+		for( int i=0; i<batch.size(); i++ ){
+			String sql = batch.get(i);
 			SQLWarning warning = null;
 			try( Statement stmt = dbc.createStatement() ){
 				stmt.executeUpdate(sql);
 				warning = stmt.getWarnings();
 			}catch( SQLException e ){
-				handleException(sql, e);
+				handleException(sql, e, i);
 				failed = true;
 				throw e;
 			}
 			if( warning != null ){
-				handleWarning(sql, warning);
+				handleWarning(sql, warning, i);
 			}
 		}
 	}
 
 	public void removeTables(){
-		log.info("Cleanup temporary tables");
+		javaLog.info("Cleanup temporary tables");
 		for( TemporaryTable table : query.tables){
 			// XXX drop TEMPORARY not supported, make sure not to drop regular tables
 			String sql = "DROP TABLE IF EXISTS "+table.name;
-			log.info(sql);
+			javaLog.info(sql);
 			try( Statement s = dbc.createStatement() ){
 				s.executeUpdate(sql);
 			} catch (SQLException e) {
-				handleException(sql, e);
+				handleException(sql, e, -1);
 			}
 		}
 	}
@@ -219,11 +234,11 @@ public class Execution{
 		try{
 			for( int i=0; i<batch.size(); i++ ){
 				Statement s = dbc.createStatement();
-				log.info("Executing ["+batch.get(i)+"]");
+				javaLog.info("Executing ["+batch.get(i)+"]");
 				s.executeUpdate(batch.get(i));
 				SQLWarning w = s.getWarnings();
 				if( w != null ){
-					handleWarning(batch.get(i), w);
+					handleWarning(batch.get(i), w, -1);
 				}
 				s.close();
 			}

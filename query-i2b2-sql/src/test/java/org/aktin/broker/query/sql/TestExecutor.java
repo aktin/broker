@@ -9,6 +9,8 @@ import java.util.Map;
 
 import javax.xml.bind.JAXB;
 
+import org.aktin.broker.query.Logger;
+
 public class TestExecutor {
 
 	public static SQLQuery getTestQuery() throws IOException{
@@ -26,7 +28,7 @@ public class TestExecutor {
 		return m;
 	}
 	public static void main(String[] args) throws SQLException, SubstitutionError, IOException{
-		Execution x = new Execution(getTestQuery());
+		Execution x = new Execution(getTestQuery(), Logger.stderrLogger());
 		x.prepareStatements(getTestLookup()::get);
 		try( Connection c = TestSQLHandler.getLocalI2b2DataSource().getConnection() ){
 			x.generateTables(c);

@@ -8,6 +8,7 @@ import java.nio.file.Path;
 
 import javax.sql.DataSource;
 
+import org.aktin.broker.query.Logger;
 import org.aktin.broker.query.io.ZipArchiveWriter;
 import org.postgresql.ds.PGSimpleDataSource;
 
@@ -24,6 +25,7 @@ public class TestSQLHandler {
 	public static void main(String[] args) throws IOException{
 		SQLHandlerFactory f = new SQLHandlerFactory(getLocalI2b2DataSource());
 		SQLHandler h = f.wrap(TestExecutor.getTestQuery(), TestExecutor.getTestLookup()::get);
+		h.setLogger(Logger.stderrLogger());
 		// create ZIP file
 		Path temp = Files.createTempFile("queries", ".zip");
 		System.out.println("Writing to "+temp.toString());

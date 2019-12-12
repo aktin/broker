@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Function;
 
+import org.aktin.broker.query.Logger;
 import org.aktin.broker.query.QueryHandler;
 import org.aktin.broker.query.io.MultipartDirectory;
 import org.aktin.broker.query.io.MultipartOutputStream;
@@ -15,6 +16,7 @@ public class SQLHandler implements QueryHandler {
 	private SQLHandlerFactory factory;
 	private SQLQuery query;
 	private Function<String,String> propertyLookup;
+	private Logger logger;
 
 	SQLHandler(SQLHandlerFactory factory, SQLQuery query, Function<String,String> propertyLookup){
 		this.factory = factory;
@@ -25,7 +27,7 @@ public class SQLHandler implements QueryHandler {
 
 	@Override
 	public void execute(MultipartDirectory input, MultipartOutputStream target) throws IOException {
-		Execution ex = new Execution(query);
+		Execution ex = new Execution(query, logger);
 		try {
 			ex.prepareStatements(propertyLookup);
 		} catch (SubstitutionError e) {
@@ -41,6 +43,12 @@ public class SQLHandler implements QueryHandler {
 		} catch (SQLException e) {
 			throw new IOException(e);
 		}
+	}
+
+
+	@Override
+	public void setLogger(Logger log) {
+		this.logger = log;
 	}
 
 }
