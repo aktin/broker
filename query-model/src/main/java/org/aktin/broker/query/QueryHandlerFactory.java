@@ -32,13 +32,13 @@ public interface QueryHandlerFactory {
 	public String formatTimestamp(Instant timestamp);
 
 	/**
-	 * Parse a query from DOM element. When called, the {@code element} argument will
+	 * Parse a query handler/processing stage from DOM element. When called, the {@code element} argument will
 	 * match to the values from {@link #getElementName()} and {@link #getNamespace()}.
 	 * 
 	 * @param element DOM element containing the query
 	 * @param propertyLookup function to be used to look up additional context information
 	 *   about the environment of the query. e.g. time stamps, version numbers, etc.
-	 *   The lookupFuntion can used after exiting this function and is valud during 
+	 *   The lookupFuntion can be used after exiting this function and is valid during 
 	 *   the whole lifetime of the generated {@link QueryHandler}.
 	 * @return new query handler
 	 */

@@ -13,11 +13,11 @@ import org.aktin.broker.query.io.MultipartOutputStream;
  * @author R.W.Majeed
  *
  */
-// TODO allow execute method to provide long error message in case of failure (e.g. multi line error message from R)
 public interface QueryHandler {
 	/**
 	 * Execute the query and store the results
 	 * in the target location.
+	 * The execute method can be called 
 	 *
 	 * @param input input for the execution, typically output from the 
 	 *   previous processing stage. Will be {@code null} for extraction handlers.
@@ -26,4 +26,9 @@ public interface QueryHandler {
 	 * @throws IOException execution/export failure
 	 */
 	void execute(MultipartDirectory input, MultipartOutputStream target) throws IOException;
+	/**
+	 * Set a logger which can be used during execution to report errors, warnings, etc.
+	 * @param log logger
+	 */
+	void setLogger(Logger log);
 }
