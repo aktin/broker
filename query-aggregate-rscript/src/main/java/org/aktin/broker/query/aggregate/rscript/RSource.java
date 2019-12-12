@@ -15,4 +15,7 @@ public class RSource {
 	List<Resource> resource;
 	@XmlElement
 	List<Result> result;
+
+	@XmlElement(name="result-list")
+	ResultList resultList;
 }

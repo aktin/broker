@@ -19,6 +19,12 @@ public class Result {
 	@XmlAttribute
 	Boolean required;
 
+	protected Result() {
+	}
+	public Result(String file, String type) {
+		this.file = file;
+		this.type = type;
+	}
 	public boolean getRequired() {
 		if( required == null ) {
 			return true;

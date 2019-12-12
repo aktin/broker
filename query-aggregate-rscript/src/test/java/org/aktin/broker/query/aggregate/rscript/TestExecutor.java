@@ -46,6 +46,21 @@ public class TestExecutor {
 			Files.delete(base.resolve(name));
 		}		
 	}
+
+	@Test
+	public void testMoveResultFilesToSameDirectory() {
+		// TODO
+	}
+
+	@Test
+	public void testMoveResultFilesToOtherDirectory() {
+		// TODO
+	}
+	@Test
+	public void testMoveResultFilesToZipArchive() {
+		// TODO
+	}
+
 	@Test
 	public void executeRScript() throws IOException {
 		RSource rs = getRScript();
@@ -63,6 +78,9 @@ public class TestExecutor {
 
 		exec.removeFileResources();
 		deleteInputFiles1(testDir);
+
+		// move result files is tested in separate unit tests, see above
+		
 		exec.removeResultFiles();
 
 		Files.delete(testDir);

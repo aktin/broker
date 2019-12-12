@@ -18,6 +18,10 @@
 	  before execution of the script. e.g. lookup tables, additional script modules, etc. -->
 	<resource file="module1.R" type="text/plain">
 <![CDATA[
+
+	report.generatedFile <- function(name){
+		cat(paste(name,"\n",sep=""), file="r-generated-files.txt", append=TRUE)
+	}
 	# write svg graphics
 	gfx.ext <- '.svg'
 	gfx.dev <- 'svg'
@@ -25,10 +29,12 @@
 		trellis.device(gfx.dev,file=paste0(name,gfx.ext), width=width,height=height)
 		print(graph)
 		no_output <- dev.off() #silent
+		report.generatedFile(paste0(name,gfx.ext,"=images/svg")
 	}
 ]]>
 	</resource>
 
+	<result-list file=""
 	<result file="counts.txt" type="text/tab-separated-values"/>
 	<result file="age.svg" type="image/svg"/>
 </r-script>

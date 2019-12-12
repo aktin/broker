@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -116,6 +117,11 @@ public class Execution{
 		for( Result r : script.result ) {
 			Files.delete(resolvePath(r.file));
 		}
+		if( script.resultList != null ) {
+			for( Result r : script.resultList.getFileEntries(this::resolvePath) ) {
+				Files.delete(resolvePath(r.file));
+			}
+		}
 	}
 
 	public void runRscript() throws IOException{
@@ -132,6 +138,27 @@ public class Execution{
 		}
 	}
 
+	private void copyFilesToTargetStream(List<Result> results, MultipartOutputStream target) throws IOException {
+		for( Result r : results ) {
+			Path file = resolvePath(r.file);
+			try( OutputStream out = target.writePart(r.type, r.file) ){
+				Files.copy(file, out);
+			}
+		}
+	}
+	private void copyFileEntriesOnly(List<Result> results, MultipartDirectoryWriter w) throws FileNotFoundException {
+		// result entries
+		for( Result r : results ) {
+			Path file = resolvePath(r.file);
+			if( Files.exists(file) ) {
+				// file exists, write file entry
+				w.addFileEntry(r.file, r.type);
+			}else if( r.getRequired() ) {
+				// file does not exist but is required
+				throw new FileNotFoundException("Required result file does not exist: "+file);
+			}
+		}		
+	}
 	public void moveResultFiles(MultipartOutputStream target) throws IOException{
 		// if the target directory is the same as the working directory,
 		// then we don't need copy the data
@@ -139,23 +166,17 @@ public class Execution{
 				&& this.workingDir.equals(((MultipartDirectoryWriter)target).getBasePath()) ) {
 			// files already there, just create the entries
 			MultipartDirectoryWriter w = (MultipartDirectoryWriter)target;
-			for( Result r : script.result ) {
-				Path file = resolvePath(r.file);
-				if( Files.exists(file) ) {
-					// file exists, write file entry
-					w.addFileEntry(r.file, r.type);
-				}else if( r.getRequired() ) {
-					// file does not exist but is required
-					throw new FileNotFoundException("Required result file does not exist: "+file);
-				}
+			// result list
+			copyFileEntriesOnly(script.result, w);
+			if( script.resultList != null ) {
+				copyFileEntriesOnly(script.resultList.getFileEntries(this::resolvePath), w);
 			}
+			// TODO read file script.resultList and add contained references
 		}else {
 			// move file data to the target stream
-			for( Result r : script.result ) {
-				Path file = resolvePath(r.file);
-				try( OutputStream out = target.writePart(r.type, r.file) ){
-					Files.copy(file, out);
-				}
+			copyFilesToTargetStream(script.result, target);
+			if( script.resultList != null ) {
+				copyFilesToTargetStream(script.resultList.getFileEntries(this::resolvePath), target);
 			}
 			// all result files copied, now delete the local data
 			removeResultFiles();
