@@ -57,7 +57,8 @@ public abstract class AbstractNode {
 	protected void fillSoftwareModulesVersions(Map<String,String> versions){
 		versions.put("java", System.getProperty("java.vendor")+"/"+System.getProperty("java.version"));
 		versions.put("org.aktin.broker.node", AbstractNode.class.getPackage().getImplementationVersion());
-		versions.put(getModuleName(), getModuleVersion());
+		// prevent NPE if the implementing package does not provide version information
+		versions.put(getModuleName(), String.valueOf(getModuleVersion()));
 	}
 	/**
 	 * Override this method to specify a name for your module.
