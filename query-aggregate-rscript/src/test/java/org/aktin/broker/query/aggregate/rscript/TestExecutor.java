@@ -21,6 +21,13 @@ public class TestExecutor {
 		}
 		return q;
 	}
+	public static RSource getRScriptWithError() throws IOException{
+		RSource q;
+		try( InputStream in = TestExecutor.class. getResourceAsStream("/query-rscript.xml") ){
+			q = JAXB.unmarshal(in,RSource.class);
+		}
+		return q;
+	}
 
 	public static Map<String,String> getTestLookup(){
 		Map<String, String> m = new HashMap<>();
@@ -64,6 +71,9 @@ public class TestExecutor {
 	@Test
 	public void executeRScript() throws IOException {
 		RSource rs = getRScript();
+		executeRScript(rs);
+	}
+	public void executeRScript(RSource rs) throws IOException {
 		
 		Execution exec = new Execution(rs);
 		Path testDir = Files.createTempDirectory("aggregate-r");

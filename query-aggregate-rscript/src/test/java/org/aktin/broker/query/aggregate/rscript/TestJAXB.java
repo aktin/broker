@@ -19,7 +19,8 @@ public class TestJAXB {
 		}
 		assertNotNull(query);
 		assertEquals(1, query.resource.size());
-		assertEquals(2, query.result.size());
+		assertEquals(1, query.result.size());
+		assertEquals("r-generated-files.txt", query.resultList.file);
 		assertEquals("text/plain", query.resource.get(0).type);
 		assertEquals("module1.R", query.resource.get(0).file);
 

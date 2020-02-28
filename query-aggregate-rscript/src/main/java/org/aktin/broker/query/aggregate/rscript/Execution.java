@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +27,8 @@ import org.aktin.scripting.r.RScript;
  *
  */
 public class Execution{
-	private static final Logger log = Logger.getLogger(Execution.class.getName());
+	private static final Logger serverLog = Logger.getLogger(Execution.class.getName());
+	private org.aktin.broker.query.Logger log;
 
 	private RSource script;
 	/** timeout milliseconds for the script */
@@ -50,6 +52,9 @@ public class Execution{
 		rExecPath = path;
 	}
 
+	public void setLogger(org.aktin.broker.query.Logger log) {
+		this.log = log;
+	}
 	/**
 	 * Resolve path withing the working directory.
 	 * Also makes sure that the names do not go outside (e.g. up) from the working dir
@@ -92,7 +97,7 @@ public class Execution{
 	public void createFileResources() throws IOException{
 		// create main script
 		mainScript = Files.createTempFile(this.workingDir, "main", ".R");
-		log.info("Created source file for R script query postprocessing: "+mainScript);
+		serverLog.info("Created source file for R script query postprocessing: "+mainScript);
 		try( BufferedWriter w = Files.newBufferedWriter(mainScript, StandardOpenOption.TRUNCATE_EXISTING) ){
 			w.write(script.source.value);
 		}
@@ -113,7 +118,6 @@ public class Execution{
 		}
 	}
 	public void removeResultFiles() throws IOException{
-		// delete main script if previously created
 		for( Result r : script.result ) {
 			Files.delete(resolvePath(r.file));
 		}
@@ -121,19 +125,25 @@ public class Execution{
 			for( Result r : script.resultList.getFileEntries(this::resolvePath) ) {
 				Files.delete(resolvePath(r.file));
 			}
+			Files.delete(resolvePath(script.resultList.file));
 		}
 	}
 
 	public void runRscript() throws IOException{
 		RScript r = new RScript(rExecPath);
+		String relativeMain = workingDir.relativize(mainScript).toString();
 		try {
-			r.runRscript(workingDir, workingDir.relativize(mainScript).toString(), timeoutMillis);
+			r.runRscript(workingDir, relativeMain, timeoutMillis);
 		} catch (TimeoutException e) {
 			throw new IOException("R execution timeout expired", e);
 		} catch (AbnormalTerminationException e) {
 			// log full error message
-			log.warning("R execution failed with exit code "+e.getExitCode());
-			log.warning("R stdout: "+e.getErrorOutput());
+			serverLog.warning("R execution failed with exit code "+e.getExitCode());
+			serverLog.warning("R stdout: "+e.getErrorOutput());
+			
+			log.log(Level.SEVERE, e.getErrorOutput(), relativeMain, null);
+			log.log(Level.SEVERE, "R execution failed with exit code "+e.getExitCode(), relativeMain, null);
+
 			throw new IOException("R execution failed",e);
 		}
 	}

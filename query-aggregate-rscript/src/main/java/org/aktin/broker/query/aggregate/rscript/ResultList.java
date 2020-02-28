@@ -1,6 +1,5 @@
 package org.aktin.broker.query.aggregate.rscript;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -24,7 +23,6 @@ public class ResultList {
 	@XmlTransient
 	List<Result> fileEntries;
 
-	@XmlTransient
 	List<Result> getFileEntries(Function<String, Path> resolve) throws IOException{
 		if( fileEntries == null ) {
 			// lazy load entries

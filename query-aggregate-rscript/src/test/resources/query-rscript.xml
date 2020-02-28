@@ -29,12 +29,12 @@
 		trellis.device(gfx.dev,file=paste0(name,gfx.ext), width=width,height=height)
 		print(graph)
 		no_output <- dev.off() #silent
-		report.generatedFile(paste0(name,gfx.ext,"=images/svg")
+		report.generatedFile(paste0(name,gfx.ext,"=images/svg"))
 	}
 ]]>
 	</resource>
 
-	<result-list file=""
+	<!-- TODO need wildcard result file list? -->
 	<result file="counts.txt" type="text/tab-separated-values"/>
-	<result file="age.svg" type="image/svg"/>
+	<result-list file="r-generated-files.txt"/>
 </r-script>
