@@ -8,12 +8,12 @@
 
 	<groupId>org.aktin</groupId>
 	<artifactId>broker-api</artifactId>
-	<version>0.10-SNAPSHOT</version>
+	<version>0.10</version>
 
 	<parent>
 		<groupId>org.aktin</groupId>
 		<artifactId>broker</artifactId>
-		<version>0.10-SNAPSHOT</version>
+		<version>0.10</version>
 	</parent>
 
 	<build>
