@@ -17,7 +17,7 @@ public interface QueryHandler {
 	/**
 	 * Execute the query and store the results
 	 * in the target location.
-	 * The execute method can be called 
+	 * The execute method can be called only once per instance.
 	 *
 	 * @param input input for the execution, typically output from the 
 	 *   previous processing stage. Will be {@code null} for extraction handlers.
