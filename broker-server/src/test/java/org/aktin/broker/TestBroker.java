@@ -389,7 +389,7 @@ public class TestBroker {
 	}
 	
 	// TODO implement websocket tests
-	@Test
+	//@Test
 	public void testWebsocket() throws Exception{
 		WebSocketClient client = new WebSocketClient();
 		ClientWebsocket websocket = new ClientWebsocket();
