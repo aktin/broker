@@ -1,10 +1,9 @@
 package org.aktin.broker.auth;
 
-import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 
 public interface HeaderAuthentication {
 
-	public String[] authenticateByHeaders(Map<String,List<String>> headers);
+	public Principal authenticateByHeaders(Function<String,String> getHeader);
 
 }

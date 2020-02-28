@@ -13,6 +13,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import org.aktin.broker.auth.Principal;
+
 
 @ServerEndpoint(value="/broker-notify", configurator=SessionConfigurator.class)
 public class BrokerWebsocket {
@@ -46,8 +48,14 @@ public class BrokerWebsocket {
 		}
 		int count = 0;
 		for( Session session : clients ){
-			if( adminOnly ){
+			Principal user = (Principal)session.getUserProperties().get(SessionConfigurator.AUTH_USER);
+			if( user == null ) {
+				log.warning("Skipping websocket session without authentication "+session);
+				continue;
+			}
+			if( adminOnly && !user.isAdmin() ) {
 				// skip if not admin privileges
+				continue;
 			}
 			if( session.isOpen() ){
 				session.getAsyncRemote().sendText(message);

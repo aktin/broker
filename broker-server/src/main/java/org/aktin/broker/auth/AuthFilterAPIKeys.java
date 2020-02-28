@@ -2,6 +2,7 @@ package org.aktin.broker.auth;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +23,7 @@ import javax.ws.rs.core.Response;
  * @author R.W.Majeed
  *
  */
-public abstract class AuthFilterAPIKeys implements ContainerRequestFilter {
+public abstract class AuthFilterAPIKeys implements ContainerRequestFilter, HeaderAuthentication {
 	private static final Logger log = Logger.getLogger(AuthFilterAPIKeys.class.getName());
 
 	@Inject
@@ -38,34 +39,40 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter {
 
 	@Override
 	public final void filter(ContainerRequestContext ctx) throws IOException {
-		String auth = ctx.getHeaderString(HttpHeaders.AUTHORIZATION);
+		Principal principal = authenticateByHeaders(ctx::getHeaderString);
+		if( principal == null ) {
+			ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+		}else {
+			ctx.setSecurityContext(principal);
+		}
+	}
+
+	@Override
+	public Principal authenticateByHeaders(Function<String,String> getHeader) {
+		String auth = getHeader.apply(HttpHeaders.AUTHORIZATION);
 		String key = null;
 		if( auth != null && auth.startsWith("Bearer ") ){
 			key = auth.substring(7);
 		}
 		if( key == null ){
-        	ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         	log.info("HTTP Authorization header missing");
-        	return;
+        	return null;
 		}
 
 		// check API key against whitelist
 		String clientDn = getClientDN(key);
 		if( clientDn == null ){
 			// access denied
-			ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
 			log.info("Access denied for API key: "+key);
-			return;
+			return null;
 		}
-		Principal principal;
+		Principal principal = null;
 		try {
 			principal = authCache.getPrincipal(key, clientDn);
-			ctx.setSecurityContext(principal);
 			log.info("Principal found: "+principal.getName());
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to lookup principal", e);
-			ctx.abortWith(Response.serverError().build());
-		}		
+		}
+		return principal;
 	}
-
 }

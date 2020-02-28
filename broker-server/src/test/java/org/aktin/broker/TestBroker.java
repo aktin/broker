@@ -387,13 +387,18 @@ public class TestBroker {
 		assertEquals("202cb962ac59075b964b07152d234b70", r.getMD5String());
 		
 	}
+	
+	// TODO implement websocket tests
 	@Test
 	public void testWebsocket() throws Exception{
 		WebSocketClient client = new WebSocketClient();
 		ClientWebsocket websocket = new ClientWebsocket();
+		ClientUpgradeRequest req = new ClientUpgradeRequest();
+		/// TODO
+		req.setHeader("Authorization", "Bearer xmxkaa");
 		websocket.prepareForMessages(1);
 		client.start();
-		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker-notify"), new ClientUpgradeRequest());
+		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker-notify"), req);
 		System.out.println("Connecting..");
 		Session s = f.get(5, TimeUnit.SECONDS);
 		s.getClass(); // don't need the session

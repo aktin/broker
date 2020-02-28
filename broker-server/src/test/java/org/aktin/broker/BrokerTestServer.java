@@ -46,12 +46,13 @@ public class BrokerTestServer {
 		}
 		rc.register(AuthFilterAdmin.class);
 		rc.registerClasses(Broker.ENDPOINTS);
-//		rc.register(BrokerStatusEndpoint.class);
+
+//		rc.registerClasses(BrokerWebsocket.class);
 //		rc.register(MyBrokerEndpoint.class);
 //		rc.register(NodeInfoEndpoint.class);
 //		rc.register(RequestAdminEndpoint.class);		
 //		rc.register(AggregatorEndpoint.class);
-		rc.register(new MyBinder(ds));		
+		rc.register(new MyBinder(ds));
 	}
 	public void register(Class<?> componentClass){
 		rc.register(componentClass);

@@ -3,6 +3,7 @@ package org.aktin.broker.auth;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +35,7 @@ import org.aktin.broker.auth.Principal;
 //@Authenticated
 //@Provider
 //@Priority(Priorities.AUTHENTICATION)
-public class AuthFilterSSLHeaders implements ContainerRequestFilter{
+public class AuthFilterSSLHeaders implements ContainerRequestFilter, HeaderAuthentication{
 	private static final Logger log = Logger.getLogger(AuthFilterSSLHeaders.class.getName());
 	/**
 	 * Client ID to uniquely identify the client. 
@@ -49,23 +50,33 @@ public class AuthFilterSSLHeaders implements ContainerRequestFilter{
 	
 	@Override
 	public void filter(ContainerRequestContext ctx) throws IOException {
-		String verify = ctx.getHeaderString(X_SSL_CLIENT_VERIFY);
-		String id = ctx.getHeaderString(X_SSL_CLIENT_ID);
-		String dn = ctx.getHeaderString(X_SSL_CLIENT_DN);
-		if( verify == null || !verify.equals("SUCCESS") ){
+
+		Principal principal = authenticateByHeaders(ctx::getHeaderString);
+		if( principal == null ){
         	ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+		}else{
+			ctx.setSecurityContext(principal);
+		}
+	}
+
+	@Override
+	public Principal authenticateByHeaders(Function<String, String> getHeader) {
+		String verify = getHeader.apply(X_SSL_CLIENT_VERIFY);
+		String id = getHeader.apply(X_SSL_CLIENT_ID);
+		String dn = getHeader.apply(X_SSL_CLIENT_DN);
+		if( verify == null || !verify.equals("SUCCESS") ){
         	log.info("Client verify header not found or not successful");
-        	return;
+        	return null;
 		}
 
 		Principal principal;
 		try {
 			principal = authCache.getPrincipal(id, dn);
-			ctx.setSecurityContext(principal);
 			log.info("Principal found: "+principal.getName());
+			return principal;
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to lookup principal", e);
-			ctx.abortWith(Response.serverError().build());
+			return null;
 		}		
 	}
 }
