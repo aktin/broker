@@ -73,13 +73,15 @@ public abstract class AbstractBrokerClient extends AbstractClient{
 			// TODO allow user to notice/differentiate between 404 and 406 responses
 			return null;
 		}
-		String contentType = c.getContentType();
-		// use charset from content-type header
-		int csi = contentType.indexOf("charset=");
 		// default HTTP charset
 		String charset = "ISO-8859-1";
-		if( csi != -1 ){
-			charset = contentType.substring(csi+8);
+		// use charset from content-type header
+		String contentType = c.getContentType();
+		if( contentType != null ) {
+			int csi = contentType.indexOf("charset=");
+			if( csi != -1 ){
+				charset = contentType.substring(csi+8);
+			}			
 		}
 		return new InputStreamReader(c.getInputStream(), charset);
 	}
