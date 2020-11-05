@@ -21,7 +21,6 @@
 		<module>query-i2b2-sql</module>
 		<module>query-aggregate-rscript</module>
 		<module>broker-client</module>
-		<module>broker-client-websocket</module>
 		<module>broker-server</module>
 		<module>broker-admin</module>
 		<module>broker-admin-dist</module>
@@ -177,7 +176,7 @@
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
-				<version>4.12</version>
+				<version>4.13.1</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>
