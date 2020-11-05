@@ -8,24 +8,24 @@
 
 	<groupId>org.aktin.broker</groupId>
 	<artifactId>query-aggregate-rscript</artifactId>
-	<version>0.12-SNAPSHOT</version>
+	<version>0.11-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.aktin</groupId>
 		<artifactId>broker</artifactId>
-		<version>0.12-SNAPSHOT</version>
+		<version>0.11-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-api</artifactId>
-			<version>0.12-SNAPSHOT</version>
+			<version>0.11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aktin.broker</groupId>
 			<artifactId>query-model</artifactId>
-			<version>0.12-SNAPSHOT</version>
+			<version>0.11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aktin</groupId>
@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>dwh-api</artifactId>
-			<version>0.6</version>
+			<version>0.6-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
