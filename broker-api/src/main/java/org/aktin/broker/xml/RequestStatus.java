@@ -1,12 +1,15 @@
 package org.aktin.broker.xml;
 
+/**
+ * Enum of request states which can be reported to the broker by nodes.
+ * 
+ * @author R.W.Majeed
+ */
 public enum RequestStatus {
-	// TODO refactor to uppercase constant names
 	/** The request has been retrieved by the node. */
 	retrieved,
 	/** The request is waiting for user interaction,
-	 * e.g. manual confirmation of execution or result submission.
-	 */
+	 * e.g. manual confirmation of execution or result submission. */
 	interaction,
 	/** The request was accepted for processing, but is currently waiting in the execution queue. XXX rename to queued */
 	queued,
