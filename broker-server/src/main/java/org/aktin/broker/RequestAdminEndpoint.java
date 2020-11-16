@@ -49,6 +49,16 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 
 
 
+	/***
+	 * Create a new request at the broker and return the request location in the HTTP-response header {@code Location}.
+	 * This method can be used either to create an empty request if no {@code Content-type} header is given (e.g. to add multiple content representations later)
+	 * or it can be used to create a request already containing a request definition. In the latter case the {@code Content-type} header must be present and the HTTP payload is used for the representation. 
+	 * @param content HTTP payload to use as first content representation
+	 * @param headers HTTP request headers containing Content-type
+	 * @param info URI info for the response location
+	 * @return request object with status 201 and location header.
+	 * @throws URISyntaxException URI syntax processing error
+	 */
 	@POST
 	@RequireAdmin
 	public Response createRequest(Reader content, @Context HttpHeaders headers, @Context UriInfo info) throws URISyntaxException{
@@ -82,28 +92,15 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 	}
 
-	@GET
-	@Path("headers")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String debugReturnRequestHeaders(@Context HttpHeaders headers){
-		StringBuilder b = new StringBuilder();
-		MultivaluedMap<String, String> req = headers.getRequestHeaders();
-		for( String key : req.keySet() ){
-			
-			b.append(key).append(": ");
-			boolean multiple = false;
-			for( String value : req.get(key) ){
-				if( multiple ){
-					b.append(", ");
-				}
-				b.append(value);
-				multiple = true;
-			}
-			b.append("\n");
-		}
-		return b.toString();
-	}
-
+	/**
+	 * Add (additional) request definitions to an existing request. This method is similar to {@link #createRequest(Reader, HttpHeaders, UriInfo)}
+	 * but expects the request to be already existing.
+	 * @param requestId request id
+	 * @param content request definition
+	 * @param headers Content-type header
+	 * @return HTTP 200 on success
+	 * @throws URISyntaxException URI syntax error
+	 */
 	@PUT
 	@Path("{id}")
 	@RequireAdmin
@@ -124,6 +121,10 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 	}
 	
+	/**
+	 * List all request available at this broker
+	 * @return HTTP 200 with XML representation of all requests
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	@RequireAdmin
@@ -136,6 +137,11 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 	}
 
+	/**
+	 * Delete a single existing request
+	 * @param id request id to delete
+	 * @return HTTP 200 on success
+	 */
 	@DELETE
 	@Path("{id}")
 	@RequireAdmin
@@ -157,6 +163,15 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 	}
 
+	/**
+	 * Get a single content representation for the given request which matches the provided Accept header.
+	 * @param requestId request id request id
+	 * @param headers headers headers containing acceptable media types
+	 * @return request definition matching the Accept header
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
+	 * @throws NotFoundException request id does not exist
+	 */
 	@RequireAdmin
 	@GET
 	@Path("{id}")

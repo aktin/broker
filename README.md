@@ -6,8 +6,12 @@ This software is not designed for standalone usage. Rather it is to be used with
 data warehouse environments like e.g. research networks or multi-center clinical study registries 
 in conjunction with local workflows and processing infrastructure.
 
-
 The broker infrastructure contains two main components: The central component `broker-server` is used to publish information to be distributed. The local component `broker-client` is used by multiple parties to retrieve the published information and subsequently report status updates and response-data.
+
+The middleware infrastructure is content-agnostic in the sense that it can be used with 
+any format or kind of data. A typical scenario is submitting a query for data extraction (e.g. SQL) to the broker (server) to be received by multiple clients which in turn process the query and return status/progress information and resulting extracted data. Other use cases include distribution of metadata/terminology and processing of material transfer requests.
+
+
 As all communication is based on RESTful HTTP endpoints, the `broker-client` is optional and can be replaced with simple HTTP calls.
 
 
@@ -15,11 +19,11 @@ Example for a typical scenario:
 ```
 Analyst          Broker-Server        Broker-Client-1        Broker-Client-2      ....
 
-ask query --->   publish query
+submit query --->   publish query
                         |
-                        |    <-----     ask for query
+                        |    <-----     ask for queries
                         |                    |
-                        |    ----->     receive query
+                        |    ----->     receive new query
                         |                    |
                         |    <-----     report status
                         |                    | (internal workflow 
@@ -31,9 +35,9 @@ ask query --->   publish query
 get status update <---  |
                         |
                         |
-                        |    <-----------------------------     ask for query
+                        |    <-----------------------------     ask for queries
                         |                                            |
-                        |    ----------------------------->     receive query
+                        |    ----------------------------->     receive new query
                         |                                            |
                         |    <-----------------------------     report status
                         |                                            | (internal workflow 
@@ -43,3 +47,39 @@ get status update <---  |
 retrieve results <---   |
 
 ```
+
+
+
+Getting started
+===============
+The easiest way to use the software is to download and run the [pre-build binary distribution](/releases) of  `broker-admin-dist`.
+
+Running the broker
+------------------
+To run the central broker component, first unpack the binary distribution `broker-admin-dist-1.x.zip`. For running the application, you need a Java 8 runtime environment or newer. We recommend to use the latest OpenJDK version (currently OpenJDK 15). Open a command shell in the extracted folder and run the script `run_broker.sh` for Linux/MingW/GitBash or `run_broker.bat` for Windows respectively. To change startup options (e.g port), edit the startup script.
+
+
+Building from source code
+-------------------------
+To build the project from its source code, you need a Java runtime environment (e.g. OpenJDK 15, minimum is Java 8) and the build-tool [Apache Maven](https://maven.apache.org/download.cgi). To build the project, download/clone the repository source code and run `mvn clean install` via command shell in the main directory. After the build process is completed, you can find the broker binary distribution in the subfolder `broker-admin-dist/target`. To run the broker, see section /Getting startet/ above.
+
+
+
+Examples for using the broker
+=============================
+
+Below, you will find examples for typical use cases. To demonstrate the simplicity of the RESTful API, only the command line tool `curl` is used.
+
+Submitting query to the broker
+------------------------------
+This example performs authentication at the broker and creates a request containing query syntax which is to be distributed to all nodes.
+```bash
+# Admin authentication and store token in shell variable
+TOKEN=`curl -s -H "Content-Type: application/xml" -X POST -d '<credentials><username>admin</username><password>CHANGEME</password></credentials>' http://localhost:8080/auth/login`
+# Create a file containing the query syntax
+echo "SELECT * FROM fhir_observation" > query1.sql
+# submit the query
+curl -i -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/sql" -X POST -d @query1.sql http://localhost:8080/broker/request
+# the response will contain a Location header for the newly created request
+```
+Documentation on the RESTful API of the request administration endpoint can be found in [RequestAdminEndpoint.java](blob/master/broker-server/src/main/java/org/aktin/broker/RequestAdminEndpoint.java)
