@@ -78,11 +78,14 @@ This example performs authentication at the broker and creates a request contain
 TOKEN=`curl -s -H "Content-Type: application/xml" -X POST \
     -d '<credentials><username>admin</username><password>CHANGEME</password></credentials>' \
     http://localhost:8080/auth/login`
+
 # Create a file containing the query syntax
 echo "SELECT * FROM fhir_observation" > query1.sql
+
 # submit the query
 curl -i -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/sql" -X POST \
      -d @query1.sql http://localhost:8080/broker/request
+
 # the response will contain a Location header for the newly created request. 
 # We will use this location below to publish the request
 curl -si -H "Authorization: Bearer $TOKEN" -X POST http://localhost:8080/broker/request/1/publish
@@ -97,8 +100,10 @@ In this example, the client will authenticate via API-key and receives the publi
 ```bash
 # list available requests
 curl -is -H "Authorization: Bearer xxxApiKey123" http://localhost:8080/broker/my/request
+
 # retrieve first request
 curl -is -H "Authorization: Bearer xxxApiKey123" http://localhost:8080/broker/my/request/1
+
 # update status to retrieved
 curl -is -H "Authorization: Bearer xxxApiKey123" -X POST \
      http://localhost:8080/broker/my/request/1/status/retrieved
