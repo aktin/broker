@@ -16,7 +16,9 @@
 	<body>
 		<section>
 			<h1>Requests</h1>
-			<a href="nodes.html">View nodes</a>
+			<div>
+				<a href="nodes.html">View connected nodes</a>
+			</div>
 			<div id="requests">
 			</div>
 		</section>
@@ -28,8 +30,8 @@
 		<section id="create">
 			<h1>From existing template</h1>
 			<form id="load_template">
-				<legend>Load from existing template <input type="text" id="template" /></legend>
-				<button onclick="fillFormFromTemplate($('#template').val());return false;">laden</button>
+				<legend>Load from existing template ID <input type="text" id="template" /></legend>
+				<button onclick="fillFormFromTemplate($('#template').val());return false;">Load</button>
 			</form>
 			<hr/>
 			<h1>New request</h1>
@@ -37,7 +39,7 @@
 				<fieldset>
 					<legend>Recipients</legend>
 					<legend>all<input type="radio" id="limit_target_a" name="limit_target" /></legend>
-					<legend>selected<input type="radio" id="limit_target_s" name="limit_target" /></legend>
+					<legend>selected<input type="radio" id="limit_target_s" name="limit_target" /> (shift+click for multiple selection)</legend>
 					<select name="target" id="target" multiple="multiple" style="height:10em">
 					</select>
 				</fieldset>

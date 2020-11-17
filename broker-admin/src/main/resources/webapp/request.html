@@ -10,7 +10,8 @@
 function parseNodeStatus(rsi){
 	var node_id = rsi.find('node').text();
 	var status = 'unknown';
-	var c = ['completed','failed','interaction','processing','queued','retrieved'];
+	// list states in reverse order to select the one state most relevant to the user
+	var c = ['completed','failed','rejected','interaction','processing','queued','retrieved'];
 	var t = 'unknown';
 	for( var i=0; i<c.length; i++ ){
 		t = rsi.find(c[i]).text();
@@ -63,7 +64,7 @@ function init(){
 			success: function(data){
 				var list = $(data).find('request-status-info');
 				if( list.length == 0 ){
-					$('#nodes').after('<p>Bisher Statusmeldungen eingegangen</p>');
+					$('#nodes').after('<p>No status/progress received so far</p>');
 					$('#nodes').remove();
 				}else list.each(function(){
 					var st = parseNodeStatus($(this));
@@ -103,7 +104,7 @@ function init(){
 			success: function(data){
 				var list = $(data).find('result');
 				if( list.length == 0 ){
-					$('#results').after('<p>Bisher keine Ergebnisse vorhanden</p>');
+					$('#results').after('<p>No response content reveived so far</p>');
 					$('#results').remove();
 				}else list.each(function(){
 					var node_id = $(this).find('node').text();
@@ -133,7 +134,7 @@ function init(){
 	<body>
 		<h1>Request details</h1>
 		<div>
-			<a href="index.html">Liste</a>
+			<a href="index.html">View all requests</a>
 		</div>
 
 		<table id="nodes">
