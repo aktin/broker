@@ -151,7 +151,7 @@ via ZIP bundle:
 BUNDLE_ID=`curl -s -H "Authorization: Bearer $TOKEN"  http://localhost:8080/broker/export/request-bundle/1`
 
 # download the results bundle
-curl -si -H "Authorization: Bearer $TOKEN" --output results.zip \
+curl -s -H "Authorization: Bearer $TOKEN" --output results.zip \
      http://localhost:8080/broker/download/$BUNDLE_ID 
 
 ```
