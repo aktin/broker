@@ -39,6 +39,15 @@ import org.aktin.broker.xml.RequestStatusInfo;
 import org.aktin.broker.xml.RequestStatusList;
 import org.aktin.broker.xml.RequestTargetNodes;
 
+/**
+ * RESTful HTTP endpoint to manage broker requests.
+ * 
+ * Request management is not done by client nodes. For client node usage,
+ * see {@link MyBrokerEndpoint}.
+ * 
+ * @author R.W.Majeed
+ *
+ */
 @Path("/broker/request")
 public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	private static final Logger log = Logger.getLogger(RequestAdminEndpoint.class.getName());
@@ -50,9 +59,15 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 
 
 	/***
-	 * Create a new request at the broker and return the request location in the HTTP-response header {@code Location}.
-	 * This method can be used either to create an empty request if no {@code Content-type} header is given (e.g. to add multiple content representations later)
-	 * or it can be used to create a request already containing a request definition. In the latter case the {@code Content-type} header must be present and the HTTP payload is used for the representation. 
+	 * Create a new request at the broker and return the request location in the HTTP-response 
+	 * header {@code Location}.
+	 * 
+	 * This method can be used either to create an empty request if no {@code Content-type} header 
+	 * is given (e.g. to add multiple content representations later)  or it can be used to create 
+	 * a request already containing a request definition. 
+	 * In the latter case the {@code Content-type} header must be present and the HTTP payload is 
+	 * used for the representation. 
+	 * 
 	 * @param content HTTP payload to use as first content representation
 	 * @param headers HTTP request headers containing Content-type
 	 * @param info URI info for the response location
@@ -93,8 +108,10 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	}
 
 	/**
-	 * Add (additional) request definitions to an existing request. This method is similar to {@link #createRequest(Reader, HttpHeaders, UriInfo)}
-	 * but expects the request to be already existing.
+	 * Add (additional) request definitions to an existing request. This method is similar 
+	 * to {@link #createRequest(Reader, HttpHeaders, UriInfo)} but expects the request 
+	 * to be already existing.
+	 * 
 	 * @param requestId request id
 	 * @param content request definition
 	 * @param headers Content-type header
@@ -123,6 +140,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	
 	/**
 	 * List all request available at this broker
+	 * 
 	 * @return HTTP 200 with XML representation of all requests
 	 */
 	@GET
@@ -139,6 +157,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 
 	/**
 	 * Delete a single existing request
+	 * 
 	 * @param id request id to delete
 	 * @return HTTP 200 on success
 	 */
@@ -165,6 +184,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 
 	/**
 	 * Get a single content representation for the given request which matches the provided Accept header.
+	 * 
 	 * @param requestId request id request id
 	 * @param headers headers headers containing acceptable media types
 	 * @return request definition matching the Accept header
@@ -179,11 +199,20 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			List<MediaType> accept = headers.getAcceptableMediaTypes();
 			return getRequest(requestId, accept);
 	}
+
+	/**
+	 * Retrieve available HTTP methods for the given request ID
+	 * 
+	 * @param requestId request id
+	 * @return response with [@code Allow} header or 404 if request was not found 
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
+	 */
 	@OPTIONS
 	@Path("{id}")
 	@RequireAdmin
 	//@Produces(MediaType.APPLICATION_XML) will cause errors in this case. therefore the media type is set below
-	public Response getRequestInfo(@PathParam("id") int requestId, @Context HttpHeaders headers) throws SQLException, IOException{
+	public Response getRequestInfo(@PathParam("id") int requestId) throws SQLException, IOException{
 		// TODO return RequestInfo
 		RequestInfo info = db.getRequestInfo(requestId);
 		ResponseBuilder response;
@@ -255,6 +284,20 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 		db.clearRequestTargets(requestId);
 	}
+
+	/**
+	 * Apply a publication restriction to the request, making it available only to the given nodes.
+	 * Only the specified nodes will be able to retrieve the request.
+	 *
+	 * To clear the restriction, submit an empty restriction list. Without the restriction,
+	 * any node can download the request - also including nodes added in the future.
+	 * 
+	 * @param requestId request id
+	 * @param nodes selected list of nodes to which the request should be available
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
+	 * @throws NotFoundException request not found
+	 */
 	@PUT
 	@Path("{id}/nodes")
 	@Consumes(MediaType.APPLICATION_XML)
@@ -270,7 +313,15 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		db.setRequestTargets(requestId, nodes.getNodes());
 	}
 
-	// TODO add method to retrieve request node status message (e.g. error messages)
+	/**
+	 * Retrieve request node status message (e.g. error messages) assigned to a request by a node
+	 * 
+	 * @param requestId request id
+	 * @param nodeId node id
+	 * @return error payload
+	 * @throws SQLException SQL error
+	 * @throws IOException IO error
+	 */
 	@GET
 	@Path("{id}/status/{nodeId}")
 	@RequireAdmin
@@ -286,6 +337,13 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 
 
 
+	/**
+	 * Publish the given request. After being published, the request can be retrieved
+	 * by client nodes.
+	 *
+	 * @param requestId request id
+	 * @throws SQLException SQL error
+	 */
 	@POST
 	@Path("{id}/publish")
 	@RequireAdmin
@@ -309,6 +367,13 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		}
 	}
 
+	/**
+	 * Mark a request as closed.
+	 * The client nodes will stop processing requests in closed state.
+	 *
+	 * @param requestId request id
+	 * @throws SQLException SQL error
+	 */
 	@POST
 	@Path("{id}/close")
 	@RequireAdmin
