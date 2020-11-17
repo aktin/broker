@@ -8,12 +8,12 @@
 
 	<groupId>org.aktin</groupId>
 	<artifactId>broker-server</artifactId>
-	<version>1.0.3</version>
+	<version>1.0.4-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.aktin</groupId>
 		<artifactId>broker</artifactId>
-		<version>1.0.3</version>
+		<version>1.0.4-SNAPSHOT</version>
 	</parent>
 	<build>
 	<!-- 	<plugins>
@@ -104,12 +104,12 @@
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-api</artifactId>
-			<version>1.0.3</version>
+			<version>1.0.4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-client</artifactId>
-			<version>1.0.3</version>
+			<version>1.0.4-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		
