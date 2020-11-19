@@ -68,7 +68,7 @@ To build the project from its source code, you need a Java runtime environment (
 Examples for using the broker
 =============================
 
-Below, you will find examples for typical use cases. To demonstrate the simplicity of the RESTful API, only the command line tool `curl` is used.
+Below, you will find examples for typical use cases. For accessing the broker from Java/JRE-Applications, you can use the broker-client dependency (https://mvnrepository.com/artifact/org.aktin/broker-client) which communicates with the broker via HTTP. To demonstrate the simplicity of the RESTful API, the command line tool `curl` is used in the following examples for direct HTTP communication.
 
 Submitting a request to the broker
 ------------------------------
@@ -165,3 +165,13 @@ user interface - for a better user experience, external customized frontents sho
 
 To access the frontend, go to http://localhost:8080/admin/html/index.html once the broker is running.
 For login, use the username *admin*. The admin password is specified in the startup script and defaults to *CHANGEME*.
+
+
+
+Using the broker-client library
+-------------------------------
+To use broker functionality in java client applications, you can use the broker-client dependency 
+(https://mvnrepository.com/artifact/org.aktin/broker-client). For a code example on how to use the client, see
+the following implementations:
+- https://github.com/li2b2/li2b2-shrine/tree/master/node/i2b2/i2b2-node
+- https://github.com/li2b2/li2b2-shrine/tree/master/node/dktk/dktk-node
