@@ -61,7 +61,7 @@ To run the central broker component, first unpack the binary distribution `broke
 
 Building from source code
 -------------------------
-To build the project from its source code, you need a Java runtime environment (e.g. [OpenJDK 15](https://jdk.java.net/15/), minimum is Java 8) and the build-tool [Apache Maven](https://maven.apache.org/download.cgi). To build the project, download/clone the repository source code and run `mvn clean install` via command shell in the main directory. After the build process is completed, you can find the broker binary distribution in the subfolder `broker-admin-dist/target`. To run the broker, see section /Getting startet/ above.
+To build the project from its source code, you need a Java runtime environment (e.g. [OpenJDK 15](https://jdk.java.net/15/), minimum is Java 8) and the build-tool [Apache Maven](https://maven.apache.org/download.cgi). To build the project, download/clone the repository source code and run `mvn clean install` via command shell in the main directory. After the build process is completed, you can find the broker binary distribution in the subfolder `broker-admin-dist/target`. To run the broker, see section *Getting startet* above.
 
 
 
@@ -155,3 +155,13 @@ curl -s -H "Authorization: Bearer $TOKEN" --output results.zip \
      http://localhost:8080/broker/download/$BUNDLE_ID 
 
 ```
+
+
+Using the web frontend
+----------------------
+The broker includes a minimal web frontent, which can be used to view the status of connected nodes,
+manage requests and responses and download results. This frontent serves only as a built-in minimal 
+user interface - for a better user experience, external customized frontents should be used.
+
+To access the frontend, go to http://localhost:8080/admin/html/index.html once the broker is running.
+For login, use the username *admin*. The admin password is specified in the startup script and defaults to *CHANGEME*.
