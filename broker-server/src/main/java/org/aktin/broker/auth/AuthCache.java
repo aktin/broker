@@ -45,7 +45,7 @@ public class AuthCache implements Flushable, Closeable{
 			p = backend.accessPrincipal(nodeKey, clientDn);
 			cache.put(nodeKey, p);
 		}else{
-			// TODO check if client DN changed. If so, log warning and update the client DN
+			; // TODO check if client DN changed. If so, log warning and update the client DN
 		}
 		p.updateLastAccessed();
 		return p;

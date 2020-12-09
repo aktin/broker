@@ -12,7 +12,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 
-import org.aktin.broker.auth.Principal;
 
 /**
  * Authentication filter for RESTful interfaces.

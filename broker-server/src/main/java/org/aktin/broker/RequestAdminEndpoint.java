@@ -354,8 +354,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			// 404 if not found
 			throw new NotFoundException();
 		}else if( info.published != null ){
-			// already published, nothing to do
-			
+			; // already published, nothing to do
 		}else{
 			// TODO use timestamp from headers for future publishing
 
@@ -384,7 +383,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			// 404 if not found
 			throw new NotFoundException();
 		}else if( info.closed != null ){
-			// already closed, nothing to do
+			; // already closed, nothing to do
 			
 		}else{
 			// update published timestamp
