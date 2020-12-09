@@ -108,16 +108,15 @@ public class AggregatorImpl implements AggregatorBackend {
 	@Override
 	public List<ResultInfo> listResults(int requestId) throws SQLException{
 		List<ResultInfo> list = new ArrayList<>();
-		try( Connection dbc = ds.getConnection() ){
+		try( Connection dbc = ds.getConnection(); 
+				Statement st = dbc.createStatement() ){
 			// find is result is already present
-			Statement st = dbc.createStatement();
 			ResultSet rs = st.executeQuery("SELECT node_id, media_type FROM request_node_results WHERE request_id="+requestId);
 			// compile list
 			while( rs.next() ){
 				list.add(new ResultInfo(rs.getString(1), rs.getString(2)));
 			}
 			rs.close();
-			st.close();
 		}
 		return list;
 	}
@@ -127,9 +126,9 @@ public class AggregatorImpl implements AggregatorBackend {
 	@Override
 	public DateDataSource getResult(int requestId, int nodeId) throws SQLException{
 		DateDataSource data;
-		try( Connection dbc = ds.getConnection() ){
+		try( Connection dbc = ds.getConnection(); 
+				Statement st = dbc.createStatement() ){
 			// find is result is already present
-			Statement st = dbc.createStatement();
 			ResultSet rs = st.executeQuery("SELECT media_type, last_modified, data_file FROM request_node_results WHERE request_id="+requestId+" AND node_id="+nodeId);
 			if( rs.next() ){
 				Timestamp ts = rs.getTimestamp(2);
@@ -138,7 +137,6 @@ public class AggregatorImpl implements AggregatorBackend {
 				data = null;
 			}
 			rs.close();
-			st.close();
 		}
 		return data;
 	}
@@ -147,9 +145,9 @@ public class AggregatorImpl implements AggregatorBackend {
 	 */
 	@Override
 	public void addOrReplaceResult(int requestId, int nodeId, MediaType mediaType, InputStream content) throws SQLException{
-		try( Connection dbc = ds.getConnection() ){
+		try( Connection dbc = ds.getConnection();
+				Statement st = dbc.createStatement() ){
 			// find is result is already present
-			Statement st = dbc.createStatement();
 			ResultSet rs = st.executeQuery("SELECT media_type, data_file FROM request_node_results WHERE request_id="+requestId+" AND node_id="+nodeId);
 			PreparedStatement ps;
 			if( rs.next() ){
@@ -169,7 +167,6 @@ public class AggregatorImpl implements AggregatorBackend {
 				ps = dbc.prepareStatement("INSERT INTO request_node_results (media_type, data_file, request_id, node_id, first_received, last_modified) VALUES(?,?,?,?, NOW(), NOW())");				
 			}
 			rs.close();
-			st.close();
 			
 			String file;
 			try {
@@ -189,9 +186,9 @@ public class AggregatorImpl implements AggregatorBackend {
 	@Override
 	public String[] getDistinctResultTypes(int requestId) throws SQLException {
 		List<String> list = new ArrayList<>();
-		try( Connection dbc = ds.getConnection() ){
+		try( Connection dbc = ds.getConnection();
+				Statement st = dbc.createStatement() ){
 			// find is result is already present
-			Statement st = dbc.createStatement();
 			ResultSet rs = st.executeQuery("SELECT DISTINCT media_type FROM request_node_results WHERE request_id="+requestId);
 			
 			// compile list
@@ -199,7 +196,6 @@ public class AggregatorImpl implements AggregatorBackend {
 				list.add(rs.getString(1));
 			}
 			rs.close();
-			st.close();
 		}
 		return list.toArray(new String[list.size()]);
 	}

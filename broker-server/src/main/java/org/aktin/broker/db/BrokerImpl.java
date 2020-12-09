@@ -538,6 +538,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			if( clob == null ){
 				return null;
 			}
+			// XXX do we need to keep the statment/resultset open?
 			return createTemporaryClobReader(clob);
 		}
 	}
@@ -583,8 +584,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public List<RequestStatusInfo> listRequestNodeStatus(Integer requestId) throws SQLException {
 		List<RequestStatusInfo> list = new ArrayList<>();
-		try( Connection dbc = brokerDB.getConnection() ){
-			Statement st = dbc.createStatement();
+		try( Connection dbc = brokerDB.getConnection();
+				Statement st = dbc.createStatement() )
+		{
 			ResultSet rs = st.executeQuery("SELECT node_id, retrieved, deleted, queued, processing, completed, rejected, failed, interaction, message_type  FROM request_node_status WHERE request_id="+requestId);
 			while( rs.next() ){
 				RequestStatusInfo info = new RequestStatusInfo(rs.getInt(1));
@@ -599,6 +601,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 				info.type = rs.getString(10);
 				list.add(info);
 			}
+			rs.close();
 		}
 		return list;
 	}
@@ -655,15 +658,15 @@ public class BrokerImpl implements BrokerBackend, Broker {
 //	    return w.toString();
 //	}
 	private void updateRequestTimestamp(Connection dbc, int requestId, String timestampColumn, Instant value) throws SQLException{
-		PreparedStatement ps = dbc.prepareStatement("UPDATE requests SET "+timestampColumn+"=? WHERE id=?");
-		if( value != null ){
-			ps.setTimestamp(1, Timestamp.from(value));
-		}else{
-			ps.setTimestamp(1, null);
+		try( PreparedStatement ps = dbc.prepareStatement("UPDATE requests SET "+timestampColumn+"=? WHERE id=?") ){	
+			if( value != null ){
+				ps.setTimestamp(1, Timestamp.from(value));
+			}else{
+				ps.setTimestamp(1, null);
+			}
+			ps.setInt(2, requestId);
+			ps.executeUpdate();
 		}
-		ps.setInt(2, requestId);
-		ps.executeUpdate();
-		ps.close();
 	}
 	@Override
 	public void setRequestPublished(int requestId, Instant timestamp) throws SQLException {
@@ -681,14 +684,14 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	}
 	@Override
 	public void updateNodeLastSeen(int[] nodeIds, long[] timestamps) throws SQLException{
-		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement("UPDATE nodes SET last_contact=? WHERE id=?");
+		try( Connection dbc = brokerDB.getConnection();
+				PreparedStatement ps = dbc.prepareStatement("UPDATE nodes SET last_contact=? WHERE id=?") )
+		{
 			for( int i=0; i<nodeIds.length; i++ ){
 				ps.setInt(1, nodeIds[i]);
 				ps.setTimestamp(2, new Timestamp(timestamps[i]));
 				ps.executeUpdate();
 			}
-			ps.close();
 		}
 	}
 	@Override
@@ -850,8 +853,8 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		Path file;
 		byte[] md5;
 		byte[] sha2;
-		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement("SELECT media_type, last_modified, data_file, data_md5, data_sha2 FROM node_resources WHERE node_id=? AND name=?");
+		try( Connection dbc = brokerDB.getConnection();
+				PreparedStatement ps = dbc.prepareStatement("SELECT media_type, last_modified, data_file, data_md5, data_sha2 FROM node_resources WHERE node_id=? AND name=?")	){
 			ps.setInt(1, nodeId);
 			ps.setString(2, resourceId);
 			ResultSet rs = ps.executeQuery();
@@ -865,7 +868,6 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			md5 = rs.getBytes(4);
 			sha2 = rs.getBytes(5);
 			rs.close();
-			ps.close();
 		}
 		
 		DigestPathDataSource ds = new DigestPathDataSource(file, mediaType, lastModified);
@@ -883,15 +885,15 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	 */
 	public static int updatePrincipalDN(DataSource ds, Map<String, String> mapNodeDN) throws SQLException {
 		int updated = 0;
-		try( Connection dbc = ds.getConnection() ){
-			PreparedStatement update_dn = dbc.prepareStatement("UPDATE nodes SET subject_dn=? WHERE client_key=?");
+		try( Connection dbc = ds.getConnection();
+				PreparedStatement update_dn = dbc.prepareStatement("UPDATE nodes SET subject_dn=? WHERE client_key=?") )
+		{
 			for( Entry<String, String> entry : mapNodeDN.entrySet() ){
 				// try to update database
 				update_dn.setString(1, entry.getValue());
 				update_dn.setString(2, entry.getKey());
 				updated += update_dn.executeUpdate();
 			}
-			update_dn.close();
 		}
 		return updated;
 	}
