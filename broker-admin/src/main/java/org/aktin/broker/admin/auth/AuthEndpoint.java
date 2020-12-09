@@ -1,5 +1,6 @@
 package org.aktin.broker.admin.auth;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -39,10 +40,7 @@ public class AuthEndpoint {
 	private static final Logger log = Logger.getLogger(AuthEndpoint.class.getName());
 	@Inject 
 	private TokenManager tokens;
-	
-	@Context 
-	private SecurityContext security;
-	
+
 	@POST
 	@Path("login")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -51,10 +49,10 @@ public class AuthEndpoint {
 		// TODO allow access for other users
 		Token t = tokens.authenticate(cred.username, cred.password.toCharArray());
 		if( t != null ){
-			log.info("Login successful: "+cred.username);
+			log.log(Level.INFO,"Login successful: {0}",cred.username);
 			return Response.ok(t.getGUID()).build();
 		}else{
-			log.info("Access denied for "+cred.username);
+			log.log(Level.INFO,"Access denied for {0}",cred.username);
 			// access denied
 			return Response.status(Response.Status.UNAUTHORIZED).build();
 		}
