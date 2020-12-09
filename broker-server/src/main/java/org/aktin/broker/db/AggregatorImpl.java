@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.annotation.Resource;
@@ -155,7 +156,7 @@ public class AggregatorImpl implements AggregatorBackend {
 				String prevType = rs.getString(1);
 				// remove data file if necessary
 				// TODO log info: replacing prevType
-				prevType.length();
+				Objects.requireNonNull(prevType); // prevent unused code warning
 				try{
 					removeData(rs.getString(2));
 				}catch( IOException e ){

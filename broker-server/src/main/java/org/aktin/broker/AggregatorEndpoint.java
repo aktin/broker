@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +43,8 @@ public class AggregatorEndpoint {
 
 	private boolean isRequestWritable(int requestId, int nodeId){
 		// TODO check if request is open for writing results
+		Objects.requireNonNull(Integer.valueOf(requestId));
+		Objects.requireNonNull(Integer.valueOf(nodeId));
 		return true;
 	}
 
