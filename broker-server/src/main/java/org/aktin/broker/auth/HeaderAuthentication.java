@@ -4,6 +4,6 @@ import java.util.function.Function;
 
 public interface HeaderAuthentication {
 
-	public Principal authenticateByHeaders(Function<String,String> getHeader);
+	Principal authenticateByHeaders(Function<String,String> getHeader);
 
 }

@@ -5,10 +5,10 @@ import java.io.InputStream;
 
 public interface Configuration {
 
-	public InputStream readAPIKeyProperties()throws IOException;
-	public String getDatabasePath();
-	public String getAggregatorDataPath();
-	public String getBrokerDataPath();
-	public String getTempDownloadPath();
-	public int getPort();
+	InputStream readAPIKeyProperties()throws IOException;
+	String getDatabasePath();
+	String getAggregatorDataPath();
+	String getBrokerDataPath();
+	String getTempDownloadPath();
+	int getPort();
 }
