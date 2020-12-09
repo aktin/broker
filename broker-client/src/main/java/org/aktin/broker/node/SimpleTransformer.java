@@ -2,6 +2,7 @@ package org.aktin.broker.node;
 
 import java.io.File;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -19,6 +20,9 @@ public class SimpleTransformer {
 
 	public void loadTransformer(String path) throws TransformerException{
 		TransformerFactory tf = TransformerFactory.newInstance();
+		// disable external entity access
+		tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 		this.transformer = tf.newTransformer(new StreamSource(new File(path)));
 	}
 
@@ -29,6 +33,9 @@ public class SimpleTransformer {
 		DOMSource dom = new DOMSource(source);
 		DocumentBuilder b;
 		try {
+			DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
+			df.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+			df.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");	
 			b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
 			throw new TransformerException("Failed to create document builder", e);

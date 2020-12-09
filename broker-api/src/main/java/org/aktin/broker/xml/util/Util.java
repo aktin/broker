@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -41,6 +42,9 @@ public class Util {
 	public static Document parseDocument(Reader reader) throws IOException{
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
+		// disable external entity access
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 		try {
 			return factory.newDocumentBuilder().parse(new InputSource(reader));
 		} catch (ParserConfigurationException | SAXException e) {
@@ -56,6 +60,9 @@ public class Util {
 	}
 	public static void writeDOM(Node node, Writer writer, String encoding) throws TransformerException{
 	    TransformerFactory tf = TransformerFactory.newInstance();
+	    // disable external entity access
+	    tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+	    tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 	    Transformer transformer;
 			transformer = tf.newTransformer();
 	    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");

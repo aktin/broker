@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -87,6 +88,8 @@ public abstract class AbstractClient {
 	}
 	protected static void writeContent(Node node, OutputStream dest, String charset)throws IOException{
 	    TransformerFactory tf = TransformerFactory.newInstance();
+	    tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
+	    tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, ""); // Compliant
 	    Transformer transformer;
 		try {
 			transformer = tf.newTransformer();
