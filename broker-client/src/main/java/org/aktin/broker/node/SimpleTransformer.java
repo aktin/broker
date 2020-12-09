@@ -36,7 +36,7 @@ public class SimpleTransformer {
 			DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
 			df.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
 			df.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");	
-			b = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			b = df.newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
 			throw new TransformerException("Failed to create document builder", e);
 		}
