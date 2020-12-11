@@ -8,18 +8,9 @@
 
 	<name>AKTIN : Broker</name>
 	<description>AKTIN Search Broker</description>
-	<!--
-	<parent>
-		<groupId>org.aktin</groupId>
-		<artifactId>broker</artifactId>
-		<version>0.1-SNAPSHOT</version>
-	</parent>
-	-->
+
 	<modules>
 		<module>broker-api</module>
-		<module>query-model</module>
-		<module>query-i2b2-sql</module>
-		<module>query-aggregate-rscript</module>
 		<module>broker-client</module>
 		<module>broker-server</module>
 		<module>broker-admin</module>
