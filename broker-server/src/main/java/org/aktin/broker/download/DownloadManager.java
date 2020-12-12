@@ -39,7 +39,7 @@ public class DownloadManager {
 
 	public DownloadManager() {
 		store = new Hashtable<>();
-		expirationMillis = 1000*60*10; // 10 minutes
+		expirationMillis = 1000*60*10L; // 10 minutes
 	}
 
 	public DownloadManager(Path tempDir) throws IOException {
