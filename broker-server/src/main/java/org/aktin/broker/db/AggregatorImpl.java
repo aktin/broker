@@ -202,4 +202,10 @@ public class AggregatorImpl implements AggregatorBackend {
 		return list.toArray(new String[list.size()]);
 	}
 
+	@Override
+	public boolean isRequestWritable(int requestId, int nodeId) {
+		// TODO check in database
+		return true;
+	}
+
 }

@@ -42,10 +42,8 @@ public class AggregatorEndpoint {
 	private DownloadManager downloads;
 
 	private boolean isRequestWritable(int requestId, int nodeId){
-		// TODO check if request is open for writing results
-		Objects.requireNonNull(Integer.valueOf(requestId));
-		Objects.requireNonNull(Integer.valueOf(nodeId));
-		return true;
+		// check if request is open for writing results (e.g. not closed)
+		return db.isRequestWritable(requestId, nodeId);
 	}
 
 	// TODO allow multiple media types for a single result.

@@ -21,4 +21,5 @@ public interface AggregatorBackend extends Aggregator{
 
 	void addOrReplaceResult(int requestId, int nodeId, MediaType mediaType, InputStream content) throws SQLException;
 
+	boolean isRequestWritable(int requestId, int nodeId);
 }
