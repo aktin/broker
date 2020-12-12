@@ -441,7 +441,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			rs.close();
 		}
 
-		if( fillTypes ){
+		if( ri != null && fillTypes ){
 			// load request types
 			try( PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID) ){
 				ps.setInt(1, requestId);
