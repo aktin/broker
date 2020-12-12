@@ -149,7 +149,7 @@ public class AggregatorImpl implements AggregatorBackend {
 				Statement st = dbc.createStatement() ){
 			// find is result is already present
 			ResultSet rs = st.executeQuery("SELECT media_type, data_file FROM request_node_results WHERE request_id="+requestId+" AND node_id="+nodeId);
-			PreparedStatement ps;
+			String insertOrUpdate;
 			if( rs.next() ){
 				String prevType = rs.getString(1);
 				// remove data file if necessary
@@ -161,10 +161,10 @@ public class AggregatorImpl implements AggregatorBackend {
 					// TODO log error
 				}
 				// update data
-				ps = dbc.prepareStatement("UPDATE request_node_results SET media_type=?, data_file=?, last_modified=NOW() WHERE request_id=? AND node_id=?");
+				insertOrUpdate = "UPDATE request_node_results SET media_type=?, data_file=?, last_modified=NOW() WHERE request_id=? AND node_id=?";
 			}else{
 				// insert data
-				ps = dbc.prepareStatement("INSERT INTO request_node_results (media_type, data_file, request_id, node_id, first_received, last_modified) VALUES(?,?,?,?, NOW(), NOW())");				
+				insertOrUpdate = "INSERT INTO request_node_results (media_type, data_file, request_id, node_id, first_received, last_modified) VALUES(?,?,?,?, NOW(), NOW())";
 			}
 			rs.close();
 			
@@ -175,11 +175,13 @@ public class AggregatorImpl implements AggregatorBackend {
 			} catch (IOException e) {
 				throw new SQLException("Unable to read supplied data", e);
 			}
-			ps.setString(1, mediaType.toString());
-			ps.setString(2, file);
-			ps.setInt(3, requestId);
-			ps.setInt(4, nodeId);
-			ps.executeUpdate();
+			try( PreparedStatement ps = dbc.prepareStatement(insertOrUpdate) ){
+				ps.setString(1, mediaType.toString());
+				ps.setString(2, file);
+				ps.setInt(3, requestId);
+				ps.setInt(4, nodeId);
+				ps.executeUpdate();
+			}
 			dbc.commit();
 		}
 	}

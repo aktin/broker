@@ -103,9 +103,10 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public List<Node> getAllNodes() throws SQLException{
 		// TODO read/write nodes to external file
 		List<Node> nl = new ArrayList<>();
-		try( Connection dbc = brokerDB.getConnection() ){
+		try( Connection dbc = brokerDB.getConnection();
+				PreparedStatement st = dbc.prepareStatement("SELECT id, subject_dn, last_contact FROM nodes") )
+		{
 			// XXX maybe better to add an is_admin column
-			PreparedStatement st = dbc.prepareStatement("SELECT id, subject_dn, last_contact FROM nodes");
 			ResultSet rs = st.executeQuery();
 //			Statement st = dbc.createStatement();
 //			ResultSet rs = st.executeQuery("SELECT id, subject_dn, last_contact FROM nodes");
@@ -117,7 +118,6 @@ public class BrokerImpl implements BrokerBackend, Broker {
 				nl.add(new Node(rs.getInt(1), rs.getString(2), rs.getTimestamp(3).toInstant()));
 			}
 			rs.close();
-			st.close();
 		}
 		return nl;
 	}
@@ -126,25 +126,25 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public Node getNode(int nodeId) throws SQLException{
 		Node n;
 		try( Connection dbc = brokerDB.getConnection() ){
-			Statement st = dbc.createStatement();
-			ResultSet rs = st.executeQuery("SELECT id, subject_dn, last_contact FROM nodes WHERE id="+nodeId);
-			if( rs.next() ){
-				n = new Node(rs.getInt(1), rs.getString(2), rs.getTimestamp(3).toInstant());
-			}else{
-				n = null;
-			}
-			rs.close();
-			st.close();
-			if( n != null ){
-				// load module versions
-				st = dbc.createStatement();
-				rs = st.executeQuery("SELECT module, version FROM node_modules WHERE node_id="+nodeId);
-				n.modules = new HashMap<>();
-				while( rs.next() ){
-					n.modules.put(rs.getString(1), rs.getString(2));
+			try( Statement st = dbc.createStatement() ){				
+				ResultSet rs = st.executeQuery("SELECT id, subject_dn, last_contact FROM nodes WHERE id="+nodeId);
+				if( rs.next() ){
+					n = new Node(rs.getInt(1), rs.getString(2), rs.getTimestamp(3).toInstant());
+				}else{
+					n = null;
 				}
 				rs.close();
-				st.close();
+			}
+			if( n != null ){
+				// load module versions
+				try( Statement st = dbc.createStatement() ){
+					ResultSet rs = st.executeQuery("SELECT module, version FROM node_modules WHERE node_id="+nodeId);
+					n.modules = new HashMap<>();
+					while( rs.next() ){
+						n.modules.put(rs.getString(1), rs.getString(2));
+					}
+					rs.close();
+				}
 			}
 		}		
 		return n;
@@ -172,9 +172,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	}
 
 	private int createEmptyRequest(Connection dbc) throws SQLException{
-		Statement st = dbc.createStatement();
-		st.executeUpdate("INSERT INTO requests(created) VALUES(NOW())");
-		st.close();
+		executeUpdate(dbc, "INSERT INTO requests(created) VALUES(NOW())");
 		// get id
 		return getLastInsertId(dbc);
 		
@@ -209,32 +207,33 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	}
 	private void setRequestDefinition(Connection dbc, int requestId, String mediaType, Reader content) throws SQLException{
 		// determine a definition is already there
-		PreparedStatement ps = dbc.prepareStatement("SELECT COUNT(*) FROM request_definitions WHERE request_id=? AND media_type=?");
-		ps.setInt(1, requestId);
-		ps.setString(2, mediaType);
-		ResultSet rs = ps.executeQuery();
-		rs.next();
-		boolean hasRecord = (rs.getInt(1) != 0);
-		rs.close();
-		ps.close();
-		ps = null;
+		boolean hasRecord;
+		try( PreparedStatement ps = dbc.prepareStatement("SELECT COUNT(*) FROM request_definitions WHERE request_id=? AND media_type=?") ){			
+			ps.setInt(1, requestId);
+			ps.setString(2, mediaType);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			hasRecord = (rs.getInt(1) != 0);
+			rs.close();
+		}
+
 		if( hasRecord ){
 			// already there, update the definition
-			ps = dbc.prepareStatement("UPDATE request_definitions SET query_def=? WHERE request_id=? AND media_type=?");
-			ps.setClob(1, content);
-			ps.setInt(2, requestId);
-			ps.setString(3, mediaType);
-			ps.executeUpdate();		
-			ps.close();
+			try( PreparedStatement ps = dbc.prepareStatement("UPDATE request_definitions SET query_def=? WHERE request_id=? AND media_type=?") ){
+				ps.setClob(1, content);
+				ps.setInt(2, requestId);
+				ps.setString(3, mediaType);
+				ps.executeUpdate();		
+			}
 			log.info("Updated definition for request "+requestId+": "+mediaType);
 		}else{
 			// no definition, create one
-			ps = dbc.prepareStatement("INSERT INTO request_definitions (request_id, media_type, query_def) VALUES(?,?,?)");
-			ps.setInt(1, requestId);
-			ps.setString(2, mediaType);
-			ps.setClob(3, content);
-			ps.executeUpdate();
-			ps.close();
+			try( PreparedStatement ps = dbc.prepareStatement("INSERT INTO request_definitions (request_id, media_type, query_def) VALUES(?,?,?)") ){
+				ps.setInt(1, requestId);
+				ps.setString(2, mediaType);
+				ps.setClob(3, content);
+				ps.executeUpdate();
+			}
 			log.info("New definition for request "+requestId+": "+mediaType);
 		}
 	}
@@ -255,15 +254,10 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public void deleteRequest(int id) throws SQLException{
 		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement("DELETE FROM request_definitions WHERE request_id=?");
-			ps.setInt(1, id);
-			ps.executeUpdate();
-			ps.close();
-			
-			ps = dbc.prepareStatement("DELETE FROM requests WHERE id=?");
-			ps.setInt(1, id);
-			ps.executeUpdate();
-			ps.close();
+
+			executeUpdate(dbc, "DELETE FROM request_definitions WHERE request_id="+id);
+
+			executeUpdate(dbc, "DELETE FROM requests WHERE id="+id);
 			// commit transaction
 			dbc.commit();
 		}
@@ -311,14 +305,14 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public List<RequestInfo> listAllRequests() throws SQLException{
 		List<RequestInfo> list;
-		try( Connection dbc = brokerDB.getConnection() ){
-			Statement st = dbc.createStatement();
+		try( Connection dbc = brokerDB.getConnection();
+				Statement st = dbc.createStatement() )
+		{
 			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, d.media_type, r.targeted FROM requests r JOIN request_definitions d ON r.id=d.request_id ORDER BY r.id");
 			list = loadRequestList(rs, 4,  
 					r -> new RequestInfo(r.getInt(1), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(5))
 			);
 			rs.close();
-			st.close();
 		}
 		return list;
 	}
@@ -337,8 +331,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public List<String> getRequestTypes(int requestId) throws SQLException{
 		List<String> types = new ArrayList<>();
-		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
+		try( Connection dbc = brokerDB.getConnection();
+				PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID) )
+		{
 			ps.setInt(1, requestId);
 			ResultSet rs = ps.executeQuery();
 			while( rs.next() ){
@@ -382,9 +377,10 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public List<RequestInfo> listRequestsForNode(int nodeId) throws SQLException{
 		List<RequestInfo> list = new ArrayList<>();
 		List<String> types = new ArrayList<>();
-		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
-			Statement st = dbc.createStatement();
+		try( Connection dbc = brokerDB.getConnection();
+				PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
+				Statement st = dbc.createStatement() )
+		{
 			// targeted requests are ONLY supplied to selected nodes: .. AND (r.targeted = FALSE OR s.request_id IS NOT NULL)
 			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted, s.retrieved, s.interaction, s.queued, s.processing, s.completed, s.rejected, s.failed FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL AND (r.targeted = FALSE OR s.request_id IS NOT NULL) ORDER BY r.id");
 //			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, s.retrieved FROM requests r LEFT OUTER JOIN request_node_status s ON r.id=s.request_id AND s.node_id="+ nodeId+" WHERE s.deleted IS NULL AND r.closed IS NULL AND r.published IS NOT NULL ORDER BY r.id");
@@ -420,7 +416,6 @@ public class BrokerImpl implements BrokerBackend, Broker {
 				}
 			}
 			rs.close();
-			st.close();
 		}
 		return list;		
 	}
@@ -433,45 +428,46 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	}
 	
 	private RequestInfo loadRequest(Connection dbc, int requestId, boolean fillTypes) throws SQLException{
-		Statement st = dbc.createStatement();
-		ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted FROM requests r WHERE r.id="+requestId);
 		RequestInfo ri = null;
-		if( rs.next() ){
-			ri = new RequestInfo(rs.getInt(1), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(4));
+		try( Statement st = dbc.createStatement() ){
+			ResultSet rs = st.executeQuery("SELECT r.id, r.published, r.closed, r.targeted FROM requests r WHERE r.id="+requestId);
+			if( rs.next() ){
+				ri = new RequestInfo(rs.getInt(1), optionalTimestamp(rs, 2), optionalTimestamp(rs, 3), rs.getBoolean(4));
+			}
+			rs.close();
 		}
-		rs.close();
-		st.close();
 
 		if( fillTypes ){
 			// load request types
-			PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID);
-			ps.setInt(1, requestId);
-			ArrayList<String> types = new ArrayList<>();
-			rs = ps.executeQuery();
-			while( rs.next() ){
-				types.add(rs.getString(1));
-			}
-			if( !types.isEmpty() ){
-				ri.setTypes(types.toArray(new String[types.size()]));
+			try( PreparedStatement ps = dbc.prepareStatement(SELECT_MEDIATYPE_BY_REQUESTID) ){
+				ps.setInt(1, requestId);
+				ArrayList<String> types = new ArrayList<>();
+				ResultSet rs = ps.executeQuery();
+				while( rs.next() ){
+					types.add(rs.getString(1));
+				}
+				if( !types.isEmpty() ){
+					ri.setTypes(types.toArray(new String[types.size()]));
+				}
 			}
 		}
 		return ri;
 	}
 	private boolean loadRequestNodeStatus(Connection dbc, int nodeId, int requestId, RequestStatusInfo ri) throws SQLException{
 		
-		Statement st = dbc.createStatement();
-		ResultSet rs = st.executeQuery("SELECT retrieved, deleted FROM request_node_status r WHERE request_id="+requestId+" AND node_id="+nodeId);
 		boolean status_found = false;
-		if( rs.next() ){
-			status_found = true;
-			ri.retrieved = optionalTimestamp(rs, 1);
-			ri.deleted = optionalTimestamp(rs, 2);
-			// don't need other time stamps,
-			// this method is only used internally to find out if a status record exists 
-			// and if the query was deleted
+		try( Statement st = dbc.createStatement() ){
+			ResultSet rs = st.executeQuery("SELECT retrieved, deleted FROM request_node_status r WHERE request_id="+requestId+" AND node_id="+nodeId);
+			if( rs.next() ){
+				status_found = true;
+				ri.retrieved = optionalTimestamp(rs, 1);
+				ri.deleted = optionalTimestamp(rs, 2);
+				// don't need other time stamps,
+				// this method is only used internally to find out if a status record exists 
+				// and if the query was deleted
+			}
+			rs.close();
 		}
-		rs.close();
-		st.close();
 		return status_found;
 	}
 	/* (non-Javadoc)
@@ -490,35 +486,35 @@ public class BrokerImpl implements BrokerBackend, Broker {
 				sql.append(", interaction=NULL");
 			}
 			sql.append(" WHERE request_id=? AND node_id=?");
-			PreparedStatement ps = dbc.prepareStatement(sql.toString());
-			ps.setTimestamp(1, ts);
-			ps.setInt(2, requestId);
-			ps.setInt(3, nodeId);
-			rowCount = ps.executeUpdate();
-			ps.close();
+			try( PreparedStatement ps = dbc.prepareStatement(sql.toString()) ){
+				ps.setTimestamp(1, ts);
+				ps.setInt(2, requestId);
+				ps.setInt(3, nodeId);
+				rowCount = ps.executeUpdate();
+			}
 			// status message must be updated via a different method
 			if( rowCount == 0 ){
 				// row not there, insert row
-				ps = dbc.prepareStatement("INSERT INTO request_node_status(request_id, node_id, "+status.name()+") VALUES(?,?,?)");
-				ps.setInt(1, requestId);
-				ps.setInt(2, nodeId);
-				ps.setTimestamp(3, ts);
-				ps.executeUpdate();
-				ps.close();
+				try( PreparedStatement ps = dbc.prepareStatement("INSERT INTO request_node_status(request_id, node_id, "+status.name()+") VALUES(?,?,?)") ){
+					ps.setInt(1, requestId);
+					ps.setInt(2, nodeId);
+					ps.setTimestamp(3, ts);
+					ps.executeUpdate();
+				}
 			}
 			dbc.commit();
 		}
 	}
 	@Override
 	public void setRequestNodeStatusMessage(int requestId, int nodeId, String mediaType, Reader message) throws SQLException{
-		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement("UPDATE request_node_status SET message_type=?, message=? WHERE request_id=? AND node_id=?");
+		try( Connection dbc = brokerDB.getConnection();
+				PreparedStatement ps = dbc.prepareStatement("UPDATE request_node_status SET message_type=?, message=? WHERE request_id=? AND node_id=?") )
+		{
 			ps.setString(1, mediaType);
 			ps.setClob(2, message);
 			ps.setInt(3, requestId);
 			ps.setInt(4, nodeId);
 			ps.executeUpdate();
-			ps.close();
 			dbc.commit();
 		}
 	}
@@ -557,17 +553,17 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			}else if( false == loadRequestNodeStatus(dbc, nodeId, requestId, si) ){
 				// no status for node, need to insert
 				// this also means that the request was never retrieved by the node
-				Statement st = dbc.createStatement();
-				st.executeUpdate("INSERT INTO request_node_status(deleted, node_id, request_id) VALUES(NOW(),"+nodeId+","+requestId+")");
-				st.close();
+				try( Statement st = dbc.createStatement() ){
+					st.executeUpdate("INSERT INTO request_node_status(deleted, node_id, request_id) VALUES(NOW(),"+nodeId+","+requestId+")");
+				}
 				dbc.commit();
 				delete_ok = true;
 			}else if( si.deleted == null ){
 				// request was retrieved by node, but not deleted.
 				// we need to update the timestamp to now
-				Statement st = dbc.createStatement();
-				st.executeUpdate("UPDATE request_node_status SET deleted=NOW() WHERE request_id="+requestId+" AND node_id="+nodeId);
-				st.close();
+				try( Statement st = dbc.createStatement() ){
+					st.executeUpdate("UPDATE request_node_status SET deleted=NOW() WHERE request_id="+requestId+" AND node_id="+nodeId);
+				}
 				dbc.commit();
 				delete_ok = true;
 			}else{
@@ -624,24 +620,27 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			p = loadPrincipalByCertId(select_node, clientKey);
 			if( p == null ){
 				// insert into database
-				PreparedStatement ps = dbc.prepareStatement("INSERT INTO nodes(client_key, subject_dn, last_contact)VALUES(?,?,NOW())");
-				ps.setString(1, clientKey);
-				ps.setString(2, clientDn);
-				ps.executeUpdate();
-				ps.close();
+				try( PreparedStatement ps = dbc.prepareStatement("INSERT INTO nodes(client_key, subject_dn, last_contact)VALUES(?,?,NOW())") ){
+					ps.setString(1, clientKey);
+					ps.setString(2, clientDn);
+					ps.executeUpdate();					
+				}
 				// retrieve id
 				select_node.clearParameters();
 				p = loadPrincipalByCertId(select_node, clientKey);
 			}else{
 				// update last contact
-				Statement st = dbc.createStatement();
-				st.executeUpdate("UPDATE nodes SET last_contact=NOW() WHERE id="+p.getNodeId());
-				st.close();
+				executeUpdate(dbc, "UPDATE nodes SET last_contact=NOW() WHERE id="+p.getNodeId());
 			}
 			select_node.close();
 			dbc.commit();
 		}
 		return p;
+	}
+	private static void executeUpdate(Connection dbc, String sql) throws SQLException {
+		try( Statement st = dbc.createStatement() ){
+			st.executeUpdate(sql);
+		}
 	}
 
 
@@ -699,25 +698,21 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		Objects.requireNonNull(nodes);
 		try( Connection dbc = brokerDB.getConnection() ){
 			// set targeted
-			Statement st = dbc.createStatement();
-			st.executeUpdate("UPDATE requests SET targeted=TRUE WHERE id="+requestId);
-			st.close();
+			executeUpdate(dbc, "UPDATE requests SET targeted=TRUE WHERE id="+requestId);
 
 			// clear nodes
-			st = dbc.createStatement();
 			// TODO issue warning, if the request was already retrieved by a node
 			// TODO 
-			st.executeUpdate("DELETE FROM request_node_status WHERE request_id="+requestId);
-			st.close();
+			executeUpdate(dbc, "DELETE FROM request_node_status WHERE request_id="+requestId);
 
 			// insert target nodes
-			PreparedStatement ps = dbc.prepareStatement("INSERT INTO request_node_status(request_id,node_id)VALUES(?,?)");
-			ps.setInt(1, requestId);
-			for( int i=0; i<nodes.length; i++ ){
-				ps.setInt(2, nodes[i]);
-				ps.executeUpdate();
+			try( PreparedStatement ps = dbc.prepareStatement("INSERT INTO request_node_status(request_id,node_id)VALUES(?,?)") ){				
+				ps.setInt(1, requestId);
+				for( int i=0; i<nodes.length; i++ ){
+					ps.setInt(2, nodes[i]);
+					ps.executeUpdate();
+				}
 			}
-			ps.close();
 
 			// commit transaction
 			dbc.commit();
@@ -729,23 +724,22 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		try( Connection dbc = brokerDB.getConnection() ){
 			// first find out, if the query is targeted at all
 			boolean isTargeted = false;
-			Statement st = dbc.createStatement();
-			ResultSet rs = st.executeQuery("SELECT targeted FROM requests WHERE id="+requestId);
-			if( rs.next() ){
-				isTargeted = rs.getBoolean(1);
+			try( Statement st = dbc.createStatement() ){
+				ResultSet rs = st.executeQuery("SELECT targeted FROM requests WHERE id="+requestId);
+				if( rs.next() ){
+					isTargeted = rs.getBoolean(1);
+				}
 			}
-			st.close();
-
 			if( isTargeted == true ){
 				// retrieve nodes
 				ArrayList<Integer> list = new ArrayList<>();
-				st = dbc.createStatement();
-				rs = st.executeQuery("SELECT node_id FROM request_node_status WHERE request_id="+requestId);
-				while( rs.next() ){
-					list.add(rs.getInt(1));
+				try( Statement st = dbc.createStatement() ){
+					ResultSet rs = st.executeQuery("SELECT node_id FROM request_node_status WHERE request_id="+requestId);
+					while( rs.next() ){
+						list.add(rs.getInt(1));
+					}
+					rs.close();
 				}
-				rs.close();
-				st.close();
 				// fill array
 				nodes = new int[list.size()];
 				for( int i=0; i<list.size(); i++ ){
@@ -758,9 +752,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public void clearRequestTargets(int requestId) throws SQLException {
 		try( Connection dbc = brokerDB.getConnection() ){
-			Statement st = dbc.createStatement();
-			st.executeUpdate("UPDATE requests SET targeted=FALSE WHERE id="+requestId);
-			st.close();
+			executeUpdate(dbc, "UPDATE requests SET targeted=FALSE WHERE id="+requestId);
 		}
 	}
 	private String nodeResourceName(int nodeId, String resourceId, MediaType mediaType){
@@ -810,38 +802,43 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		String oldFile = null;
 		String newFile = nodeResourceName(nodeId, resourceId, mediaType);
 		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement("SELECT data_file FROM node_resources WHERE node_id=? AND name=?");
-			ps.setInt(1, nodeId);
-			ps.setString(2, resourceId);
-			ResultSet rs = ps.executeQuery();
-			if( rs.next() ){
-				oldFile = rs.getString(1);
+			try( PreparedStatement ps = dbc.prepareStatement("SELECT data_file FROM node_resources WHERE node_id=? AND name=?") ){				
+				ps.setInt(1, nodeId);
+				ps.setString(2, resourceId);
+				ResultSet rs = ps.executeQuery();
+				if( rs.next() ){
+					oldFile = rs.getString(1);
+				}
 			}
-			ps.close();
-			ps = null;
 
 			// replace file
 			byte[][] digests = replaceResourceFile(content, oldFile, newFile);
 			// XXX this is not 100% transaction safe, the file is still replaced if the next database operation fails. Would be better to backup the old file and restore it if the database operation fails
 
 			// update database entry
-			if( oldFile != null ){
-				// previous entry, replace existing
-				ps = dbc.prepareStatement("UPDATE node_resources SET media_type=?, last_modified=?, data_file=?, data_md5=?, data_sha2=? WHERE node_id=? AND name=?");
-			}else{
-				// no previous entry, create new one
-				ps = dbc.prepareStatement("INSERT INTO node_resources(media_type, last_modified, data_file, data_md5, data_sha2, node_id, name)VALUES(?,?,?,?,?,?,?)");
+			PreparedStatement ps = null;
+			try{
+				if( oldFile != null ){
+					// previous entry, replace existing
+					ps = dbc.prepareStatement("UPDATE node_resources SET media_type=?, last_modified=?, data_file=?, data_md5=?, data_sha2=? WHERE node_id=? AND name=?");
+				}else{
+					// no previous entry, create new one
+					ps = dbc.prepareStatement("INSERT INTO node_resources(media_type, last_modified, data_file, data_md5, data_sha2, node_id, name)VALUES(?,?,?,?,?,?,?)");
+				}
+	
+				ps.setString(1, mediaType.toString());
+				ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+				ps.setString(3, newFile);
+				ps.setBytes(4, digests[0]);
+				ps.setBytes(5, digests[1]);
+				ps.setInt(6, nodeId);
+				ps.setString(7, resourceId);
+				ps.executeUpdate();
+			}finally {
+				if( ps != null ) {
+					ps.close();					
+				}
 			}
-
-			ps.setString(1, mediaType.toString());
-			ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-			ps.setString(3, newFile);
-			ps.setBytes(4, digests[0]);
-			ps.setBytes(5, digests[1]);
-			ps.setInt(6, nodeId);
-			ps.setString(7, resourceId);
-			ps.executeUpdate();
-			ps.close();
 			// done
 			dbc.commit();
 		}
