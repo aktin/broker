@@ -351,6 +351,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			}
 			return new StringReader(str);
 		}else{
+			// current implementation reads the clob directly.
+			// if this is implemented later asynchronously, we need to make sure that
+			// the underlying connection can be closed and the clob is still readable.
 			throw new UnsupportedOperationException("Temporary file CLOB reader not implemented yet. Size > "+inMemoryTreshold);
 		}
 	}
@@ -359,8 +362,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	 */
 	@Override
 	public Reader getRequestDefinition(int requestId, String mediaType) throws SQLException, IOException{
-		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement("SELECT query_def FROM request_definitions WHERE request_id=? AND media_type=?");
+		try( Connection dbc = brokerDB.getConnection();
+			PreparedStatement ps = dbc.prepareStatement("SELECT query_def FROM request_definitions WHERE request_id=? AND media_type=?") )
+		{
 			ps.setInt(1, requestId);
 			ps.setString(2, mediaType);
 			ResultSet rs = ps.executeQuery();
@@ -522,8 +526,10 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	// TODO unit test
 	@Override
 	public Reader getRequestNodeStatusMessage(int requestId, int nodeId) throws SQLException, IOException{
-		try( Connection dbc = brokerDB.getConnection() ){
-			PreparedStatement ps = dbc.prepareStatement("SELECT message_type, message FROM request_node_status WHERE request_id=? AND node_id=?");
+		try( Connection dbc = brokerDB.getConnection();
+				PreparedStatement ps = dbc.prepareStatement("SELECT message_type, message FROM request_node_status WHERE request_id=? AND node_id=?") )
+		{
+			
 			ps.setInt(1, requestId);
 			ps.setInt(2, nodeId);
 			ResultSet rs = ps.executeQuery();
@@ -534,7 +540,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			if( clob == null ){
 				return null;
 			}
-			// XXX do we need to keep the statment/resultset open?
+
 			return createTemporaryClobReader(clob);
 		}
 	}
