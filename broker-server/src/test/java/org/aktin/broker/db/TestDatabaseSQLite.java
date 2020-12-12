@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.junit.Assert;
 import org.junit.Test;
+
 
 
 public class TestDatabaseSQLite extends AbstractDatabase{
@@ -16,6 +18,7 @@ public class TestDatabaseSQLite extends AbstractDatabase{
 	@Test
 	public void verifyDatabaseFileCreated() throws SQLException{
 		//resetDatabase();
+		Assert.assertTrue(true);
 	}
 
 

@@ -78,10 +78,12 @@ public class TestDatabaseHSQL extends AbstractDatabase {
 	}
 	
 	@Test
-	public void loadChangelogToLiquibase() throws SQLException, LiquibaseException, IOException {
+	public void loadChangelogToLiquibase(){
 		try( LiquibaseWrapper lw = new LiquibaseWrapper(getConnection()) )
 		{
 			lw.update();
+		}catch( Throwable e ) {
+			Assert.fail();
 		}
 	}
 	
