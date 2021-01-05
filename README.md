@@ -58,6 +58,9 @@ Running the broker
 ------------------
 To run the central broker component, first unpack the binary distribution `broker-admin-dist-1.x.zip`. For running the application, you need a Java 8 runtime environment or newer. We recommend to use the latest OpenJDK version (currently OpenJDK 15). Open a command shell in the extracted folder and run the script `run_broker.sh` for Linux/MingW/GitBash or `run_broker.bat` for Windows respectively. To change startup options (e.g port), edit the startup script.
 
+Running the broker from your IDE for development
+------------------------------------------------
+To test the broker from an IDE, simply run the class `broker-admin/src/test/java/org.aktin.broker.admin.standalone.TestServer`. The port can be specified as command line argument and defaults to locahost:8080. Running the TestServer (instead of directly using the production `src/main/java/org.aktin.broker.admin.standalone.HttpServer`) will make sure that the system state and configuration files go to the target/ folder instead of cluttering the project directories as well as that example data is already available. In this test environment, the admin password is set to 'test'. Client API-Keys can be found under `broker-admin/src/test/resources/api-keys.properties`. For examples to use the broker, see below.
 
 Building from source code
 -------------------------
