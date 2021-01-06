@@ -15,7 +15,6 @@ import org.aktin.broker.Broker;
 import org.aktin.broker.admin.auth.AuthEndpoint;
 import org.aktin.broker.admin.auth.AuthFilter;
 import org.aktin.broker.admin.rest.FormTemplateEndpoint;
-import org.aktin.broker.admin.rest.ValidatorEndpoint;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.db.LiquibaseWrapper;
 import org.eclipse.jetty.server.Handler;
@@ -70,7 +69,6 @@ public class HttpServer {
 		rc.register(AuthFilter.class);
 		// register admin endpoints
 		rc.register(AuthEndpoint.class);
-		rc.register(ValidatorEndpoint.class);
 		rc.register(FormTemplateEndpoint.class);
 	}
 
