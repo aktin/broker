@@ -62,11 +62,6 @@
 			<version>1.0.4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>org.aktin.broker</groupId>
-			<artifactId>query-model</artifactId>
-			<version>1.0.4-SNAPSHOT</version>
-		</dependency>
-		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-client</artifactId>
 			<version>1.0.4-SNAPSHOT</version>
@@ -111,12 +106,12 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>9.4.26.v20200117</version>
+			<version>9.4.35.v20201120</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-util</artifactId>
-			<version>9.4.26.v20200117</version>
+			<version>9.4.35.v20201120</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
