@@ -2,9 +2,7 @@ package org.aktin.broker.auth;
 
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -59,23 +57,17 @@ public class AuthFilterSSLHeaders implements ContainerRequestFilter, HeaderAuthe
 	}
 
 	@Override
-	public Principal authenticateByHeaders(Function<String, String> getHeader) {
+	public Principal authenticateByHeaders(Function<String, String> getHeader) throws IOException {
 		String verify = getHeader.apply(X_SSL_CLIENT_VERIFY);
 		String id = getHeader.apply(X_SSL_CLIENT_ID);
 		String dn = getHeader.apply(X_SSL_CLIENT_DN);
 		if( verify == null || !verify.equals("SUCCESS") ){
+			// authentication failed
         	log.info("Client verify header not found or not successful");
         	return null;
 		}
+		// authentication successfull
 
-		Principal principal;
-		try {
-			principal = authCache.getPrincipal(id, dn);
-			log.info("Principal found: "+principal.getName());
-			return principal;
-		} catch (SQLException e) {
-			log.log(Level.SEVERE, "Unable to lookup principal", e);
-			return null;
-		}		
+		return authCache.getPrincipal(id, dn);
 	}
 }

@@ -18,6 +18,12 @@ import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.xml.Node;
 
 
+/**
+ * In memory cache for user objects which also has manages a last-contact timestamp.
+
+ * @author R.W.Majeed
+ *
+ */
 @Singleton
 public class AuthCache implements Flushable, Closeable{
 	private static final Logger log = Logger.getLogger(AuthCache.class.getName());
@@ -29,6 +35,10 @@ public class AuthCache implements Flushable, Closeable{
 	public AuthCache(){
 		cache = new HashMap<>();
 	}
+	/**
+	 * CDI constructor
+	 * @param backend
+	 */
 	@Inject
 	public AuthCache(BrokerBackend backend){
 		this();
@@ -38,11 +48,22 @@ public class AuthCache implements Flushable, Closeable{
 		this.backend = backend;
 	}
 	
-	public Principal getPrincipal(String nodeKey, String clientDn) throws SQLException{
+	/**
+	 * Retrieve a {@link Principal} user object for a client node.
+	 * @param nodeKey unique identifier for the client/data warehouse node. This id should not change.
+	 * @param clientDn 
+	 * @return user object
+	 * @throws SQLException 
+	 */
+	public Principal getPrincipal(String nodeKey, String clientDn) throws IOException{
 		Objects.requireNonNull(clientDn);
 		Principal p = cache.get(nodeKey);
 		if( p == null ){
-			p = backend.accessPrincipal(nodeKey, clientDn);
+			try {
+				p = backend.accessPrincipal(nodeKey, clientDn);
+			} catch (SQLException e) {
+				throw new IOException("SQL error during principal retrieval for node "+nodeKey, e);
+			}
 			cache.put(nodeKey, p);
 		}else{
 			; // TODO check if client DN changed. If so, log warning and update the client DN

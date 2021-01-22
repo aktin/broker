@@ -1,9 +1,7 @@
 package org.aktin.broker.auth;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
@@ -48,7 +46,7 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter, Heade
 	}
 
 	@Override
-	public Principal authenticateByHeaders(Function<String,String> getHeader) {
+	public Principal authenticateByHeaders(Function<String,String> getHeader) throws IOException {
 		String auth = getHeader.apply(HttpHeaders.AUTHORIZATION);
 		String key = null;
 		if( auth != null && auth.startsWith("Bearer ") ){
@@ -66,13 +64,8 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter, Heade
 			log.info("Access denied for API key: "+key);
 			return null;
 		}
-		Principal principal = null;
-		try {
-			principal = authCache.getPrincipal(key, clientDn);
-			log.info("Principal found: "+principal.getName());
-		} catch (SQLException e) {
-			log.log(Level.SEVERE, "Unable to lookup principal", e);
-		}
-		return principal;
+		// we found the clientDn -> client successfully authenticated
+
+		return authCache.getPrincipal(key, clientDn);
 	}
 }
