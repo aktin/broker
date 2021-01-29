@@ -23,4 +23,6 @@ public interface HeaderAuthentication {
 	 * @throws IOException Unexpected communication errors during authentication. Don't throw exceptions for access-denied - instead return {@code null}.
 	 */
 	Principal authenticateByHeaders(Function<String,String> getHeader) throws IOException;
+
+	//Principal authenticateByWebsocketMessage(String message);
 }

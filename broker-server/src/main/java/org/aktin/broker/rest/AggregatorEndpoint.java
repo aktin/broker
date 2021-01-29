@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.rest;
 
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -27,6 +27,7 @@ import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.AggregatorBackend;
 import org.aktin.broker.download.Download;
 import org.aktin.broker.download.DownloadManager;
+import org.aktin.broker.download.RequestBundleExport;
 import org.aktin.broker.server.DateDataSource;
 import org.aktin.broker.xml.ResultInfo;
 import org.aktin.broker.xml.ResultList;

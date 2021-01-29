@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.rest;
 
 import java.sql.SQLException;
 import java.util.Base64;
@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.aktin.broker.auth.AuthCache;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.server.DateDataSource;
+import org.aktin.broker.util.DigestPathDataSource;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.NodeList;
 

@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.rest;
 
 import java.io.IOException;
 
@@ -14,6 +14,7 @@ import org.aktin.broker.db.AggregatorBackend;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.download.Download;
 import org.aktin.broker.download.DownloadManager;
+import org.aktin.broker.download.RequestBundleExport;
 
 /**
  * Create export bundles for download

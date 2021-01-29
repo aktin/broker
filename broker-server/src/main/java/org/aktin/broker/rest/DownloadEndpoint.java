@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.rest;
 
 import java.io.IOException;
 import java.sql.Date;

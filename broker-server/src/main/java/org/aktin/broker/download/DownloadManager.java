@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 import javax.activation.DataSource;
 import javax.inject.Singleton;
 
-import org.aktin.broker.PathDataSource;
+import org.aktin.broker.util.PathDataSource;
 
 
 

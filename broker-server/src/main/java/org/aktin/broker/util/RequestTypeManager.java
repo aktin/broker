@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.util;
 
 import java.io.Reader;
 import java.util.List;
@@ -42,7 +42,7 @@ public class RequestTypeManager {
 	 * @param in consumed type
 	 * @return converter converting between the given types, or {@code null} if not found.
 	 */
-	RequestConverter converterForType(String out, String in){
+	public RequestConverter converterForType(String out, String in){
 		return null;
 	}
 	
@@ -60,7 +60,7 @@ public class RequestTypeManager {
 	 * @param resources list of available resource types
 	 * @return converter or {@code null} if not possible.
 	 */
-	RequestConverter buildConverterChain(List<MediaType> accept, List<MediaType> resources){
+	public RequestConverter buildConverterChain(List<MediaType> accept, List<MediaType> resources){
 		// find out whether physical resource is acceptable
 		for( MediaType t : accept ){
 			for( MediaType resource : resources ){

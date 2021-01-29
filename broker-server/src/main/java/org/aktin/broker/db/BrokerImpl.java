@@ -34,9 +34,9 @@ import javax.inject.Singleton;
 import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
 
-import org.aktin.broker.DigestPathDataSource;
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.server.Broker;
+import org.aktin.broker.util.DigestPathDataSource;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;

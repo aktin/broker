@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import org.aktin.broker.RequestTypeManager;
 import org.aktin.broker.admin.auth.TokenManager;
 import org.aktin.broker.auth.AuthCache;
 import org.aktin.broker.db.AggregatorBackend;
@@ -17,6 +16,7 @@ import org.aktin.broker.db.AggregatorImpl;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.download.DownloadManager;
+import org.aktin.broker.util.RequestTypeManager;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
 

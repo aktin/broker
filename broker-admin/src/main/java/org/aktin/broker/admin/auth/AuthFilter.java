@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
-import org.aktin.broker.RequireAdmin;
+import org.aktin.broker.rest.RequireAdmin;
 
 
 /**

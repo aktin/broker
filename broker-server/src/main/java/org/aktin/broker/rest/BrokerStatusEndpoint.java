@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.rest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

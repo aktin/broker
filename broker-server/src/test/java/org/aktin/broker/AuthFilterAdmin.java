@@ -10,10 +10,10 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
-import org.aktin.broker.RequireAdmin;
 import org.aktin.broker.auth.AuthFilterAPIKeys;
 import org.aktin.broker.auth.AuthFilterSSLHeaders;
 import org.aktin.broker.auth.Principal;
+import org.aktin.broker.rest.RequireAdmin;
 
 @RequireAdmin
 @Provider

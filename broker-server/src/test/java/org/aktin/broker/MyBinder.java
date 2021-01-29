@@ -11,6 +11,7 @@ import org.aktin.broker.db.AggregatorImpl;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.download.DownloadManager;
+import org.aktin.broker.util.RequestTypeManager;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 

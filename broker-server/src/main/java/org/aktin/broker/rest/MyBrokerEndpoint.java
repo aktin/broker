@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +30,7 @@ import javax.ws.rs.core.Response.Status;
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.notify.MyBrokerWebsocket;
+import org.aktin.broker.util.RequestTypeManager;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;

@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import org.aktin.broker.RequireAdmin;
+import org.aktin.broker.rest.RequireAdmin;
 
 
 /**

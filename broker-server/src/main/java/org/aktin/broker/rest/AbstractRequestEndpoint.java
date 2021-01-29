@@ -1,4 +1,4 @@
-package org.aktin.broker;
+package org.aktin.broker.rest;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -12,6 +12,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 
 import org.aktin.broker.db.BrokerBackend;
+import org.aktin.broker.util.RequestConverter;
+import org.aktin.broker.util.RequestTypeManager;
 
 public abstract class AbstractRequestEndpoint {
 

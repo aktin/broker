@@ -11,8 +11,8 @@ import java.util.logging.Logger;
 
 import javax.activation.DataSource;
 
-import org.aktin.broker.PathDataSource;
 import org.aktin.broker.server.DateDataSource;
+import org.aktin.broker.util.PathDataSource;
 
 /**
  * Wraps a {@link DataSource} for download. This class also
