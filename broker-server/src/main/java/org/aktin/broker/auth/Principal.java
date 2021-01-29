@@ -9,6 +9,11 @@ public class Principal implements java.security.Principal, SecurityContext{
 	private String clientDn;
 	private long lastAccessed;
 	
+	/**
+	 * Constructor for principal.
+	 * @param nodeId unique node client id
+	 * @param clientDn distinguished name. Client information a la X.509/LDAP/etc. Should contain at least CN=display name
+	 */
 	public Principal(int nodeId, String clientDn){
 		this.nodeId = nodeId;
 		this.clientDn = clientDn;
@@ -23,9 +28,17 @@ public class Principal implements java.security.Principal, SecurityContext{
 		}
 	}
 
+	/**
+	 * Retrieve the full client DN string
+	 * @return distinguished name
+	 */
 	public String getClientDN(){
 		return clientDn;
 	}
+
+	/**
+	 * Retrieve the user name
+	 */
 	@Override
 	public String getName() {
 		if( commonName != null ){
@@ -36,6 +49,10 @@ public class Principal implements java.security.Principal, SecurityContext{
 			return Integer.toString(getNodeId());
 		}
 	}
+	/**
+	 * Get the unique node client id.
+	 * @return client id
+	 */
 	public int getNodeId(){
 		return nodeId;
 	}
@@ -43,9 +60,13 @@ public class Principal implements java.security.Principal, SecurityContext{
 	public java.security.Principal getUserPrincipal() {
 		return this;
 	}
+
+	/**
+	 * This method is not used right now.
+	 */
 	@Override
 	public boolean isUserInRole(String role) {
-		return role.equals("admini");
+		return role.equals("admin");
 	}
 	@Override
 	public boolean isSecure() {
@@ -63,9 +84,16 @@ public class Principal implements java.security.Principal, SecurityContext{
 		return clientDn != null && clientDn.contains("OU=admin");		
 	}
 
+	/**
+	 * Update the last contact / last access timestamp for this user
+	 */
 	public void updateLastAccessed(){
 		this.lastAccessed = System.currentTimeMillis();
 	}
+	/**
+	 * Get the timestamp for the last known contact to the principal.
+	 * @return epoch millis, e.g. similar to what is returned {@link System#currentTimeMillis()}
+	 */
 	public long getLastAccessed(){
 		return this.lastAccessed;
 	}

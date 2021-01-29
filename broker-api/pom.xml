@@ -4,6 +4,9 @@
 	<packaging>jar</packaging>
 
 	<description>
+	 Broker API module. Contains data structures for client/server communication
+	 as well as serverAPI interfaces for dependency injection with server components (e.g. for 
+	 additional authentication providers)
 	</description>
 
 	<groupId>org.aktin</groupId>

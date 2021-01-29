@@ -16,9 +16,12 @@ public interface BrokerBackend extends Broker{
 
 
 	/**
-	 * Add or retrieve the node principal. The node is identified by its key.
+	 * Add or retrieve the node principal. The node is identified by its key. The key can 
+	 * be any string value. It is used as primary identifier and should not change.
+	 *
 	 * For API-Key authentication, this can be the API key. For TLS client certificate
-	 * authentication, this may be the certificate serial number.
+	 * authentication, this may be the certificate serial number. For external auth,
+	 * a user id / login name can be used.
 	 * 
 	 * @param nodeKey unique key for the node. E.g. Certificate serial number or API key
 	 * @param clientDn optional X500 client DN string
