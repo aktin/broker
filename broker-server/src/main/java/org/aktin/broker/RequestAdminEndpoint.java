@@ -31,7 +31,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.aktin.broker.db.BrokerBackend;
-import org.aktin.broker.notify.BrokerWebsocket;
+import org.aktin.broker.notify.MyBrokerWebsocket;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatusInfo;
@@ -361,7 +361,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			db.setRequestPublished(requestId, Instant.now());
 
 			// broadcast to connected websocket clients
-			BrokerWebsocket.broadcastRequestPublished(requestId);
+			MyBrokerWebsocket.broadcastRequestPublished(requestId);
 		}
 	}
 
@@ -389,7 +389,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			db.setRequestClosed(requestId, Instant.now());
 
 			// broadcast to connected websocket clients
-			BrokerWebsocket.broadcastRequestClosed(requestId);
+			MyBrokerWebsocket.broadcastRequestClosed(requestId);
 		}
 	}
 	@Override

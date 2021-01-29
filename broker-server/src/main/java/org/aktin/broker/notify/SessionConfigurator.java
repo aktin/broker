@@ -1,5 +1,6 @@
 package org.aktin.broker.notify;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,12 @@ public class SessionConfigurator extends javax.websocket.server.ServerEndpointCo
 	public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
 		Objects.requireNonNull(auth, "CDI failed for HeaderAuthentication");
 		// can check header here
-		Principal user = auth.authenticateByHeaders(mapSingleHeader(request.getHeaders()));
+		Principal user = null;
+		try{
+			user = auth.authenticateByHeaders(mapSingleHeader(request.getHeaders()));
+		}catch( IOException e ) {
+			// TODO log error
+		}
 		if( user != null ) {
 			sec.getUserProperties().put(AUTH_USER,user);
 			super.modifyHandshake(sec, request, response);

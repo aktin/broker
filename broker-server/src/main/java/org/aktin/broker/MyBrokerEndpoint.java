@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
-import org.aktin.broker.notify.BrokerWebsocket;
+import org.aktin.broker.notify.MyBrokerWebsocket;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
@@ -172,7 +172,7 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 		} catch (IOException e) {
 			log.log(Level.WARNING, "Unable to close content reader", e);
 		}
-		BrokerWebsocket.broadcastRequestNodeStatus(requestId, user.getNodeId(), status.name());
+		MyBrokerWebsocket.broadcastRequestNodeStatus(requestId, user.getNodeId(), status.name());
 		return Response.noContent().build();
 	}
 	

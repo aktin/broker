@@ -16,9 +16,9 @@ import javax.websocket.server.ServerEndpoint;
 import org.aktin.broker.auth.Principal;
 
 
-@ServerEndpoint(value="/broker-notify", configurator=SessionConfigurator.class)
-public class BrokerWebsocket {
-	private static final Logger log = Logger.getLogger(BrokerWebsocket.class.getName());
+@ServerEndpoint(value="/broker/request/websocket", configurator=SessionConfigurator.class)
+public class RequestAdminWebsocket {
+	private static final Logger log = Logger.getLogger(RequestAdminWebsocket.class.getName());
 	private static Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
 
 	@OnOpen

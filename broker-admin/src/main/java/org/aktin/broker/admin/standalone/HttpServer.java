@@ -17,6 +17,8 @@ import org.aktin.broker.admin.auth.AuthFilter;
 import org.aktin.broker.admin.rest.FormTemplateEndpoint;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.db.LiquibaseWrapper;
+import org.aktin.broker.notify.MyBrokerWebsocket;
+import org.aktin.broker.notify.RequestAdminWebsocket;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
@@ -70,6 +72,9 @@ public class HttpServer {
 		// register admin endpoints
 		rc.register(AuthEndpoint.class);
 		rc.register(FormTemplateEndpoint.class);
+		// websocket endpoints
+		rc.register(MyBrokerWebsocket.class);
+		rc.register(RequestAdminWebsocket.class);
 	}
 
 	private void initialiseDatabase() throws SQLException{

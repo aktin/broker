@@ -12,7 +12,7 @@ import javax.websocket.server.ServerContainer;
 
 import org.aktin.broker.db.TestDataSource;
 import org.aktin.broker.db.TestDatabaseHSQL;
-import org.aktin.broker.notify.BrokerWebsocket;
+import org.aktin.broker.notify.MyBrokerWebsocket;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -46,6 +46,7 @@ public class BrokerTestServer {
 		}
 		rc.register(AuthFilterAdmin.class);
 		rc.registerClasses(Broker.ENDPOINTS);
+		rc.registerClasses(Broker.WEBSOCKETS);
 
 //		rc.registerClasses(BrokerWebsocket.class);
 //		rc.register(MyBrokerEndpoint.class);
@@ -70,7 +71,7 @@ public class BrokerTestServer {
 	private void setupWebSockets(ServletContextHandler context) throws DeploymentException, ServletException{
 		WebSocketServerContainerInitializer.configureContext(context);
 		ServerContainer c = (ServerContainer)context.getAttribute( javax.websocket.server.ServerContainer.class.getName() );
-		c.addEndpoint(BrokerWebsocket.class);		
+		c.addEndpoint(MyBrokerWebsocket.class);		
 	}
 	public void start(InetSocketAddress addr) throws Exception{
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);

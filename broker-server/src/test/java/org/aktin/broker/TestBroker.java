@@ -389,7 +389,7 @@ public class TestBroker {
 	}
 	
 	// TODO implement websocket tests
-	//@Test
+	@Test
 	public void testWebsocket() throws Exception{
 		WebSocketClient client = new WebSocketClient();
 		ClientWebsocket websocket = new ClientWebsocket();
@@ -398,7 +398,7 @@ public class TestBroker {
 		req.setHeader("Authorization", "Bearer xmxkaa");
 		websocket.prepareForMessages(1);
 		client.start();
-		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker-notify"), req);
+		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker/my/websocket"), req);
 		System.out.println("Connecting..");
 		Session s = f.get(5, TimeUnit.SECONDS);
 		s.getClass(); // don't need the session

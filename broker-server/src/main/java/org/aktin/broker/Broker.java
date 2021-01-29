@@ -1,5 +1,8 @@
 package org.aktin.broker;
 
+import org.aktin.broker.notify.MyBrokerWebsocket;
+import org.aktin.broker.notify.RequestAdminWebsocket;
+
 public class Broker {
 	public static final String SERVICE_URL = "/broker/";
 	public static final Class<?>[] ENDPOINTS = new Class<?>[]{
@@ -10,5 +13,9 @@ public class Broker {
 		AggregatorEndpoint.class,
 		ExportEndpoint.class,
 		DownloadEndpoint.class
+	};
+	public static final Class<?>[] WEBSOCKETS = new Class<?>[]{
+		MyBrokerWebsocket.class,
+		RequestAdminWebsocket.class,
 	};
 }
