@@ -10,6 +10,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.sql.DataSource;
+import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpoint;
+import javax.websocket.server.ServerEndpointConfig;
 
 import org.aktin.broker.Broker;
 import org.aktin.broker.admin.auth.AuthEndpoint;
@@ -17,8 +20,7 @@ import org.aktin.broker.admin.auth.AuthFilter;
 import org.aktin.broker.admin.rest.FormTemplateEndpoint;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.db.LiquibaseWrapper;
-import org.aktin.broker.notify.MyBrokerWebsocket;
-import org.aktin.broker.notify.RequestAdminWebsocket;
+import org.aktin.broker.websocket.HeaderAuthSessionConfigurator;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
@@ -27,6 +29,7 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
@@ -72,9 +75,7 @@ public class HttpServer {
 		// register admin endpoints
 		rc.register(AuthEndpoint.class);
 		rc.register(FormTemplateEndpoint.class);
-		// websocket endpoints
-		rc.register(MyBrokerWebsocket.class);
-		rc.register(RequestAdminWebsocket.class);
+		// websocket endpoints are initialized in method #setupWebsockets
 	}
 
 	private void initialiseDatabase() throws SQLException{
@@ -132,10 +133,30 @@ public class HttpServer {
 		this.binder = new MyBinder(ds,config);
 		rc.register(this.binder);
 
+		// setup websockets
+		setupWebsockets(context);
+		
 		for( Object c : rc.getInstances() ) {
 			System.out.println("Instance:"+c.getClass()+":"+c.toString());
 		}
 		jetty.start();
+	}
+
+	private static void setupWebsockets(ServletContextHandler context) throws Exception{
+		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
+		// TODO use HeaderAuthentication
+		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(null);//auth);
+		for( Class<?> websocketClass : Broker.WEBSOCKETS ) {
+			// retrieve path
+			String restPath = websocketClass.getAnnotation(ServerEndpoint.class).value();
+			// add websocket endpoint to server with custom authenticator
+			c.addEndpoint(ServerEndpointConfig.Builder
+					.create(websocketClass, restPath)
+					.configurator(sc)
+					.build()
+			);
+		}
+
 	}
 	public void join() throws InterruptedException{
 		jetty.join();

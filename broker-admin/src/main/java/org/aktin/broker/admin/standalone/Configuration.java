@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 public interface Configuration {
 
+	// TODO add configuration to specify external class implementing HeaderAuthentication
 	InputStream readAPIKeyProperties()throws IOException;
 	String getDatabasePath();
 	String getAggregatorDataPath();

@@ -97,7 +97,7 @@
 		    <version>2.3.0.1</version>
 		</dependency>-->
 
-		<!-- test dependencies to run a server for testing -->
+		<!-- dependencies to run a standalone jetty server -->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
@@ -107,6 +107,12 @@
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
 			<version>9.4.35.v20201120</version>
+		</dependency>
+		<dependency>
+			<!-- websocket support -->
+		    <groupId>org.eclipse.jetty.websocket</groupId>
+		    <artifactId>javax-websocket-server-impl</artifactId>
+		    <version>9.4.35.v20201120</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
