@@ -1,14 +1,16 @@
-package org.aktin.broker.auth;
+package org.aktin.broker.util;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
+
+import org.aktin.broker.auth.AuthInfoImpl;
+import org.aktin.broker.server.auth.AuthInfo;
+import org.aktin.broker.server.auth.AuthRole;
+import org.aktin.broker.server.auth.HeaderAuthentication;
 
 /**
  * Extend this class for API key authentication.
@@ -21,11 +23,9 @@ import javax.ws.rs.core.Response;
  * @author R.W.Majeed
  *
  */
-public abstract class AuthFilterAPIKeys implements ContainerRequestFilter, HeaderAuthentication {
+public abstract class AuthFilterAPIKeys implements HeaderAuthentication {
 	private static final Logger log = Logger.getLogger(AuthFilterAPIKeys.class.getName());
 
-	@Inject
-	private AuthCache authCache;
 
 	/**
 	 * Get the client directory name for the specified API key.
@@ -34,18 +34,9 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter, Heade
 	 * @return client DN string or {@code null} to deny access.
 	 */
 	public abstract String getClientDN(String apiKey);
+	public abstract Set<AuthRole> getRoles(String apiKey);
 
-	@Override
-	public final void filter(ContainerRequestContext ctx) throws IOException {
-		Principal principal = authenticateByHeaders(ctx::getHeaderString);
-		if( principal == null ) {
-			ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
-		}else {
-			ctx.setSecurityContext(principal);
-		}
-	}
-
-	private Principal processAuthorizationBearer(String bearer) throws IOException {
+	private AuthInfo processAuthorizationBearer(String bearer) throws IOException {
 		String key = null;
 		if( bearer != null && bearer.startsWith("Bearer ") ){
 			key = bearer.substring(7);
@@ -64,11 +55,10 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter, Heade
 		}
 		// we found the clientDn -> client successfully authenticated
 
-		return authCache.getPrincipal(key, clientDn);
-		
+		return new AuthInfoImpl(key, clientDn, getRoles(key)); 
 	}
 	@Override
-	public Principal authenticateByHeaders(Function<String,String> getHeader) throws IOException {
+	public AuthInfo authenticateByHeaders(Function<String,String> getHeader) throws IOException {
 		String auth = getHeader.apply(HttpHeaders.AUTHORIZATION);
 		return processAuthorizationBearer(auth);
 	}

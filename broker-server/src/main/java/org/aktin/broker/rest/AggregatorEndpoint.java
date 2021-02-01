@@ -68,7 +68,7 @@ public class AggregatorEndpoint {
 		return Response.noContent().build();
 	}
 	
-//	@Authenticated
+	@Authenticated
 	@RequireAdmin
 	@GET
 	@Path("request/{id}/result")
@@ -87,7 +87,7 @@ public class AggregatorEndpoint {
 		return Response.ok(new ResultList(results)).build();
 	}
 
-//	@Authenticated
+	@Authenticated
 	@RequireAdmin
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)

@@ -36,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.server.Broker;
+import org.aktin.broker.server.auth.AuthInfo;
 import org.aktin.broker.util.DigestPathDataSource;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
@@ -111,10 +112,6 @@ public class BrokerImpl implements BrokerBackend, Broker {
 //			Statement st = dbc.createStatement();
 //			ResultSet rs = st.executeQuery("SELECT id, subject_dn, last_contact FROM nodes");
 			while( rs.next() ){
-				// admins are not returned unless explicitly asked for
-				if( Principal.isAdminDN(rs.getString(2)) ){
-					continue;
-				}
 				nl.add(new Node(rs.getInt(1), rs.getString(2), rs.getTimestamp(3).toInstant()));
 			}
 			rs.close();
@@ -608,32 +605,33 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		return list;
 	}
 
-	private Principal loadPrincipalByCertId(PreparedStatement ps, String certId) throws SQLException{
-		ps.setString(1, certId);
+	private Principal loadPrincipalByNodeKey(PreparedStatement ps, AuthInfo auth) throws SQLException{
+		ps.setString(1, auth.getUserId());
 		try( ResultSet rs = ps.executeQuery() ){
 			if( rs.next() ){
-				return new Principal(rs.getInt(1), rs.getString(2));
+				return new Principal(rs.getInt(1), auth);
 			}
 		}
 		return null;
 	}
 
-	public Principal accessPrincipal(String clientKey, String clientDn) throws SQLException{
+	public Principal accessPrincipal(AuthInfo auth) throws SQLException{
 		Principal p;
 		try( Connection dbc = brokerDB.getConnection() ){
 			// try to load from database
 			PreparedStatement select_node = dbc.prepareStatement("SELECT id, subject_dn FROM nodes WHERE client_key=?");
-			p = loadPrincipalByCertId(select_node, clientKey);
+			p = loadPrincipalByNodeKey(select_node, auth);
 			if( p == null ){
+				// does not exist previously
 				// insert into database
 				try( PreparedStatement ps = dbc.prepareStatement("INSERT INTO nodes(client_key, subject_dn, last_contact)VALUES(?,?,NOW())") ){
-					ps.setString(1, clientKey);
-					ps.setString(2, clientDn);
+					ps.setString(1, auth.getUserId());
+					ps.setString(2, auth.getClientDN());
 					ps.executeUpdate();					
 				}
 				// retrieve id
 				select_node.clearParameters();
-				p = loadPrincipalByCertId(select_node, clientKey);
+				p = loadPrincipalByNodeKey(select_node, auth);
 			}else{
 				// update last contact
 				executeUpdate(dbc, "UPDATE nodes SET last_contact=NOW() WHERE id="+p.getNodeId());

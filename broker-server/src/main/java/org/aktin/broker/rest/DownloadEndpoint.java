@@ -18,7 +18,8 @@ import org.aktin.broker.download.Download;
 import org.aktin.broker.download.DownloadManager;
 
 /**
- * Provide temporary download links which expire after a short period of time or number of downloads
+ * Provide temporary download links which expire after a short period of time or number of downloads.
+ * 
  *
  * @author R.W.Majeed
  *
@@ -30,6 +31,13 @@ public class DownloadEndpoint {
 	@Inject
 	DownloadManager downloads;
 
+	/**
+	 * Retrieve a download. This method is not authenticated on purpose, as the download id
+	 * can not be guessed and authentication was already required for creation of the download link.
+	 * @param id download id
+	 * @return download content stream
+	 * @throws IOException IO error
+	 */
 	@GET
 	@Path("{id}")
 	public Response download(@PathParam("id") String id) throws IOException {

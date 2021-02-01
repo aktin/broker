@@ -1,7 +1,8 @@
-package org.aktin.broker.auth;
+package org.aktin.broker.server.auth;
 
 import java.io.IOException;
 import java.util.function.Function;
+
 
 /**
  * Interface for using HTTP header for authentication. Implementations should use/inject
@@ -22,6 +23,6 @@ public interface HeaderAuthentication {
 	 *
 	 * @throws IOException Unexpected communication errors during authentication. Don't throw exceptions for access-denied - instead return {@code null}.
 	 */
-	Principal authenticateByHeaders(Function<String,String> getHeader) throws IOException;
+	AuthInfo authenticateByHeaders(Function<String,String> getHeader) throws IOException;
 
 }

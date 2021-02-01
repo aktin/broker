@@ -1,14 +1,17 @@
-package org.aktin.broker.auth;
+package org.aktin.broker.util;
 
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Response;
+import org.aktin.broker.auth.AuthInfoImpl;
+import org.aktin.broker.server.auth.AuthInfo;
+import org.aktin.broker.server.auth.AuthRole;
+import org.aktin.broker.server.auth.HeaderAuthentication;
 
 
 /**
@@ -32,7 +35,7 @@ import javax.ws.rs.core.Response;
 //@Authenticated
 //@Provider
 //@Priority(Priorities.AUTHENTICATION)
-public class AuthFilterSSLHeaders implements ContainerRequestFilter, HeaderAuthentication{
+public class AuthFilterSSLHeaders implements HeaderAuthentication{
 	private static final Logger log = Logger.getLogger(AuthFilterSSLHeaders.class.getName());
 	/**
 	 * Client ID to uniquely identify the client. 
@@ -42,22 +45,23 @@ public class AuthFilterSSLHeaders implements ContainerRequestFilter, HeaderAuthe
 	public static final String X_SSL_CLIENT_DN = "X-SSL-Client-DN";
 	public static final String X_SSL_CLIENT_VERIFY = "X-SSL-Client-Verify";
 
-	@Inject
-	private AuthCache authCache;
-
-	@Override
-	public void filter(ContainerRequestContext ctx) throws IOException {
-
-		Principal principal = authenticateByHeaders(ctx::getHeaderString);
-		if( principal == null ){
-        	ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
-		}else{
-			ctx.setSecurityContext(principal);
+	/**
+	 * Override this method to derive the user roles from client DN.
+	 * Default implementation looks if the DN contains the string {@code OU=admin}
+	 * to differentiate between admin and node roles.
+	 *
+	 * @param clientDN client dn
+	 * @return set of roles
+	 */
+	public Set<AuthRole> loadRolesFromClientDN(String clientDN){
+		if( clientDN.contains("OU=admin") ) {
+			return new HashSet<>(Arrays.asList(AuthRole.ADMIN_READ, AuthRole.ADMIN_WRITE));
+		}else {
+			return new HashSet<>(Arrays.asList(AuthRole.NODE_READ, AuthRole.NODE_WRITE));
 		}
 	}
-
 	@Override
-	public Principal authenticateByHeaders(Function<String, String> getHeader) throws IOException {
+	public AuthInfo authenticateByHeaders(Function<String, String> getHeader) throws IOException {
 		String verify = getHeader.apply(X_SSL_CLIENT_VERIFY);
 		String id = getHeader.apply(X_SSL_CLIENT_ID);
 		String dn = getHeader.apply(X_SSL_CLIENT_DN);
@@ -65,10 +69,10 @@ public class AuthFilterSSLHeaders implements ContainerRequestFilter, HeaderAuthe
 			// authentication failed
         	log.info("Client verify header not found or not successful");
         	return null;
+		}else {
+			log.info("Authenticated user "+id+" with dn "+dn);
 		}
-		// authentication successfull
-
-		return authCache.getPrincipal(id, dn);
+		return new AuthInfoImpl(id, dn, loadRolesFromClientDN(dn));
 	}
 
 }

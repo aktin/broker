@@ -11,8 +11,8 @@ import javax.inject.Singleton;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.ext.Provider;
 
-import org.aktin.broker.auth.AuthFilterAPIKeys;
 import org.aktin.broker.rest.Authenticated;
+import org.aktin.broker.util.AuthFilterAPIKeys;
 
 @Singleton
 @Authenticated

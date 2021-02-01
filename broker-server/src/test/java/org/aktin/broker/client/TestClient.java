@@ -6,7 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.BiConsumer;
 
-import org.aktin.broker.auth.AuthFilterSSLHeaders;
+import org.aktin.broker.util.AuthFilterSSLHeaders;
 
 public class TestClient extends BrokerClient{
 

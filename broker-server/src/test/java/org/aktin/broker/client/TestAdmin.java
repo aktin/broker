@@ -5,7 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.aktin.broker.auth.AuthFilterSSLHeaders;
+import org.aktin.broker.util.AuthFilterSSLHeaders;
 
 public class TestAdmin extends BrokerAdmin{
 

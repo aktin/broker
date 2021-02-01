@@ -15,6 +15,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.aktin.broker.db.BrokerBackend;
+import org.aktin.broker.server.auth.AuthInfo;
+import org.aktin.broker.server.auth.AuthRole;
 import org.aktin.broker.xml.Node;
 
 
@@ -47,24 +49,39 @@ public class AuthCache implements Flushable, Closeable{
 	private void setBackend(BrokerBackend backend){
 		this.backend = backend;
 	}
-	
+
+	private boolean isNodePrincipal(AuthInfo info) {
+		if( info.getRoles().contains(AuthRole.NODE_READ) || info.getRoles().contains(AuthRole.NODE_WRITE) ) {
+			return true;
+		}else {
+			return false;
+		}
+	}
 	/**
 	 * Retrieve a {@link Principal} user object for a client node.
-	 * @param nodeKey unique identifier for the client/data warehouse node. This id should not change.
-	 * @param clientDn 
+	 * @param info authentication info
 	 * @return user object
 	 * @throws SQLException 
 	 */
-	public Principal getPrincipal(String nodeKey, String clientDn) throws IOException{
-		Objects.requireNonNull(clientDn);
-		Principal p = cache.get(nodeKey);
+	public Principal getPrincipal(AuthInfo info) throws IOException{
+		Objects.requireNonNull(info);
+		Objects.requireNonNull(info.getClientDN());
+		Objects.requireNonNull(info.getUserId());
+		Principal p = cache.get(info.getUserId());
 		if( p == null ){
-			try {
-				p = backend.accessPrincipal(nodeKey, clientDn);
-			} catch (SQLException e) {
-				throw new IOException("SQL error during principal retrieval for node "+nodeKey, e);
+			// principal not cached previously
+			if( isNodePrincipal(info) ) {
+				// register node with backend				
+				try {
+					p = backend.accessPrincipal(info);
+				} catch (SQLException e) {
+					throw new IOException("SQL error during principal retrieval for node "+info.getUserId(), e);
+				}
+			}else {
+				// admin user. just cache the information without registering with backend
+				p = Principal.createAdminPrincipal(info);
 			}
-			cache.put(nodeKey, p);
+			cache.put(info.getUserId(), p);
 		}else{
 			; // TODO check if client DN changed. If so, log warning and update the client DN
 		}
@@ -82,7 +99,9 @@ public class AuthCache implements Flushable, Closeable{
 		
 		for( Principal p : cache.values() ){
 			//timestamps.put(p.getNodeId(), p.getLastAccessed());
-			lookup.put(p.getNodeId(), p);
+			if( p.isNode() ) {
+				lookup.put(p.getNodeId(), p);				
+			}
 		}
 		for( Node node : nodes ){
 			Principal p = lookup.get(node.id);
@@ -101,16 +120,18 @@ public class AuthCache implements Flushable, Closeable{
 	public void flush() throws IOException {
 		// collect last accessed timestamps
 		log.info("flushing");
-		int[] nodeIds = new int[cache.size()];
-		long[] timestamps = new long[cache.size()];
-		int i=0;
+		Map<Integer,Long> timestamps = new HashMap<>();
+		
 		for( Principal p : cache.values() ){
-			nodeIds[i] = p.getNodeId();
-			timestamps[i] = p.getLastAccessed();
+			if( p.isNode() ) {
+				timestamps.put(p.getNodeId(), p.getLastAccessed());
+			}
 		}
+
+		// convert to arrays
 		// write last accessed timestamps to database
 		try {
-			backend.updateNodeLastSeen(nodeIds, timestamps);
+			backend.updateNodeLastSeen(timestamps);
 		} catch (SQLException e) {
 			throw new IOException(e);
 		}

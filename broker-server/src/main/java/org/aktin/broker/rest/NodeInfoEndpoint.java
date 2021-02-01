@@ -47,6 +47,7 @@ public class NodeInfoEndpoint {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
+	@Authenticated
 	@RequireAdmin
 	public Response allNodes(){
 		try {
@@ -67,6 +68,7 @@ public class NodeInfoEndpoint {
 	@GET
 	@Path("{id}")
 	@Produces(MediaType.APPLICATION_XML)
+	@Authenticated
 	@RequireAdmin
 	public Node getNodeInfo(@PathParam("id") int nodeId){
 		Node node;
@@ -96,6 +98,7 @@ public class NodeInfoEndpoint {
 	 */
 	@GET
 	@Path("{node}/{resource}")
+	@Authenticated
 	@RequireAdmin
 	public Response getNodeResource(@PathParam("node") int nodeId, @PathParam("resource") String resourceId) throws SQLException{		
 		DateDataSource ds = db.getNodeResource(nodeId, resourceId);

@@ -15,8 +15,10 @@ import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
 
-import org.aktin.broker.auth.HeaderAuthentication;
+import org.aktin.broker.auth.AuthCache;
 import org.aktin.broker.auth.Principal;
+import org.aktin.broker.server.auth.AuthInfo;
+import org.aktin.broker.server.auth.HeaderAuthentication;
 
 /**
  * Websocket session configurator with authentication. Performs authentication
@@ -35,10 +37,12 @@ public class HeaderAuthSessionConfigurator extends javax.websocket.server.Server
 	public static final String AUTH_USER = "auth-user";
 
 	private HeaderAuthentication auth;
+	private AuthCache cache;
 
 	@Inject
-	public HeaderAuthSessionConfigurator(HeaderAuthentication auth) {
+	public HeaderAuthSessionConfigurator(HeaderAuthentication auth, AuthCache cache) {
 		this.auth = auth;
+		this.cache = cache;
 	}
 	/**
 	 * Reduce multiple HTTP headers per key to only one header by key
@@ -63,11 +67,13 @@ public class HeaderAuthSessionConfigurator extends javax.websocket.server.Server
 	public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
 		// make sure authentication interface is available
 		Objects.requireNonNull(auth, "CDI failed for HeaderAuthentication");
+		Objects.requireNonNull(cache, "CDI failed for AuthCache");
 
 		// can check header here
 		Principal user = null;
 		try{
-			user = auth.authenticateByHeaders(mapSingleHeader(request.getHeaders()));
+			AuthInfo info = auth.authenticateByHeaders(mapSingleHeader(request.getHeaders()));
+			user = cache.getPrincipal(info);
 		}catch( IOException e ) {
 			log.log(Level.WARNING, "Unexpected authentication failure", e);
 		}

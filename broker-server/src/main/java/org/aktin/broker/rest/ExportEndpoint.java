@@ -21,7 +21,6 @@ import org.aktin.broker.download.RequestBundleExport;
  * 
  * @author R.W.Majeed
  */
-@RequireAdmin
 @Path("/broker/export")
 public class ExportEndpoint {
 		@Inject
@@ -32,6 +31,8 @@ public class ExportEndpoint {
 		@Inject
 		private DownloadManager downloads;
 
+		@Authenticated
+		@RequireAdmin
 		@GET
 		@Path("request-bundle/{id}")
 		@Produces(MediaType.TEXT_PLAIN)

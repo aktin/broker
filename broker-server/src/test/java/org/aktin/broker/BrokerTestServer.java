@@ -1,5 +1,6 @@
 package org.aktin.broker;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -11,9 +12,11 @@ import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpointConfig;
 
-import org.aktin.broker.auth.HeaderAuthentication;
+import org.aktin.broker.auth.AuthenticationRequestFilter;
+import org.aktin.broker.auth.AuthorizationRequestFilter;
 import org.aktin.broker.db.TestDataSource;
 import org.aktin.broker.db.TestDatabaseHSQL;
+import org.aktin.broker.server.auth.HeaderAuthentication;
 import org.aktin.broker.websocket.MyBrokerWebsocket;
 import org.aktin.broker.websocket.HeaderAuthSessionConfigurator;
 import org.eclipse.jetty.server.Server;
@@ -37,8 +40,9 @@ public class BrokerTestServer {
 	private Server jetty;
 	private DataSource ds;
 	private HeaderAuthentication headerAuth;
+	private MyBinder binder;
 	
-	public BrokerTestServer(HeaderAuthentication headerAuth) throws SQLException{
+	public BrokerTestServer(HeaderAuthentication headerAuth) throws IOException, SQLException{
 		this.headerAuth = headerAuth;
 		ds = new TestDataSource(new TestDatabaseHSQL());
 		rc = new ResourceConfig();
@@ -49,8 +53,9 @@ public class BrokerTestServer {
 //			// use SSL header auth
 //			rc.register(SSLHeaderAuth.class);
 //		}
-		rc.register(headerAuth);
-		rc.register(AuthFilterAdmin.class);
+		//rc.register(headerAuth);
+		rc.register(AuthenticationRequestFilter.class);
+		rc.register(AuthorizationRequestFilter.class);
 		rc.registerClasses(Broker.ENDPOINTS);
 		//rc.registerClasses(Broker.WEBSOCKETS);
 
@@ -59,7 +64,8 @@ public class BrokerTestServer {
 //		rc.register(NodeInfoEndpoint.class);
 //		rc.register(RequestAdminEndpoint.class);		
 //		rc.register(AggregatorEndpoint.class);
-		rc.register(new MyBinder(ds));
+		this.binder = new MyBinder(ds, headerAuth);
+		rc.register(binder);
 	}
 	public void register(Class<?> componentClass){
 		rc.register(componentClass);
@@ -78,7 +84,7 @@ public class BrokerTestServer {
 		//WebSocketServerContainerInitializer.configureContext(context);
 		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
 		//ServerContainer c = (ServerContainer)context.getAttribute( javax.websocket.server.ServerContainer.class.getName() );
-		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(auth);
+		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(auth, binder.getAuthCache());
 		c.addEndpoint(ServerEndpointConfig.Builder
 			.create(MyBrokerWebsocket.class, MyBrokerWebsocket.REST_PATH)
 			.configurator(sc)

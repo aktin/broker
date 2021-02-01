@@ -48,6 +48,7 @@ import org.aktin.broker.xml.RequestTargetNodes;
  * @author R.W.Majeed
  *
  */
+@Authenticated
 @Path("/broker/request")
 public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	private static final Logger log = Logger.getLogger(RequestAdminEndpoint.class.getName());

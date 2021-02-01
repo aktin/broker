@@ -1,11 +1,16 @@
 package org.aktin.broker;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.ext.Provider;
 
-import org.aktin.broker.auth.AuthFilterAPIKeys;
 import org.aktin.broker.rest.Authenticated;
+import org.aktin.broker.server.auth.AuthRole;
+import org.aktin.broker.util.AuthFilterAPIKeys;
 
 @Authenticated
 @Provider
@@ -18,6 +23,14 @@ public class ApiKeyAuth extends AuthFilterAPIKeys{
 	public String getClientDN(String apiKey) {
 		if( apiKey.equals(CLIENT_1_KEY) ){
 			return CLIENT_1_DN;
+		}
+		return null;
+	}
+
+	@Override
+	public Set<AuthRole> getRoles(String apiKey) {
+		if( apiKey.equals(CLIENT_1_KEY) ){
+			return new HashSet<>(Arrays.asList(AuthRole.NODE_READ, AuthRole.NODE_WRITE));
 		}
 		return null;
 	}

@@ -1,23 +1,37 @@
 package org.aktin.broker.auth;
 
+import java.util.Set;
+
 import javax.ws.rs.core.SecurityContext;
+
+import org.aktin.broker.server.auth.AuthInfo;
+import org.aktin.broker.server.auth.AuthRole;
 
 public class Principal implements java.security.Principal, SecurityContext{
 
-	private int nodeId;
+	/**
+	 * integer node id, if the principal is a node. {@code null otherwise}.
+	 */
+	private Integer nodeId;
 	private String commonName;
 	private String clientDn;
+	private Set<AuthRole> roles;
 	private long lastAccessed;
 	private int websocketConnections;
 	
 	/**
-	 * Constructor for principal.
+	 * Constructor for node principal.
 	 * @param nodeId unique node client id
 	 * @param clientDn distinguished name. Client information a la X.509/LDAP/etc. Should contain at least CN=display name
 	 */
-	public Principal(int nodeId, String clientDn){
+	public Principal(int nodeId, AuthInfo info){
+		this(info);
 		this.nodeId = nodeId;
-		this.clientDn = clientDn;
+	}
+
+	private Principal(AuthInfo info) {
+		this.clientDn = info.getClientDN();
+		this.roles = info.getRoles();
 		this.websocketConnections = 0;
 		// TODO load client DN correctly
 		if( clientDn != null && clientDn.startsWith("CN=") ){
@@ -27,9 +41,22 @@ public class Principal implements java.security.Principal, SecurityContext{
 				e = clientDn.length();
 			}
 			commonName = clientDn.substring(3, e);
-		}
+		}		
 	}
 
+	static Principal createAdminPrincipal(AuthInfo info) {
+		Principal p = new Principal(info);
+		p.nodeId = null;
+		return p;
+	}
+
+	/**
+	 * Determine whether the principal is a client node. For client nodes, {@link #getNodeId()} will be defined.
+	 * @return {@code true} if the principal is a node.
+	 */
+	public boolean isNode() {
+		return this.nodeId != null;
+	}
 	/**
 	 * Retrieve the full client DN string
 	 * @return distinguished name
@@ -52,10 +79,15 @@ public class Principal implements java.security.Principal, SecurityContext{
 		}
 	}
 	/**
-	 * Get the unique node client id.
+	 * Get the unique node client id. 
+	 * Will throw {@link UnsupportedOperationException} if the principal is not a node
 	 * @return client id
+	 * @throws UnsupportedOperationException if the principal is not a node
 	 */
-	public int getNodeId(){
+	public int getNodeId() throws UnsupportedOperationException{
+		if( nodeId == null ) {
+			throw new UnsupportedOperationException("Principal is not a node: "+clientDn);
+		}
 		return nodeId;
 	}
 	@Override
@@ -68,7 +100,11 @@ public class Principal implements java.security.Principal, SecurityContext{
 	 */
 	@Override
 	public boolean isUserInRole(String role) {
-		return role.equals("admin");
+		try {
+			return roles.contains(AuthRole.valueOf(role));
+		}catch( IllegalArgumentException e ) {
+			return false;
+		}
 	}
 	@Override
 	public boolean isSecure() {
@@ -79,11 +115,7 @@ public class Principal implements java.security.Principal, SecurityContext{
 		return SecurityContext.CLIENT_CERT_AUTH;
 	}
 	public boolean isAdmin(){
-		return isAdminDN(clientDn);
-	}
-	public static final boolean isAdminDN(String clientDn){
-		// TODO correct parsing/handling of DN
-		return clientDn != null && clientDn.contains("OU=admin");		
+		return roles.contains(AuthRole.ADMIN_READ);
 	}
 
 	/**
