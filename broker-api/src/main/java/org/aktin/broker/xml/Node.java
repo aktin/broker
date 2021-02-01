@@ -21,6 +21,8 @@ public class Node {
 	public String clientDN;
 	@XmlElement(name="last-contact")
 	public Instant lastContact;
+	@XmlElement
+	public boolean realtime;
 	/**
 	 * Relevant software modules running at the client. The first element must be "broker-api" with
 	 * the current version information.

@@ -78,15 +78,20 @@ public class AuthCache implements Flushable, Closeable{
 	 * @param nodes nodes to update the timestamp
 	 */
 	public void fillCachedAccessTimestamps(Iterable<Node> nodes){
-		Map<Integer,Long> timestamps = new HashMap<>();
+		Map<Integer,Principal> lookup = new HashMap<>();
+		
 		for( Principal p : cache.values() ){
-			timestamps.put(p.getNodeId(), p.getLastAccessed());
+			//timestamps.put(p.getNodeId(), p.getLastAccessed());
+			lookup.put(p.getNodeId(), p);
 		}
 		for( Node node : nodes ){
-			Long ts = timestamps.get(node.id);
+			Principal p = lookup.get(node.id);
+			
+			Long ts = p.getLastAccessed();
 			if( ts != null ){
 				node.lastContact = Instant.ofEpochMilli(ts);
 			}
+			node.realtime = (p.getWebsocketCount() > 0);
 		}
 	}
 	// TODO also flush sometimes before close, e.g. using timer
