@@ -24,5 +24,4 @@ public interface HeaderAuthentication {
 	 */
 	Principal authenticateByHeaders(Function<String,String> getHeader) throws IOException;
 
-	//Principal authenticateByWebsocketMessage(String message);
 }

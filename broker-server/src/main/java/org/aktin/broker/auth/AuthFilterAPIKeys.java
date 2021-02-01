@@ -45,12 +45,10 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter, Heade
 		}
 	}
 
-	@Override
-	public Principal authenticateByHeaders(Function<String,String> getHeader) throws IOException {
-		String auth = getHeader.apply(HttpHeaders.AUTHORIZATION);
+	private Principal processAuthorizationBearer(String bearer) throws IOException {
 		String key = null;
-		if( auth != null && auth.startsWith("Bearer ") ){
-			key = auth.substring(7);
+		if( bearer != null && bearer.startsWith("Bearer ") ){
+			key = bearer.substring(7);
 		}
 		if( key == null ){
         	log.info("HTTP Authorization header missing");
@@ -67,5 +65,12 @@ public abstract class AuthFilterAPIKeys implements ContainerRequestFilter, Heade
 		// we found the clientDn -> client successfully authenticated
 
 		return authCache.getPrincipal(key, clientDn);
+		
 	}
+	@Override
+	public Principal authenticateByHeaders(Function<String,String> getHeader) throws IOException {
+		String auth = getHeader.apply(HttpHeaders.AUTHORIZATION);
+		return processAuthorizationBearer(auth);
+	}
+
 }

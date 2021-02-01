@@ -44,7 +44,7 @@ public class AuthFilterSSLHeaders implements ContainerRequestFilter, HeaderAuthe
 
 	@Inject
 	private AuthCache authCache;
-	
+
 	@Override
 	public void filter(ContainerRequestContext ctx) throws IOException {
 
@@ -70,4 +70,5 @@ public class AuthFilterSSLHeaders implements ContainerRequestFilter, HeaderAuthe
 
 		return authCache.getPrincipal(id, dn);
 	}
+
 }
