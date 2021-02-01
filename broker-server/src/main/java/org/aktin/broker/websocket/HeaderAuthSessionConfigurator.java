@@ -1,4 +1,4 @@
-package org.aktin.broker.notify;
+package org.aktin.broker.websocket;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -27,8 +27,8 @@ import org.aktin.broker.auth.Principal;
  * @author R.W.Majeed
  *
  */
-public class SessionConfigurator extends javax.websocket.server.ServerEndpointConfig.Configurator {
-	private static final Logger log = Logger.getLogger(SessionConfigurator.class.getName());
+public class HeaderAuthSessionConfigurator extends javax.websocket.server.ServerEndpointConfig.Configurator {
+	private static final Logger log = Logger.getLogger(HeaderAuthSessionConfigurator.class.getName());
 	/**
 	 * Websocket session user properties key where the authenticated user {@link Principal} is stored.
 	 */
@@ -37,7 +37,7 @@ public class SessionConfigurator extends javax.websocket.server.ServerEndpointCo
 	private HeaderAuthentication auth;
 
 	@Inject
-	public SessionConfigurator(HeaderAuthentication auth) {
+	public HeaderAuthSessionConfigurator(HeaderAuthentication auth) {
 		this.auth = auth;
 	}
 	/**

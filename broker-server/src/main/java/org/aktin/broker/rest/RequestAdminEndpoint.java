@@ -31,8 +31,8 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.aktin.broker.db.BrokerBackend;
-import org.aktin.broker.notify.MyBrokerWebsocket;
 import org.aktin.broker.util.RequestTypeManager;
+import org.aktin.broker.websocket.MyBrokerWebsocket;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatusInfo;
