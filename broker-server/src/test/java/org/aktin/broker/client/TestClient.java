@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.function.BiConsumer;
 
 import org.aktin.broker.auth.AuthFilterSSLHeaders;
 
@@ -20,10 +21,13 @@ public class TestClient extends BrokerClient{
 	@Override
 	public HttpURLConnection openConnection(String method, URI uri) throws IOException{
 		HttpURLConnection c = super.openConnection(method, uri);
-		c.setRequestProperty(AuthFilterSSLHeaders.X_SSL_CLIENT_ID, certId);
-		c.setRequestProperty(AuthFilterSSLHeaders.X_SSL_CLIENT_DN, clientDn);
-		c.setRequestProperty(AuthFilterSSLHeaders.X_SSL_CLIENT_VERIFY, "SUCCESS");
+		setAuthenticatedHeaders(c::setRequestProperty, certId, clientDn);
 		return c;
+	}
+	public static void setAuthenticatedHeaders(BiConsumer<String, String> setter, String certId, String clientDn) {
+		setter.accept(AuthFilterSSLHeaders.X_SSL_CLIENT_ID, certId);
+		setter.accept(AuthFilterSSLHeaders.X_SSL_CLIENT_DN, clientDn);
+		setter.accept(AuthFilterSSLHeaders.X_SSL_CLIENT_VERIFY, "SUCCESS");
 	}
 	
 	public static void main(String[] args) throws URISyntaxException, IOException{

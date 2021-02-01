@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import javax.sql.DataSource;
 
 import org.aktin.broker.auth.AuthCache;
+import org.aktin.broker.auth.HeaderAuthentication;
 import org.aktin.broker.db.AggregatorBackend;
 import org.aktin.broker.db.AggregatorImpl;
 import org.aktin.broker.db.BrokerBackend;
@@ -43,6 +44,9 @@ public class MyBinder extends AbstractBinder{
 			// clear uploaded files
 			adb.clearDataDirectory();
 			bind(adb).to(AggregatorBackend.class);
+			// try to bind HeaderAuthenticator
+			bind(new SSLHeaderAuth()).to(HeaderAuthentication.class);
+			
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

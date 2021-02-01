@@ -49,7 +49,7 @@ public class TestBroker {
 
 	@Before
 	public void setupServer() throws Exception{
-		server = new BrokerTestServer(false);
+		server = new BrokerTestServer(new SSLHeaderAuth());
 		server.start_local(0);
 		// TODO reset database
 	}
@@ -394,8 +394,8 @@ public class TestBroker {
 		WebSocketClient client = new WebSocketClient();
 		ClientWebsocket websocket = new ClientWebsocket();
 		ClientUpgradeRequest req = new ClientUpgradeRequest();
-		/// TODO
-		req.setHeader("Authorization", "Bearer xmxkaa");
+		// set authentication headers for socket handshake
+		TestClient.setAuthenticatedHeaders(req::setHeader, CLIENT_01_SERIAL, CLIENT_01_CN);
 		websocket.prepareForMessages(1);
 		client.start();
 		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker/my/websocket"), req);

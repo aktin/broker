@@ -9,10 +9,13 @@ import javax.servlet.ServletException;
 import javax.sql.DataSource;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 
+import org.aktin.broker.auth.HeaderAuthentication;
 import org.aktin.broker.db.TestDataSource;
 import org.aktin.broker.db.TestDatabaseHSQL;
-import org.aktin.broker.notify.MyBrokerWebsocket;
+import org.aktin.broker.websocket.MyBrokerWebsocket;
+import org.aktin.broker.websocket.HeaderAuthSessionConfigurator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -33,20 +36,23 @@ public class BrokerTestServer {
 	private ResourceConfig rc;
 	private Server jetty;
 	private DataSource ds;
+	private HeaderAuthentication headerAuth;
 	
-	public BrokerTestServer(boolean apiKeyAuth) throws SQLException{
+	public BrokerTestServer(HeaderAuthentication headerAuth) throws SQLException{
+		this.headerAuth = headerAuth;
 		ds = new TestDataSource(new TestDatabaseHSQL());
 		rc = new ResourceConfig();
-		if( apiKeyAuth ){
-			// use API key auth
-			rc.register(ApiKeyAuth.class);
-		}else{
-			// use SSL header auth
-			rc.register(SSLHeaderAuth.class);
-		}
+//		if( apiKeyAuth ){
+//			// use API key auth
+//			rc.register(ApiKeyAuth.class);
+//		}else{
+//			// use SSL header auth
+//			rc.register(SSLHeaderAuth.class);
+//		}
+		rc.register(headerAuth);
 		rc.register(AuthFilterAdmin.class);
 		rc.registerClasses(Broker.ENDPOINTS);
-		rc.registerClasses(Broker.WEBSOCKETS);
+		//rc.registerClasses(Broker.WEBSOCKETS);
 
 //		rc.registerClasses(BrokerWebsocket.class);
 //		rc.register(MyBrokerEndpoint.class);
@@ -68,10 +74,16 @@ public class BrokerTestServer {
 	public int getLocalPort(){
 		return ((ServerConnector)jetty.getConnectors()[0]).getLocalPort();
 	}
-	private void setupWebSockets(ServletContextHandler context) throws DeploymentException, ServletException{
-		WebSocketServerContainerInitializer.configureContext(context);
-		ServerContainer c = (ServerContainer)context.getAttribute( javax.websocket.server.ServerContainer.class.getName() );
-		c.addEndpoint(MyBrokerWebsocket.class);		
+	private void setupWebSockets(ServletContextHandler context, HeaderAuthentication auth) throws DeploymentException, ServletException{
+		//WebSocketServerContainerInitializer.configureContext(context);
+		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
+		//ServerContainer c = (ServerContainer)context.getAttribute( javax.websocket.server.ServerContainer.class.getName() );
+		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(auth);
+		c.addEndpoint(ServerEndpointConfig.Builder
+			.create(MyBrokerWebsocket.class, MyBrokerWebsocket.REST_PATH)
+			.configurator(sc)
+			.build()
+		);
 	}
 	public void start(InetSocketAddress addr) throws Exception{
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -90,7 +102,7 @@ public class BrokerTestServer {
 //			}
 //		};
 //		context.addServlet(new ServletHolder(wss), "/*");
-		setupWebSockets(context);
+		setupWebSockets(context, headerAuth);
 		jetty.start();
 	}
 	public void join() throws InterruptedException{
@@ -127,7 +139,7 @@ public class BrokerTestServer {
 		}
 
 		// start server
-		BrokerTestServer server = new BrokerTestServer(true);
+		BrokerTestServer server = new BrokerTestServer(new ApiKeyAuth());
 		try{
 			server.start(new InetSocketAddress(port));
 			System.err.println("Broker service at: "+server.getBrokerServiceURI());
