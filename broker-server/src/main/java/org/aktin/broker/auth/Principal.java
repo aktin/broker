@@ -8,6 +8,7 @@ public class Principal implements java.security.Principal, SecurityContext{
 	private String commonName;
 	private String clientDn;
 	private long lastAccessed;
+	private int websocketConnections;
 	
 	/**
 	 * Constructor for principal.
@@ -17,6 +18,7 @@ public class Principal implements java.security.Principal, SecurityContext{
 	public Principal(int nodeId, String clientDn){
 		this.nodeId = nodeId;
 		this.clientDn = clientDn;
+		this.websocketConnections = 0;
 		// TODO load client DN correctly
 		if( clientDn != null && clientDn.startsWith("CN=") ){
 			int e = clientDn.indexOf(',');
@@ -96,5 +98,15 @@ public class Principal implements java.security.Principal, SecurityContext{
 	 */
 	public long getLastAccessed(){
 		return this.lastAccessed;
+	}
+
+	public void incrementWebsocketCount() {
+		this.websocketConnections ++;
+	}
+	public void decrementWebsocketCount() {
+		this.websocketConnections --;
+	}
+	public int getWebsocketCount() {
+		return this.websocketConnections;
 	}
 }

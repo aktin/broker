@@ -17,8 +17,8 @@ public abstract class AbstractBroadcastWebsocket {
 	private static final Logger log = Logger.getLogger(AbstractBroadcastWebsocket.class.getName());
 
 	protected abstract boolean isAuthorized(Principal principal);
-	protected abstract void addSession(Session session);
-	protected abstract void removeSession(Session session);
+	protected abstract void addSession(Session session, Principal user);
+	protected abstract void removeSession(Session session, Principal user);
 
 
 	@OnOpen
@@ -28,7 +28,7 @@ public abstract class AbstractBroadcastWebsocket {
 
 		// check privileges and close session if needed
 		if( isAuthorized(user) ) {
-			addSession(session);
+			addSession(session, user);
 
 		}else {
 			// unauthorized, close session
@@ -48,7 +48,7 @@ public abstract class AbstractBroadcastWebsocket {
 	}
 	@OnClose
 	public void close(Session session){
-		removeSession(session);
+		removeSession(session, getSessionPrincipal(session));
 		log.info("Session closed: "+session.getId());
 	}
 

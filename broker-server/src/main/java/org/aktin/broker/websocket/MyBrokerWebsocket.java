@@ -16,6 +16,7 @@ import org.aktin.broker.auth.Principal;
 public class MyBrokerWebsocket extends AbstractBroadcastWebsocket{
 	public static final String REST_PATH = "/broker/my/websocket";
 	private static final Logger log = Logger.getLogger(MyBrokerWebsocket.class.getName());
+	/** set of connected sessions, needs to be static and local */ 
 	private static Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
 	
 	public static void broadcastRequestPublished(int requestId){
@@ -50,7 +51,8 @@ public class MyBrokerWebsocket extends AbstractBroadcastWebsocket{
 
 
 	@Override
-	protected void addSession(Session session) {
+	protected void addSession(Session session, Principal user) {
+		user.incrementWebsocketCount();
 		clients.add(session);
 	}
 
@@ -58,7 +60,8 @@ public class MyBrokerWebsocket extends AbstractBroadcastWebsocket{
 
 
 	@Override
-	protected void removeSession(Session session) {
+	protected void removeSession(Session session, Principal user) {
+		user.decrementWebsocketCount();
 		clients.remove(session);
 	}
 }

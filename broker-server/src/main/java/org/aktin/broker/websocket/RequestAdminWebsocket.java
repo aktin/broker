@@ -42,11 +42,14 @@ public class RequestAdminWebsocket extends AbstractBroadcastWebsocket{
 		return true;
 	}
 	@Override
-	protected void addSession(Session session) {
+	protected void addSession(Session session, Principal user) {
+		user.incrementWebsocketCount();
 		clients.add(session);
 	}
+
 	@Override
-	protected void removeSession(Session session) {
+	protected void removeSession(Session session, Principal user) {
+		user.decrementWebsocketCount();
 		clients.remove(session);
 	}
 }
