@@ -19,7 +19,7 @@ public class OpenIdAuthenticator implements HeaderAuthentication{
 		// TODO use getHeader to obtain token
 		// TODO validate token
 		// TODO retrieve details from token and fill and return AuthInfo (e.g. AuthInfoImpl)
-		return null;
+		throw new IllegalStateException("Not implemented yet");
 	}
 
 }
