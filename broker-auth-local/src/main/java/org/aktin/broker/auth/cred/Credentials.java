@@ -1,4 +1,4 @@
-package org.aktin.broker.admin.auth.cred;
+package org.aktin.broker.auth.cred;
 
 import java.io.Serializable;
 

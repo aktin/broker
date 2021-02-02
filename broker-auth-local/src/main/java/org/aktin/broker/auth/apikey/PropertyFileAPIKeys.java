@@ -1,4 +1,4 @@
-package org.aktin.broker.admin.auth.apikey;
+package org.aktin.broker.auth.apikey;
 
 import java.io.IOException;
 import java.io.InputStream;

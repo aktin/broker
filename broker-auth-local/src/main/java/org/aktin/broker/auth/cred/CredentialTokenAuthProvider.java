@@ -1,16 +1,15 @@
-package org.aktin.broker.admin.auth.cred;
+package org.aktin.broker.auth.cred;
 
 import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import org.aktin.broker.server.auth.AbstractAuthProviderFactory;
-import org.aktin.broker.server.auth.HeaderAuthentication;
 
 public class CredentialTokenAuthProvider extends AbstractAuthProviderFactory{
 	private TokenManager manager;
 
 	@Override
-	public HeaderAuthentication getInstance() throws IOException {
+	public CredentialTokenAuth getInstance() throws IOException {
 		// initialize token manager
 		manager = new TokenManager();
 		// return 
@@ -27,4 +26,7 @@ public class CredentialTokenAuthProvider extends AbstractAuthProviderFactory{
 		return new Class<?>[] { AuthEndpoint.class };
 	}
 
+	public TokenManager getManager() {
+		return manager;
+	}
 }

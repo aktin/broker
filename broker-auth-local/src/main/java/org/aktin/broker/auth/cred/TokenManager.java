@@ -1,4 +1,4 @@
-package org.aktin.broker.admin.auth.cred;
+package org.aktin.broker.auth.cred;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,15 +6,21 @@ import java.util.logging.Logger;
 
 import javax.inject.Singleton;
 
+/**
+ * 
+ * @author Raphael
+ *
+ */
 @Singleton
 public class TokenManager {
+	public static final String PROPERTY_BROKER_PASSWORD = "aktin.broker.password"; 
 	private static final Logger log = Logger.getLogger(TokenManager.class.getName());
 	private Map<String,Token> map;
 	private String simplePassword;
 
 	public TokenManager(){
 		this.map = new HashMap<>();
-		simplePassword = System.getProperty("aktin.broker.password");
+		simplePassword = System.getProperty(PROPERTY_BROKER_PASSWORD);
 		if( simplePassword == null ){
 			// generate random password
 			StringBuilder b = new StringBuilder(8);
@@ -46,5 +52,9 @@ public class TokenManager {
 
 	public Token lookupToken(String guid){
 		return map.get(guid);
+	}
+
+	public String getPassword() {
+		return simplePassword;
 	}
 }
