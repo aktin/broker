@@ -60,7 +60,7 @@ public class HttpServer {
 		Objects.requireNonNull(authFactory,"No AuthProvider available!");
 		authFactory.setBasePath(config.getBasePath());
 		this.auth = authFactory.getInstance();
-		Objects.requireNonNull(auth)
+		Objects.requireNonNull(auth);
 		ds = new HSQLDataSource(config.getDatabasePath());
 		// initialize database
 		initialiseDatabase();
