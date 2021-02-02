@@ -7,8 +7,8 @@ public class TestTokenManager {
 
 	@Test
 	public void authRandomPassword() {
-		TokenManager m = new TokenManager();
-		String pw = m.getPassword();
+		String pw = TokenManager.randomPassword();
+		TokenManager m = new TokenManager(pw);
 		// auth should succeed
 		Token t = m.authenticate("admin", pw.toCharArray());
 		Assert.assertNotNull(t);

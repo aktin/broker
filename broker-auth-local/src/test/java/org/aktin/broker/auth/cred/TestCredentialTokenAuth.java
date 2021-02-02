@@ -14,10 +14,12 @@ import org.junit.Test;
 public class TestCredentialTokenAuth {
 	private CredentialTokenAuth auth;
 	private TokenManager manager;
+	private String password;
 
 	@Before
 	public void initializeInstanceFromProvider() throws IOException {
-		CredentialTokenAuthProvider prov = new CredentialTokenAuthProvider();
+		this.password = TokenManager.randomPassword();
+		CredentialTokenAuthProvider prov = new CredentialTokenAuthProvider(password);
 		prov.setBasePath(Paths.get("src/test/resources"));
 		auth = prov.getInstance();
 		manager = prov.getManager();
@@ -25,7 +27,7 @@ public class TestCredentialTokenAuth {
 	@Test
 	public void validAuthHeaderShouldReturnValidAuth() throws IOException {
 		// set headers
-		Token t = manager.authenticate("admin", manager.getPassword().toCharArray());
+		Token t = manager.authenticate("admin", password.toCharArray());
 		
 		Map<String,String> headers = new HashMap<>();
 		HeaderUtils.putAuthorizationBearerHeader(headers, t.getGUID());
@@ -39,7 +41,7 @@ public class TestCredentialTokenAuth {
 	//@Test
 	public void invalidatedTokenShouldNotAuthenticate() throws IOException {
 		// set headers
-		Token t = manager.authenticate("admin", manager.getPassword().toCharArray());
+		Token t = manager.authenticate("admin", password.toCharArray());
 		
 		Map<String,String> headers = new HashMap<>();
 		HeaderUtils.putAuthorizationBearerHeader(headers, t.getGUID());

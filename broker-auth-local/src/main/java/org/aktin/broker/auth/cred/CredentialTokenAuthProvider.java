@@ -7,13 +7,15 @@ import org.aktin.broker.server.auth.AbstractAuthProviderFactory;
 
 public class CredentialTokenAuthProvider extends AbstractAuthProviderFactory{
 	private TokenManager manager;
+	private CredentialTokenAuth auth;
 
+	public CredentialTokenAuthProvider(String simplePassword) {
+		this.manager = new TokenManager(simplePassword);
+		this.auth = new CredentialTokenAuth(manager);
+	}
 	@Override
 	public CredentialTokenAuth getInstance() throws IOException {
-		// initialize token manager
-		manager = new TokenManager();
-		// return 
-		return new CredentialTokenAuth(manager);
+		return auth;
 	}
 
 	@Override
