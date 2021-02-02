@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import org.aktin.broker.admin.auth.cred.TokenManager;
 import org.aktin.broker.auth.AuthCache;
 import org.aktin.broker.db.AggregatorBackend;
 import org.aktin.broker.db.AggregatorImpl;
@@ -67,7 +66,6 @@ public class MyBinder extends AbstractBinder{
 			bind(o).to((Class<? super Object>) c);
 		});
 		
-		bind(new TokenManager()).to(TokenManager.class);
 	}
 	@Override
 	public <T> ScopedBindingBuilder<T> bind(T service) {
