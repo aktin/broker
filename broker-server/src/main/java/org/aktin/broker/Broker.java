@@ -1,5 +1,7 @@
 package org.aktin.broker;
 
+import org.aktin.broker.auth.AuthenticationRequestFilter;
+import org.aktin.broker.auth.AuthorizationRequestFilter;
 import org.aktin.broker.rest.AggregatorEndpoint;
 import org.aktin.broker.rest.BrokerStatusEndpoint;
 import org.aktin.broker.rest.DownloadEndpoint;
@@ -24,5 +26,9 @@ public class Broker {
 	public static final Class<?>[] WEBSOCKETS = new Class<?>[]{
 		MyBrokerWebsocket.class,
 		RequestAdminWebsocket.class,
+	};
+	public static final Class<?>[] AUTH_FILTERS = new Class<?>[]{
+		AuthenticationRequestFilter.class,
+		AuthorizationRequestFilter.class,
 	};
 }

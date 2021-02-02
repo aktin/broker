@@ -45,8 +45,10 @@ public class MyBinder extends AbstractBinder{
 
 			// broker
 			backend.clearDataDirectory();
+
 			bind(backend).to(BrokerBackend.class);
 			bind(cache).to(AuthCache.class);
+			
 			// aggregator
 			AggregatorImpl adb = new AggregatorImpl(ds, Paths.get("target/aggregator-data"));
 			// clear uploaded files

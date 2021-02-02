@@ -1,4 +1,4 @@
-package org.aktin.broker.admin.auth;
+package org.aktin.broker.admin.auth.cred;
 
 import java.security.Principal;
 

@@ -1,13 +1,13 @@
 package org.aktin.broker.admin.standalone;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import javax.sql.DataSource;
 import javax.websocket.server.ServerContainer;
@@ -15,11 +15,10 @@ import javax.websocket.server.ServerEndpoint;
 import javax.websocket.server.ServerEndpointConfig;
 
 import org.aktin.broker.Broker;
-import org.aktin.broker.admin.auth.AuthEndpoint;
-import org.aktin.broker.admin.auth.AuthFilter;
 import org.aktin.broker.admin.rest.FormTemplateEndpoint;
-import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.db.LiquibaseWrapper;
+import org.aktin.broker.server.auth.AuthProviderFactory;
+import org.aktin.broker.server.auth.HeaderAuthentication;
 import org.aktin.broker.websocket.HeaderAuthSessionConfigurator;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -52,28 +51,23 @@ public class HttpServer {
 	private Server jetty;
 	private DataSource ds;
 	private MyBinder binder;
+	private AuthProviderFactory authFactory;
+	private HeaderAuthentication auth;
 
 	public HttpServer(Configuration config) throws SQLException, IOException{
 		this.config = config;
+		this.authFactory = config.getAuthProvider();
+		this.auth = authFactory.getInstance();
 		ds = new HSQLDataSource(config.getDatabasePath());
 		// initialize database
 		initialiseDatabase();
 		rc = new ResourceConfig();
-		PropertyFileAPIKeys keys;
-		try( InputStream in = config.readAPIKeyProperties() ){
-			keys = new PropertyFileAPIKeys(in);
-		}
-		if( System.getProperty("rewriteNodeDN") != null ){
-			int count = BrokerImpl.updatePrincipalDN(ds, keys.getMap());
-			// output/log what happened, use count returned from above method
-			System.out.println("Rewritten "+count+" node DN strings.");
-		}
-		rc.register(keys);
 		// register broker services
 		rc.registerClasses(Broker.ENDPOINTS);
-		rc.register(AuthFilter.class);
+		rc.registerClasses(Broker.AUTH_FILTERS);
+		// register auth entdpoints
+		rc.registerClasses(authFactory.getEndpoints());
 		// register admin endpoints
-		rc.register(AuthEndpoint.class);
 		rc.register(FormTemplateEndpoint.class);
 		// websocket endpoints are initialized in method #setupWebsockets
 	}
@@ -130,7 +124,7 @@ public class HttpServer {
 		context.addServlet(jersey, "/*");
 
 		// initialise query manager
-		this.binder = new MyBinder(ds,config);
+		this.binder = new MyBinder(ds,config, this.authFactory);
 		rc.register(this.binder);
 
 		// setup websockets
@@ -142,10 +136,10 @@ public class HttpServer {
 		jetty.start();
 	}
 
-	private static void setupWebsockets(ServletContextHandler context) throws Exception{
+	private void setupWebsockets(ServletContextHandler context) throws Exception{
 		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
 		// TODO use HeaderAuthentication
-		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(null);//auth);
+		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(this.auth, binder.getAuthCache());
 		for( Class<?> websocketClass : Broker.WEBSOCKETS ) {
 			// retrieve path
 			String restPath = websocketClass.getAnnotation(ServerEndpoint.class).value();

@@ -5,9 +5,7 @@ import java.util.function.Function;
 
 
 /**
- * Interface for using HTTP header for authentication. Implementations should use/inject
- * an instance of {@link AuthCache} to retrieve the {@link Principal} needed for return of
- * {@link #authenticateByHeaders(Function)}.
+ * Interface for using HTTP header for authentication.
  *
  * @author R.W.Majeed
  *

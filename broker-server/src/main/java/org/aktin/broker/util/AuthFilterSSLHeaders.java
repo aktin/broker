@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-import org.aktin.broker.auth.AuthInfoImpl;
 import org.aktin.broker.server.auth.AuthInfo;
+import org.aktin.broker.server.auth.AuthInfoImpl;
 import org.aktin.broker.server.auth.AuthRole;
 import org.aktin.broker.server.auth.HeaderAuthentication;
 

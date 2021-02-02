@@ -1,9 +1,6 @@
-package org.aktin.broker.auth;
+package org.aktin.broker.server.auth;
 
 import java.util.Set;
-
-import org.aktin.broker.server.auth.AuthInfo;
-import org.aktin.broker.server.auth.AuthRole;
 
 public class AuthInfoImpl implements AuthInfo {
 	private String userId;

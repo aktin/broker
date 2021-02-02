@@ -9,18 +9,27 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
+import org.aktin.broker.server.auth.AuthProviderFactory;
 import org.aktin.broker.xml.RequestStatus;
 
 public class TestServer implements Configuration{
 	private HttpServer http;
 	
+
 	@Override
-	public InputStream readAPIKeyProperties() {
-		return getClass().getResourceAsStream("/api-keys.properties");
+	public AuthProviderFactory getAuthProvider() {
+		return null; // TODO multiauth apikey,cred
+	}
+
+	@Override
+	public Path getBasePath() {
+		return Paths.get("target");
 	}
 
 	@Override

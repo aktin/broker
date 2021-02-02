@@ -1,4 +1,4 @@
-package org.aktin.broker.admin.auth;
+package org.aktin.broker.admin.auth.cred;
 
 import java.io.Serializable;
 
@@ -8,9 +8,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Credentials implements Serializable {
+public class Status implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public String username;
-	public String password;
+	public long issued;
 }
