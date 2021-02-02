@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<name>AKTIN : Broker : OpenID authentication plugin</name>
+	<packaging>jar</packaging>
+
+	<description>
+	 Authentication module using OpenID for server authentication and authorization.
+	 This module is meant for the broker-server.
+	</description>
+
+	<groupId>org.aktin</groupId>
+	<artifactId>broker-auth-openid</artifactId>
+	<version>1.0.4-SNAPSHOT</version>
+
+	<parent>
+		<groupId>org.aktin</groupId>
+		<artifactId>broker</artifactId>
+		<version>1.0.4-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+
+		<!-- dependencies for annotations provided by the container/application 
+			server -->
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<version>1.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+			<version>1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- broker API -->
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-api</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-client</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- dependencies accounting for java12 removal of javax.activation and jaxb -->
+		<dependency>
+		    <groupId>javax.activation</groupId>
+		    <artifactId>javax.activation-api</artifactId>
+		    <version>1.2.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>javax.xml.bind</groupId>
+		    <artifactId>jaxb-api</artifactId>
+		    <version>2.3.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.xml.bind</groupId>
+		    <artifactId>jaxb-impl</artifactId>
+		    <version>2.3.3</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+</project>
