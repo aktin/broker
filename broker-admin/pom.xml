@@ -7,9 +7,7 @@
 	Administration frontend for the AKTIN broker and aggregator
 	</description>
 
-	<groupId>org.aktin</groupId>
 	<artifactId>broker-admin</artifactId>
-	<version>1.0.4-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.aktin</groupId>

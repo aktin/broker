@@ -8,9 +8,7 @@
 	 This module is meant for the broker-server.
 	</description>
 
-	<groupId>org.aktin</groupId>
 	<artifactId>broker-auth-local</artifactId>
-	<version>1.0.4-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.aktin</groupId>

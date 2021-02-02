@@ -6,9 +6,7 @@
 	<description>
 	</description>
 
-	<groupId>org.aktin</groupId>
 	<artifactId>broker-server</artifactId>
-	<version>1.0.4-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.aktin</groupId>

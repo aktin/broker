@@ -4,9 +4,7 @@
 	
 	<packaging>pom</packaging>
 	
-	<groupId>org.aktin.broker</groupId>
 	<artifactId>broker-admin-dist</artifactId>
-	<version>1.0.4-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.aktin</groupId>

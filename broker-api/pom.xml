@@ -9,10 +9,8 @@
 	 additional authentication providers)
 	</description>
 
-	<groupId>org.aktin</groupId>
 	<artifactId>broker-api</artifactId>
-	<version>1.0.4-SNAPSHOT</version>
-
+	
 	<parent>
 		<groupId>org.aktin</groupId>
 		<artifactId>broker</artifactId>
