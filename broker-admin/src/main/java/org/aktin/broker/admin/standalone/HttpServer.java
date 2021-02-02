@@ -7,6 +7,7 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
 
 import javax.sql.DataSource;
 import javax.websocket.server.ServerContainer;
@@ -56,8 +57,10 @@ public class HttpServer {
 	public HttpServer(Configuration config) throws SQLException, IOException{
 		this.config = config;
 		this.authFactory = config.getAuthProvider();
+		Objects.requireNonNull(authFactory,"No AuthProvider available!");
 		authFactory.setBasePath(config.getBasePath());
 		this.auth = authFactory.getInstance();
+		Objects.requireNonNull(auth)
 		ds = new HSQLDataSource(config.getDatabasePath());
 		// initialize database
 		initialiseDatabase();
