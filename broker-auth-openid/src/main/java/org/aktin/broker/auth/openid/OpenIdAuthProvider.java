@@ -1,10 +1,10 @@
 package org.aktin.broker.auth.openid;
 
 import java.io.IOException;
-import org.aktin.broker.server.auth.AbstractAuthProviderFactory;
+import org.aktin.broker.server.auth.AbstractAuthProvider;
 import org.aktin.broker.server.auth.HeaderAuthentication;
 
-public class OpenIdAuthProvider extends AbstractAuthProviderFactory{
+public class OpenIdAuthProvider extends AbstractAuthProvider{
 	private OpenIdConfig config;
 
 	public void setConfig(OpenIdConfig config) {

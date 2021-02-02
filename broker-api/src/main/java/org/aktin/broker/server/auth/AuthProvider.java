@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 
-public interface AuthProviderFactory {
+public interface AuthProvider {
 
 	public void setBasePath(Path path);
 	/**

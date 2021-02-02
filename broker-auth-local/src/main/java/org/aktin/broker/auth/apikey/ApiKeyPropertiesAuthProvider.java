@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
-import org.aktin.broker.server.auth.AbstractAuthProviderFactory;
+import org.aktin.broker.server.auth.AbstractAuthProvider;
 
-public class ApiKeyPropertiesAuthProvider extends AbstractAuthProviderFactory {
+public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
 	private PropertyFileAPIKeys keys;
 
 	public ApiKeyPropertiesAuthProvider() {

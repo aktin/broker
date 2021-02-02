@@ -16,7 +16,7 @@ import javax.websocket.server.ServerEndpointConfig;
 import org.aktin.broker.Broker;
 import org.aktin.broker.admin.rest.FormTemplateEndpoint;
 import org.aktin.broker.db.LiquibaseWrapper;
-import org.aktin.broker.server.auth.AuthProviderFactory;
+import org.aktin.broker.server.auth.AuthProvider;
 import org.aktin.broker.server.auth.HeaderAuthentication;
 import org.aktin.broker.websocket.HeaderAuthSessionConfigurator;
 import org.eclipse.jetty.server.Handler;
@@ -50,7 +50,7 @@ public class HttpServer {
 	private Server jetty;
 	private DataSource ds;
 	private MyBinder binder;
-	private AuthProviderFactory authFactory;
+	private AuthProvider authFactory;
 	private HeaderAuthentication auth;
 
 	public HttpServer(Configuration config) throws SQLException, IOException{

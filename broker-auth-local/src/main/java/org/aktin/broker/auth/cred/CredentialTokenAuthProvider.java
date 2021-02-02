@@ -3,9 +3,9 @@ package org.aktin.broker.auth.cred;
 import java.io.IOException;
 import java.util.function.BiConsumer;
 
-import org.aktin.broker.server.auth.AbstractAuthProviderFactory;
+import org.aktin.broker.server.auth.AbstractAuthProvider;
 
-public class CredentialTokenAuthProvider extends AbstractAuthProviderFactory{
+public class CredentialTokenAuthProvider extends AbstractAuthProvider{
 	private TokenManager manager;
 	private CredentialTokenAuth auth;
 

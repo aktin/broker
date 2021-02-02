@@ -3,7 +3,7 @@ package org.aktin.broker.admin.standalone;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.aktin.broker.server.auth.AuthProviderFactory;
+import org.aktin.broker.server.auth.AuthProvider;
 
 public class DefaultConfiguration implements Configuration{
 
@@ -35,7 +35,7 @@ public class DefaultConfiguration implements Configuration{
 //	}
 
 	@Override
-	public AuthProviderFactory getAuthProvider() {
+	public AuthProvider getAuthProvider() {
 		// TODO Auto-generated method stub
 		return null;
 	}

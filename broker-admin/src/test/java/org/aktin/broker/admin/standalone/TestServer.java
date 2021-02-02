@@ -20,7 +20,7 @@ import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
-import org.aktin.broker.server.auth.AuthProviderFactory;
+import org.aktin.broker.server.auth.AuthProvider;
 import org.aktin.broker.xml.RequestStatus;
 
 public class TestServer implements Configuration{
@@ -29,7 +29,7 @@ public class TestServer implements Configuration{
 	private CascadedAuthProvider multiauth;
 
 	public TestServer() throws IOException {
-		List<AuthProviderFactory> auths = new ArrayList<>();
+		List<AuthProvider> auths = new ArrayList<>();
 		// use API key auth mostly for client nodes
 		try( InputStream in = getClass().getResourceAsStream("/api-keys.properties") ){
 			auths.add(new ApiKeyPropertiesAuthProvider(in));			
@@ -41,7 +41,7 @@ public class TestServer implements Configuration{
 	}
 
 	@Override
-	public AuthProviderFactory getAuthProvider() throws IOException{
+	public AuthProvider getAuthProvider() throws IOException{
 		return multiauth;
 	}
 
