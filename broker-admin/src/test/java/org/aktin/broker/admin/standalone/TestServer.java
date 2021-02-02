@@ -26,23 +26,28 @@ import org.aktin.broker.xml.RequestStatus;
 public class TestServer implements Configuration{
 	private static final String TEST_PASSWORD = "test";
 	private HttpServer http;
-	private CascadedAuthProvider multiauth;
+	private AuthProvider auth;
 
 	public TestServer() throws IOException {
+		// change here to switch to different authentications
+		auth = useDevAuthentication();
+	}
+
+	private static AuthProvider useDevAuthentication() throws IOException {
 		List<AuthProvider> auths = new ArrayList<>();
 		// use API key auth mostly for client nodes
-		try( InputStream in = getClass().getResourceAsStream("/api-keys.properties") ){
+		try( InputStream in = TestServer.class.getResourceAsStream("/api-keys.properties") ){
 			auths.add(new ApiKeyPropertiesAuthProvider(in));			
 		}
 		// use credentials for admin access
 		auths.add(new CredentialTokenAuthProvider(TEST_PASSWORD));
 		
-		multiauth = new CascadedAuthProvider(auths);
+		return new CascadedAuthProvider(auths);
 	}
 
 	@Override
 	public AuthProvider getAuthProvider() throws IOException{
-		return multiauth;
+		return auth;
 	}
 
 	@Override
