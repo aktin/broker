@@ -1,6 +1,7 @@
 package org.aktin.broker.auth;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,6 +17,10 @@ public class CascadedAuthProvider extends AbstractAuthProvider{
 
 	public CascadedAuthProvider(List<AuthProvider> providers) {
 		this.providers = providers;
+	}
+	@Override
+	public void setBasePath(Path path) {
+		providers.forEach(p -> p.setBasePath(path));
 	}
 	@Override
 	public HeaderAuthentication getInstance() throws IOException {
