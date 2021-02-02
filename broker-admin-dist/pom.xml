@@ -29,6 +29,18 @@
 			<artifactId>sqltool</artifactId>
 			<version>2.4.0</version>
 		</dependency>
+		<!-- auth providers. TODO add profiles for different needs -->
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-auth-local</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-auth-openid</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
