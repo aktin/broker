@@ -22,10 +22,11 @@ public class TokenManager {
 	private BiFunction<String, String, Boolean> authenticator;
 
 	public TokenManager(final String simplePassword) {
-		this.authenticator = (login,password) -> password.contentEquals(simplePassword);
 		this.map = new HashMap<>();
+		this.authenticator = (login,password) -> password.contentEquals(simplePassword);
 	}
 	public TokenManager(){
+		this.map = new HashMap<>();
 		final String simplePassword = System.getProperty(PROPERTY_BROKER_PASSWORD, randomPassword());
 		// TODO use normal logging or even better real password management
 		System.err.println("Using password: "+simplePassword);
