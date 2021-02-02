@@ -8,8 +8,8 @@ public interface AuthProviderFactory {
 
 	public void setBasePath(Path path);
 	/**
-	 * Create the instance to be used for authentication. This method will be called only once
-	 * and the returned instance will be used for all authentications. 
+	 * Get the instance to be used for authentication. This method will usually be called only once.
+	 * Nevertheless, implementers should make sure, that the method always returns the same instance.
 	 * @return authentication singleton instance
 	 * @throws IOException IO error during initialization
 	 */
