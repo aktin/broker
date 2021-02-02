@@ -7,7 +7,6 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 import javax.sql.DataSource;
 import javax.websocket.server.ServerContainer;
@@ -57,6 +56,7 @@ public class HttpServer {
 	public HttpServer(Configuration config) throws SQLException, IOException{
 		this.config = config;
 		this.authFactory = config.getAuthProvider();
+		authFactory.setBasePath(config.getBasePath());
 		this.auth = authFactory.getInstance();
 		ds = new HSQLDataSource(config.getDatabasePath());
 		// initialize database
@@ -124,7 +124,7 @@ public class HttpServer {
 		context.addServlet(jersey, "/*");
 
 		// initialise query manager
-		this.binder = new MyBinder(ds,config, this.authFactory);
+		this.binder = new MyBinder(ds,config, this.authFactory, this.auth);
 		rc.register(this.binder);
 
 		// setup websockets
@@ -163,7 +163,11 @@ public class HttpServer {
 		}
 		System.out.println("Cleanup jetty..");
 		System.out.flush();
-		jetty.destroy();
+		try {
+				jetty.destroy();
+		}catch( Throwable e ) {
+			System.out.println("Jetty.destroy failed with "+e);
+		}
 		// help cleanup
 		binder.closeCloseables();
 		// release threads waiting for termination

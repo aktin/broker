@@ -16,6 +16,7 @@ import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.download.DownloadManager;
 import org.aktin.broker.server.auth.AuthProviderFactory;
+import org.aktin.broker.server.auth.HeaderAuthentication;
 import org.aktin.broker.util.RequestTypeManager;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.hk2.utilities.binding.ScopedBindingBuilder;
@@ -31,12 +32,14 @@ public class MyBinder extends AbstractBinder{
 	private AggregatorBackend aggregator;
 	private DownloadManager downloads;
 	private AuthProviderFactory authProvider;
+	private HeaderAuthentication auth;
 	private AuthCache authCache;
 	private List<Closeable> closeables;
 	
-	public MyBinder(DataSource ds,Configuration config, AuthProviderFactory authProvider) throws IOException{
+	public MyBinder(DataSource ds,Configuration config, AuthProviderFactory authProvider, HeaderAuthentication auth) throws IOException{
 		this.ds = ds;
 		this.authProvider = authProvider;
+		this.auth = auth;
 		this.config = config;
 		closeables = new LinkedList<>();
 		this.broker = new BrokerImpl(ds, Paths.get(config.getBrokerDataPath()));
@@ -60,7 +63,9 @@ public class MyBinder extends AbstractBinder{
 		bind(authCache).to(AuthCache.class);
 		bind(new RequestTypeManager()).to(RequestTypeManager.class);
 		bind(downloads).to(DownloadManager.class);
-		
+
+		// bind authentication interfaces
+		bind(auth).to(HeaderAuthentication.class);
 		// bind auth provider singletons if available
 		authProvider.bindSingletons( (o,c) -> {
 			bind(o).to((Class<? super Object>) c);

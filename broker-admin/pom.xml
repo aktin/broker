@@ -67,6 +67,19 @@
 			<version>1.0.4-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- authentication for testing  -->
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-auth-local</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-auth-openid</artifactId>
+			<version>1.0.4-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.hsqldb/hsqldb -->
 		<dependency>

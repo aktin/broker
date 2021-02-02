@@ -1,5 +1,6 @@
 package org.aktin.broker.admin.standalone;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import org.aktin.broker.server.auth.AuthProviderFactory;
@@ -7,7 +8,7 @@ import org.aktin.broker.server.auth.AuthProviderFactory;
 public interface Configuration {
 
 	// configuration to specify external class implementing HeaderAuthentication
-	AuthProviderFactory getAuthProvider();
+	AuthProviderFactory getAuthProvider() throws IOException;
 
 	Path getBasePath();
 

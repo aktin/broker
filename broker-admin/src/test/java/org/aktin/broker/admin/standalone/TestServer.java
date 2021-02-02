@@ -11,7 +11,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.aktin.broker.auth.CascadedAuthProvider;
+import org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider;
+import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
@@ -19,12 +24,25 @@ import org.aktin.broker.server.auth.AuthProviderFactory;
 import org.aktin.broker.xml.RequestStatus;
 
 public class TestServer implements Configuration{
+	private static final String TEST_PASSWORD = "test";
 	private HttpServer http;
-	
+	private CascadedAuthProvider multiauth;
+
+	public TestServer() throws IOException {
+		List<AuthProviderFactory> auths = new ArrayList<>();
+		// use API key auth mostly for client nodes
+		try( InputStream in = getClass().getResourceAsStream("/api-keys.properties") ){
+			auths.add(new ApiKeyPropertiesAuthProvider(in));			
+		}
+		// use credentials for admin access
+		auths.add(new CredentialTokenAuthProvider(TEST_PASSWORD));
+		
+		multiauth = new CascadedAuthProvider(auths);
+	}
 
 	@Override
-	public AuthProviderFactory getAuthProvider() {
-		return null; // TODO multiauth apikey,cred
+	public AuthProviderFactory getAuthProvider() throws IOException{
+		return multiauth;
 	}
 
 	@Override
@@ -111,7 +129,7 @@ public class TestServer implements Configuration{
 		c.setDoInput(true);
 		c.setRequestProperty("Content-type", "application/xml");
 		try( OutputStreamWriter out = new OutputStreamWriter(c.getOutputStream()) ){
-			out.write("<credentials><username>admin</username><password>test</password></credentials>");
+			out.write("<credentials><username>admin</username><password>"+TEST_PASSWORD+"</password></credentials>");
 		}
 		if( c.getResponseCode() != 200 ) {
 			throw new IOException("Failed to authenticate as admin/test. HTTP response code "+c.getResponseCode());

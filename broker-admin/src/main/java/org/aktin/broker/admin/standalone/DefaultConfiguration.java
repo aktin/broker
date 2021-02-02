@@ -6,6 +6,11 @@ import java.nio.file.Paths;
 import org.aktin.broker.server.auth.AuthProviderFactory;
 
 public class DefaultConfiguration implements Configuration{
+
+	public DefaultConfiguration() {
+		
+	}
+
 	@Override
 	public int getPort() {
 		return 8080;
