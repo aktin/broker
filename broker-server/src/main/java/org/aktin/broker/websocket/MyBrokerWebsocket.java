@@ -21,20 +21,21 @@ public class MyBrokerWebsocket extends AbstractBroadcastWebsocket{
 	
 	public static void broadcastRequestPublished(int requestId){
 		// transmitted to all clients and administrators
-		broadcast(clients, "published "+requestId, false);
+		broadcast(clients, "published "+requestId);
 	}
 	public static void broadcastRequestClosed(int requestId){
 		// transmitted to all clients and administrators		
-		broadcast(clients, "closed "+requestId, false);
+		broadcast(clients, "closed "+requestId);
 	}
-	public static void broadcastRequestNodeStatus(int requestId, int nodeId, String status){
-		// transmitted only to administrators
-		broadcast(clients, "status "+requestId+" "+nodeId+" "+status, true);	
+
+	public static void broadcastToNode(int nodeId, String message){
+		// transmitted to all clients and administrators
+		broadcast(clients, message, p -> p.getNodeId() == nodeId);
 	}
-	// TODO method to retrieve connected client nodes (for more accurate information about last seen => active) 
 
-
-
+	public static void broadcastNodeResourceChange(int nodeId, String resource) {
+		broadcastToNode(nodeId, "resource "+resource);		
+	}
 
 	@Override
 	protected boolean isAuthorized(Principal principal) {

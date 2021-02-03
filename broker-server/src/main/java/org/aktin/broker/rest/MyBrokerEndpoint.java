@@ -31,6 +31,7 @@ import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.util.RequestTypeManager;
 import org.aktin.broker.websocket.MyBrokerWebsocket;
+import org.aktin.broker.websocket.RequestAdminWebsocket;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
@@ -43,6 +44,7 @@ import org.aktin.broker.xml.RequestStatus;
  * @author R.W.Majeed
  *
  */
+@Authenticated
 @Path("/broker/my/")
 public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 	private static final Logger log = Logger.getLogger(MyBrokerEndpoint.class.getName());
@@ -58,21 +60,24 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 	 * @param sec security context
 	 * @param content resource content to store
 	 */
-	@Authenticated
 	@PUT
 	@Path("node/{resource}")
 	public void setNodesResource(@PathParam("resource") String resourceId, @Context HttpHeaders headers, @Context SecurityContext sec, InputStream content) {
 		Principal user = (Principal)sec.getUserPrincipal();
-		log.info("Resource uploaded by node "+user.getNodeId()+": "+resourceId);
+		int nodeId = user.getNodeId();
+		log.info("Resource uploaded by node "+nodeId+": "+resourceId);
 		try {
 			db.updateNodeResource(user.getNodeId(), resourceId, headers.getMediaType(), content);
+			// TODO notify single nde
+			MyBrokerWebsocket.broadcastNodeResourceChange(nodeId, resourceId);
+			RequestAdminWebsocket.broadcastNodeResourceChange(nodeId, resourceId);
+
 		} catch (IOException | SQLException e) {
 			log.log(Level.SEVERE, "Unable to write resource for node "+user.getNodeId()+": "+resourceId, e);
 			throw new InternalServerErrorException(e);
 		}
 	}
 	
-	@Authenticated
 	@GET
 	@Path("node")
 	@Produces(MediaType.APPLICATION_XML)
@@ -88,7 +93,6 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 	}
 
 	// list requests for the calling node
-	@Authenticated
 	@GET
 	@Path("request")
 	@Produces(MediaType.APPLICATION_XML)
@@ -102,7 +106,6 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 		}
 	}
 	
-	@Authenticated
 	@OPTIONS
 	@Path("request/{id}")
 	public RequestInfo getNodesRequestInfo(@PathParam("id") Integer requestId, @Context SecurityContext sec, @Context HttpHeaders headers) throws SQLException, IOException{
@@ -113,7 +116,6 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 		return info;
 	}
 	
-	@Authenticated
 	@GET
 	@Path("request/{id}")
 	// response type depends on the data
@@ -146,7 +148,6 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 	 *	only character content is allowed (including XML/JSON).
 	 * @return no content on success. Server error otherwise.
 	 */
-	@Authenticated
 	@POST
 	@Path("request/{id}/status/{status}")
 	public Response putNodesRequestError(@PathParam("id") Integer requestId, 
@@ -173,11 +174,10 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 		} catch (IOException e) {
 			log.log(Level.WARNING, "Unable to close content reader", e);
 		}
-		MyBrokerWebsocket.broadcastRequestNodeStatus(requestId, user.getNodeId(), status.name());
+		RequestAdminWebsocket.broadcastRequestNodeStatus(requestId, user.getNodeId(), status.name());
 		return Response.noContent().build();
 	}
 	
-	@Authenticated
 	@DELETE
 	@Path("request/{id}")
 	public Response deleteNodesRequest(@PathParam("id") String requestId, @Context SecurityContext sec){

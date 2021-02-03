@@ -3,6 +3,7 @@ package org.aktin.broker.websocket;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,20 +59,26 @@ public abstract class AbstractBroadcastWebsocket {
 		log.log(Level.INFO, "Ignoring message from client {}",user.getName());
 	}
 
+	static int broadcast(Set<Session> clients, String message){
+		// if no filter is supplied, broadcast to all nodes
+		return broadcast(clients, message, p -> true);
+	}
 
-	static int broadcast(Set<Session> clients, String message, boolean adminOnly){
+	static int broadcast(Set<Session> clients, String message, Predicate<Principal> principalFilter){
+		Objects.requireNonNull(principalFilter);
 		if( clients.isEmpty() ){
 			return 0;
 		}
 		int count = 0;
+		// loop through connected clients
 		for( Session session : clients ){
 			Principal user = getSessionPrincipal(session);
 			if( user == null ) {
 				log.warning("Skipping websocket session without authentication "+session);
 				continue;
 			}
-			if( adminOnly && !user.isAdmin() ) {
-				// skip if not admin privileges
+			if( principalFilter.test(user) == false ) {
+				// skip filtered
 				continue;
 			}
 			if( session.isOpen() ){

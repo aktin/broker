@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
@@ -18,8 +19,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import org.aktin.broker.auth.Principal;
@@ -28,6 +27,7 @@ import org.aktin.broker.download.Download;
 import org.aktin.broker.download.DownloadManager;
 import org.aktin.broker.download.RequestBundleExport;
 import org.aktin.broker.server.DateDataSource;
+import org.aktin.broker.websocket.RequestAdminWebsocket;
 import org.aktin.broker.xml.ResultInfo;
 import org.aktin.broker.xml.ResultList;
 
@@ -50,22 +50,23 @@ public class AggregatorEndpoint {
 	@Authenticated
 	@PUT
 	@Path("my/request/{id}/result")
-	public Response submitResult(@PathParam("id") String requestId, @Context HttpHeaders headers, @Context SecurityContext sec, InputStream content) throws URISyntaxException{
+	public void submitResult(@PathParam("id") String requestId, @Context HttpHeaders headers, @Context SecurityContext sec, InputStream content) throws URISyntaxException{
 		Principal user = (Principal)sec.getUserPrincipal();
 		MediaType type = headers.getMediaType();
-		log.info("Result received from node "+user.getNodeId()+": "+type.toString());
+		int nodeId = user.getNodeId();
+		log.info("Result received from node "+nodeId+": "+type.toString());
 		int request = Integer.parseInt(requestId);
 		// TODO catch numberformatexception and return error
 		if( !isRequestWritable(request, user.getNodeId()) ){
-			return Response.status(Status.FORBIDDEN).build();
+			throw new ForbiddenException();
 		}
 		try {
-			db.addOrReplaceResult(request, user.getNodeId(), type, content);
+			db.addOrReplaceResult(request, nodeId, type, content);
+			RequestAdminWebsocket.broadcastNodeResult(request, nodeId, type.toString());
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to persist data", e);
-			return Response.serverError().build();
+			throw new InternalServerErrorException();
 		}
-		return Response.noContent().build();
 	}
 	
 	@Authenticated
@@ -74,17 +75,17 @@ public class AggregatorEndpoint {
 	@Path("request/{id}/result")
 	@Produces(MediaType.APPLICATION_XML)
 	//@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response listResultsForRequest(@PathParam("id") String requestId){
+	public ResultList listResultsForRequest(@PathParam("id") String requestId){
 		int request = Integer.parseInt(requestId);
 		List<ResultInfo> results;
 		try {
 			results = db.listResults(request);
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to list results from database", e);
-			return Response.serverError().build();
+			throw new InternalServerErrorException();
 		}
 		log.info("Found "+results.size()+" results");
-		return Response.ok(new ResultList(results)).build();
+		return new ResultList(results);
 	}
 
 	@Authenticated

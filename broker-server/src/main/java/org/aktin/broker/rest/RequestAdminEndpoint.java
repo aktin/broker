@@ -14,6 +14,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -33,6 +34,7 @@ import javax.ws.rs.core.UriInfo;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.util.RequestTypeManager;
 import org.aktin.broker.websocket.MyBrokerWebsocket;
+import org.aktin.broker.websocket.RequestAdminWebsocket;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 import org.aktin.broker.xml.RequestStatusInfo;
@@ -49,6 +51,7 @@ import org.aktin.broker.xml.RequestTargetNodes;
  *
  */
 @Authenticated
+@RequireAdmin
 @Path("/broker/request")
 public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	private static final Logger log = Logger.getLogger(RequestAdminEndpoint.class.getName());
@@ -76,7 +79,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 * @throws URISyntaxException URI syntax processing error
 	 */
 	@POST
-	@RequireAdmin
 	public Response createRequest(Reader content, @Context HttpHeaders headers, @Context UriInfo info) throws URISyntaxException{
 		MediaType type = headers.getMediaType();
 		try {
@@ -101,6 +103,9 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 				log.info("Forcing response location URI scheme "+forceScheme);
 				ub.scheme(forceScheme);
 			}
+			// notify listeners
+			RequestAdminWebsocket.broadcastRequestCreated(id);
+			
 			return Response.created(ub.build()).build();
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to create request", e);
@@ -121,21 +126,20 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@PUT
 	@Path("{id}")
-	@RequireAdmin
-	public Response createRequest(@PathParam("id") String requestId, Reader content, @Context HttpHeaders headers) throws URISyntaxException{
+	public void addRequestDefinition(@PathParam("id") String requestId, Reader content, @Context HttpHeaders headers) throws URISyntaxException{
 		MediaType type = headers.getMediaType();
 		try {
 			// remove charset information, since we already have the string representation
 			type = removeCharsetInfo(type);
 			// create or replace if already exists
-			db.setRequestDefinition(Integer.parseInt(requestId), type.toString(), content);
-			return Response.ok().build();
+			int reqId = Integer.parseInt(requestId);
+			db.setRequestDefinition(reqId, type.toString(), content);
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to create request definition", e);
-			return Response.serverError().build();
+			throw new InternalServerErrorException();
 		} catch( NumberFormatException e ){
 			log.log(Level.SEVERE, "Unable to parse request id: "+requestId, e);
-			return Response.status(Status.BAD_REQUEST).build();
+			throw new BadRequestException();
 		}
 	}
 	
@@ -146,13 +150,12 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
-	@RequireAdmin
-	public Response listAllRequests() {
+	public RequestList listAllRequests() {
 		try {
-			return Response.ok(new RequestList(db.listAllRequests())).build();
+			return new RequestList(db.listAllRequests());
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to read requests", e);
-			return Response.serverError().build();			
+			throw new InternalServerErrorException();			
 		}
 	}
 
@@ -164,22 +167,21 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@DELETE
 	@Path("{id}")
-	@RequireAdmin
-	public Response deleteRequest(@PathParam("id") String id){
+	public void deleteRequest(@PathParam("id") String id){
 		int i;
 		try{
 			i = Integer.parseInt(id);
 		}catch( NumberFormatException e ){
 			// cannot delete non-numeric request id
-			log.warning("Unable to delete non-numeric request id: "+id);
-			return Response.status(Status.BAD_REQUEST).build();
+			final String message = "Unable to delete non-numeric request id: "+id; 
+			log.warning(message);
+			throw new BadRequestException(message);
 		}
 		try {
 			db.deleteRequest(i);
-			return Response.noContent().build();
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to delete request "+id, e);
-			return Response.serverError().build();
+			throw new InternalServerErrorException();
 		}
 	}
 
@@ -193,7 +195,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 * @throws IOException IO error
 	 * @throws NotFoundException request id does not exist
 	 */
-	@RequireAdmin
 	@GET
 	@Path("{id}")
 	public Response getRequest(@PathParam("id") Integer requestId, @Context HttpHeaders headers) throws SQLException, IOException, NotFoundException{
@@ -211,7 +212,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@OPTIONS
 	@Path("{id}")
-	@RequireAdmin
 	//@Produces(MediaType.APPLICATION_XML) will cause errors in this case. therefore the media type is set below
 	public Response getRequestInfo(@PathParam("id") int requestId) throws SQLException, IOException{
 		// TODO return RequestInfo
@@ -233,7 +233,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@GET
 	@Path("{id}/status")
-	@RequireAdmin
 	@Produces(MediaType.APPLICATION_XML)
 	public RequestStatusList getRequestInfo(@PathParam("id") Integer requestId) throws SQLException, IOException{
 		// TODO return RequestInfo
@@ -256,7 +255,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	@GET
 	@Path("{id}/nodes")
 	@Produces(MediaType.APPLICATION_XML)
-	@RequireAdmin
 	public RequestTargetNodes getRequestTargetNodes(@PathParam("id") Integer requestId) throws SQLException, IOException, NotFoundException{
 		int[] nodes = db.getRequestTargets(requestId);
 		if( nodes == null ){
@@ -276,7 +274,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@DELETE
 	@Path("{id}/nodes")
-	@RequireAdmin
 	public void clearRequestTargetNodes(@PathParam("id") Integer requestId) throws SQLException, IOException, NotFoundException{
 		// TODO check for valid requestId and throw NotFoundException otherwise
 		int[] nodes = db.getRequestTargets(requestId);
@@ -302,7 +299,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	@PUT
 	@Path("{id}/nodes")
 	@Consumes(MediaType.APPLICATION_XML)
-	@RequireAdmin
 	public void setRequestTargetNodes(@PathParam("id") Integer requestId, RequestTargetNodes nodes) throws SQLException, IOException, NotFoundException{
 		if( nodes == null || nodes.getNodes() == null || nodes.getNodes().length == 0 ){
 			String message = "node targeting requires at least one node";
@@ -325,7 +321,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@GET
 	@Path("{id}/status/{nodeId}")
-	@RequireAdmin
 	public Response getRequestNodeStatusMessage(@PathParam("id") Integer requestId, @PathParam("nodeId") Integer nodeId) throws SQLException, IOException{
 		// TODO set header: timestamp, custom header with status code
 		Reader r = db.getRequestNodeStatusMessage(requestId, nodeId);
@@ -347,7 +342,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@POST
 	@Path("{id}/publish")
-	@RequireAdmin
 	public void publishRequest(@PathParam("id") Integer requestId) throws SQLException{
 		// find query
 		RequestInfo info = db.getRequestInfo(requestId);
@@ -364,6 +358,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 
 			// broadcast to connected websocket clients
 			MyBrokerWebsocket.broadcastRequestPublished(requestId);
+			RequestAdminWebsocket.broadcastRequestPublished(requestId);
 		}
 	}
 
@@ -376,7 +371,6 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 */
 	@POST
 	@Path("{id}/close")
-	@RequireAdmin
 	public void closeRequest(@PathParam("id") Integer requestId) throws SQLException{
 		// find query
 		RequestInfo info = db.getRequestInfo(requestId);

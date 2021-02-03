@@ -20,19 +20,30 @@ public class RequestAdminWebsocket extends AbstractBroadcastWebsocket{
 
 	private static final Logger log = Logger.getLogger(RequestAdminWebsocket.class.getName());
 	
+	public static void broadcastRequestCreated(int requestId){
+		// transmitted to all clients and administrators
+		broadcast(clients, "created "+requestId);
+	}
+	
 	public static void broadcastRequestPublished(int requestId){
 		// transmitted to all clients and administrators
-		broadcast(clients, "published "+requestId, false);
+		broadcast(clients, "published "+requestId);
 	}
 	public static void broadcastRequestClosed(int requestId){
 		// transmitted to all clients and administrators		
-		broadcast(clients, "closed "+requestId, false);
+		broadcast(clients, "closed "+requestId);
 	}
 	public static void broadcastRequestNodeStatus(int requestId, int nodeId, String status){
 		// transmitted only to administrators
-		broadcast(clients, "status "+requestId+" "+nodeId+" "+status, true);	
+		broadcast(clients, "status "+requestId+" "+nodeId+" "+status);	
 	}
-	// TODO method to retrieve connected client nodes (for more accurate information about last seen => active) 
+	public static void broadcastNodeResourceChange(int nodeId, String resourceId) {
+		broadcast(clients, "resource "+nodeId+" "+resourceId);
+	}
+	public static void broadcastNodeResult(int requestId, int nodeId, String mediaType) {
+		broadcast(clients, "result "+requestId+" "+nodeId+" "+mediaType);	
+	}
+
 	@Override
 	protected boolean isAuthorized(Principal principal) {
 		if( !principal.isAdmin() ) {
