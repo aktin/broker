@@ -43,14 +43,16 @@ public class OpenIdAuthenticator implements HeaderAuthentication {
     String introspectionResponse = introspectToken(accessTokenSerialized);
     JsonElement jsonElement = JsonParser.parseString(introspectionResponse);
 
-    // TODO: either check if the introspection result has a site-id and accept that as "this is
-    // a diz" or add another role to the token
-    Set<AuthRole> roles = new HashSet<>();
-    roles.add(AuthRole.NODE_READ);
-    roles.add(AuthRole.NODE_WRITE);
-
     String siteId = jsonElement.getAsJsonObject().get(KEY_JWT_USERNAME).getAsString();
     String siteName = jsonElement.getAsJsonObject().get(config.getSiteNameClaim()).getAsString();
+
+    // Currently, the definition is that only diz-clients get a site name claim. This might change.
+    Set<AuthRole> roles = new HashSet<>();
+    if (siteName != null && !siteName.isEmpty()) {
+      roles.add(AuthRole.NODE_READ);
+      roles.add(AuthRole.NODE_WRITE);
+    }
+
     return new AuthInfoImpl(siteId, "CN=" + siteName, roles);
   }
 
