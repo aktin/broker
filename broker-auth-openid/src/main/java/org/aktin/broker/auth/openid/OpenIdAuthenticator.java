@@ -27,7 +27,6 @@ public class OpenIdAuthenticator implements HeaderAuthentication {
   public static final String TOKEN = "token";
   public static final String TOKEN_INTROSPECTION_PATH = "protocol/openid-connect/token/introspect";
   public static final String KEY_JWT_USERNAME = "clientId";
-  public static final String KEY_JWT_CN = "site-name";
   private final OpenIdConfig config;
 
   public OpenIdAuthenticator(OpenIdConfig config) {
@@ -51,7 +50,7 @@ public class OpenIdAuthenticator implements HeaderAuthentication {
     roles.add(AuthRole.NODE_WRITE);
 
     String siteId = jsonElement.getAsJsonObject().get(KEY_JWT_USERNAME).getAsString();
-    String siteName = jsonElement.getAsJsonObject().get(KEY_JWT_CN).getAsString();
+    String siteName = jsonElement.getAsJsonObject().get(config.getSiteNameClaim()).getAsString();
     return new AuthInfoImpl(siteId, "CN=" + siteName, roles);
   }
 
