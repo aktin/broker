@@ -17,6 +17,7 @@ import java.util.List;
 import org.aktin.broker.auth.CascadedAuthProvider;
 import org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider;
 import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
+import org.aktin.broker.auth.openid.OpenIdAuthProvider;
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClientImpl;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
@@ -41,7 +42,11 @@ public class TestServer implements Configuration{
 		}
 		// use credentials for admin access
 		auths.add(new CredentialTokenAuthProvider(TEST_PASSWORD));
-		
+
+		try( InputStream in = TestServer.class.getResourceAsStream("/openid-config.properties") ){
+			auths.add(new OpenIdAuthProvider(in));
+		}
+
 		return new CascadedAuthProvider(auths);
 	}
 

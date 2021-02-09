@@ -32,6 +32,7 @@ public class TokenManager {
 		System.err.println("Using password: "+simplePassword);
 		log.info("Using password: "+simplePassword);
 		this.authenticator = (login,password) -> password.contentEquals(simplePassword);
+		this.map = new HashMap<>();
 	}
 	
 	public static final String randomPassword() {
