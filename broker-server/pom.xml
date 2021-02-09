@@ -42,6 +42,10 @@
 	</build>
 
 	<dependencies>
+		<dependency>
+			<artifactId>lombok</artifactId>
+			<groupId>org.projectlombok</groupId>
+		</dependency>
 
 		<!-- dependencies for annotations provided by the container/application 
 			server -->

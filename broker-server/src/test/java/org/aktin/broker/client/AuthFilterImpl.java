@@ -8,14 +8,13 @@ import java.util.function.BiConsumer;
 import org.aktin.broker.client2.AuthFilter;
 import org.aktin.broker.util.AuthFilterSSLHeaders;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public class AuthFilterImpl implements AuthFilter{
 	private String certId;
 	private String clientDn;
 
-	public AuthFilterImpl(String certId, String clientDn) {
-		this.certId = certId;
-		this.clientDn = clientDn;
-	}
 	private final void setHeaders(BiConsumer<String, String> setter) {
 		setter.accept(AuthFilterSSLHeaders.X_SSL_CLIENT_ID, certId);
 		setter.accept(AuthFilterSSLHeaders.X_SSL_CLIENT_DN, clientDn);

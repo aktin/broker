@@ -170,6 +170,12 @@
 				<version>4.13.1</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<artifactId>lombok</artifactId>
+				<groupId>org.projectlombok</groupId>
+				<scope>provided</scope>
+				<version>1.18.18</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 </project>

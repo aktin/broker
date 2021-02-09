@@ -52,6 +52,10 @@
 			<artifactId>junit</artifactId>
 		</dependency>
 		<dependency>
+			<artifactId>lombok</artifactId>
+			<groupId>org.projectlombok</groupId>
+		</dependency>
+		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-api</artifactId>
 			<version>1.0.4-SNAPSHOT</version>
