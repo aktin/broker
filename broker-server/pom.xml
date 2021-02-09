@@ -4,6 +4,8 @@
 	<packaging>jar</packaging>
 
 	<description>
+	 Implementation of server functionality, endpoints and websockets.
+	 Also includes persistence layer.
 	</description>
 
 	<artifactId>broker-server</artifactId>

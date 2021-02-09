@@ -25,7 +25,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.Response.Status;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
@@ -180,7 +179,7 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 	
 	@DELETE
 	@Path("request/{id}")
-	public Response deleteNodesRequest(@PathParam("id") String requestId, @Context SecurityContext sec){
+	public void deleteNodesRequest(@PathParam("id") String requestId, @Context SecurityContext sec){
 		Principal user = (Principal)sec.getUserPrincipal();
 		boolean delete_ok = false;
 		try {
@@ -190,12 +189,10 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 			delete_ok = false; // same as not found
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to delete requestId="+requestId+" for nodeId="+user.getNodeId(), e);
-			return Response.serverError().build();
+			throw new InternalServerErrorException();
 		}
-		if( delete_ok ){
-			return Response.noContent().build();
-		}else{
-			return Response.status(Status.NOT_FOUND).build();
+		if( false == delete_ok ){
+			throw new NotFoundException();
 		}
 	}
 

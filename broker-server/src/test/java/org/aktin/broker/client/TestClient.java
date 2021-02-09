@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 
 import org.aktin.broker.util.AuthFilterSSLHeaders;
 
-public class TestClient extends BrokerClient{
+public class TestClient extends BrokerClientImpl{
 
 	private String certId;
 	private String clientDn;

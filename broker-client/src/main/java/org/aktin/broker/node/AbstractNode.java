@@ -6,7 +6,7 @@ import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.aktin.broker.client.BrokerClient;
+import org.aktin.broker.client.BrokerClientImpl;
 import org.aktin.broker.client.auth.ClientAuthenticator;
 
 /** Abstract node supporting a single broker
@@ -15,7 +15,7 @@ import org.aktin.broker.client.auth.ClientAuthenticator;
  *
  */
 public abstract class AbstractNode {
-	protected BrokerClient broker;
+	protected BrokerClientImpl broker;
 	/**
 	 * Connect to the broker and exchange status information. After retrieving the remote
 	 * status, the client status with modules and software versions are submitted.
@@ -28,7 +28,7 @@ public abstract class AbstractNode {
 	 */
 	public final void connectBroker(String broker_endpoint, ClientAuthenticator auth) throws IOException{
 		try {
-			this.broker = new BrokerClient(new URI(broker_endpoint));
+			this.broker = new BrokerClientImpl(new URI(broker_endpoint));
 		} catch (URISyntaxException e) {
 			throw new IOException(e);
 		}

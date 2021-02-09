@@ -1,18 +1,14 @@
 package org.aktin.broker.client;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.JAXB;
-
-import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 
@@ -43,17 +39,6 @@ public abstract class AbstractBrokerClient extends AbstractClient{
 		}		
 	}
 	/**
-	 * Retrieve status information about the broker.
-	 * @return broker status information
-	 * @throws IOException io error
-	 */
-	public BrokerStatus getBrokerStatus() throws IOException{
-		HttpURLConnection c = openConnection("GET", "status");
-		try( InputStream response = c.getInputStream() ){
-			return JAXB.unmarshal(response, BrokerStatus.class);
-		}
-	}
-	/**
 	 * Retrieve reader to receive the content
 	 * @param c URL connection
 	 * @param mediaType media type, which will be specified in the {@code Accept} request header. If {@code null} this header is omitted.
@@ -73,17 +58,7 @@ public abstract class AbstractBrokerClient extends AbstractClient{
 			// TODO allow user to notice/differentiate between 404 and 406 responses
 			return null;
 		}
-		// default HTTP charset
-		String charset = "ISO-8859-1";
-		// use charset from content-type header
-		String contentType = c.getContentType();
-		if( contentType != null ) {
-			int csi = contentType.indexOf("charset=");
-			if( csi != -1 ){
-				charset = contentType.substring(csi+8);
-			}			
-		}
-		return new InputStreamReader(c.getInputStream(), charset);
+		return Utils.contentReaderForInputStream(c.getInputStream(), c.getContentType(), StandardCharsets.ISO_8859_1);
 	}
 
 }

@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Reader;
-import java.net.URI;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Arrays;
@@ -13,14 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
 import org.aktin.broker.db.BrokerImpl;
-import org.aktin.broker.util.AuthFilterSSLHeaders;
-import org.aktin.broker.client.ClientWebsocket;
+import org.aktin.broker.client.BrokerAdmin;
+import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.NodeResource;
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;
@@ -29,37 +26,38 @@ import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
 import org.aktin.broker.xml.ResultInfo;
 import org.aktin.broker.xml.util.Util;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class TestBroker {
-	private static final String CLIENT_01_DN = "CN=Test 1,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
-	private static final String CLIENT_02_DN = "CN=Test 2,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
-	private static final String ADMIN_00_DN = "CN=Test Adm,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
+public class TestBroker extends AbstractTestBroker {
 	private static final String CLIENT_01_SERIAL = "01";
-	private static final String CLIENT_02_SERIAL = "02";
-	private static final String ADMIN_00_SERIAL = "00";
-	private BrokerTestServer server;
+	private static final String CLIENT_01_DN = "CN=Test 1,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
 
-	@Before
-	public void setupServer() throws Exception{
-		server = new BrokerTestServer(new AuthFilterSSLHeaders());
-		server.start_local(0);
-		// TODO reset database
+	private static final String CLIENT_02_SERIAL = "02";
+	private static final String CLIENT_02_DN = "CN=Test 2,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen";
+
+	private static final String ADMIN_00_DN = "CN=Test Adm,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
+	private static final String ADMIN_00_SERIAL = "00";
+
+	@Override
+	public BrokerClient initializeClient(String arg) {
+		switch( arg ) {
+		case CLIENT_01_SERIAL:
+			return new TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		case CLIENT_02_SERIAL:
+			return new TestClient(server.getBrokerServiceURI(), CLIENT_02_SERIAL, CLIENT_02_DN);
+		default:
+			throw new IllegalArgumentException();
+		}
 	}
-	
-	@After
-	public void shutdownServer() throws Exception{
-		server.stop();
-		server.destroy();
+
+	@Override
+	public BrokerAdmin initializeAdmin() {
+		return new TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
 	}
+
 	@Test
 	public void expectClientModulesInDatabase() throws IOException{
 		// TODO test update of software modules: overwrite modules, read back modules
@@ -93,7 +91,7 @@ public class TestBroker {
 		// posting status will trigger authentication
 		c.postSoftwareVersions(Collections.singletonMap("TEST", "1"));
 
-		TestAdmin a = new TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin a = initializeAdmin();
 		// verify client list
 		List<Node> nl = a.listNodes();
 		// we should be the only node
@@ -154,17 +152,17 @@ public class TestBroker {
 
 	@Test
 	public void expect404ForNonExistentRequests() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin a = initializeAdmin();
 		assertNull(a.getRequestDefinition(0, "text/plain"));
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
 		assertNull(c.getMyRequestDefinitionString(0, "text/plain"));
 		assertNull(c.getMyRequestDefinitionXml(0, "text/plain"));
 		assertNull(c.getMyRequestDefinitionLines(0, "text/plain"));
 	}
 	@Test
 	public void reportAndReadRequestStatus() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerAdmin a = initializeAdmin();
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		// create request
 		int rid = a.createRequest("text/vnd.test1", "test");
 		a.publishRequest(rid);
@@ -216,8 +214,8 @@ public class TestBroker {
 
 	@Test
 	public void testAddRequestDeleteMyQuery() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerAdmin a = initializeAdmin();
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		// assume list is empty
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertTrue(l.isEmpty());
@@ -242,7 +240,7 @@ public class TestBroker {
 		a.deleteRequest(qid);
 	}
 	public void testAddEmptyRequest() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin a = initializeAdmin();
 		Assert.assertEquals(0, a.listAllRequests().size());
 		int qid = a.createRequest();
 		RequestInfo ri = a.getRequestInfo(qid);
@@ -250,7 +248,7 @@ public class TestBroker {
 	}
 	@Test
 	public void testRequestWithMultipleDefinitions() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin a = initializeAdmin();
 		Assert.assertEquals(0, a.listAllRequests().size());
 		int qid = a.createRequest("text/x-test-1", "test1");
 		a.putRequestDefinition(qid, "text/x-test-2", "test2");			
@@ -271,8 +269,8 @@ public class TestBroker {
 	}
 	@Test
 	public void failQueryVerifyErrorMessage() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerAdmin a = initializeAdmin();
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		// assume list is empty
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertTrue(l.isEmpty());
@@ -293,12 +291,13 @@ public class TestBroker {
 	}
 	@Test
 	public void targetedRequestsInvisibleToOtherNodes() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
-		TestClient c1 = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
-		TestClient c2 = new  TestClient(server.getBrokerServiceURI(), CLIENT_02_SERIAL, CLIENT_02_DN);
+		BrokerAdmin a = initializeAdmin();
+		BrokerClient c1 = initializeClient(CLIENT_01_SERIAL);
+		BrokerClient c2 = initializeClient(CLIENT_02_SERIAL);
 		// assume list is empty
 		assertEquals(0, c1.listMyRequests().size());
 		assertEquals(0, c2.listMyRequests().size());
+
 		// make sure we have the correct node id
 		assertEquals(1, c2.getMyNode().id);
 
@@ -311,8 +310,9 @@ public class TestBroker {
 		a.publishRequest(qid);
 		assertEquals(true, a.getRequestInfo(qid).targeted);
 
-		// assume list is still empty
+		// assume list is still empty for first node
 		assertEquals(0, c1.listMyRequests().size());
+		// request visible only to second node
 		assertEquals(1, c2.listMyRequests().size());
 
 		// clear targets
@@ -325,7 +325,7 @@ public class TestBroker {
 
 	@Test
 	public void testRequestSubmitResult() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin a = initializeAdmin();
 		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 
@@ -343,7 +343,7 @@ public class TestBroker {
 	}
 	@Test
 	public void verifyLastContactUpdated() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin a = initializeAdmin();
 		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 
@@ -365,7 +365,7 @@ public class TestBroker {
 	@Test
 	public void databaseUpdateOfNodeDN() throws SQLException, IOException{
 		// make sure that client_01 is known to the database
-		TestClient c = new TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		c.listMyRequests();
 		// fill updated CN
 		Properties p = new Properties();
@@ -378,62 +378,14 @@ public class TestBroker {
 	}
 	@Test
 	public void addDeleteNodeResource() throws IOException{
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin a = initializeAdmin();
 		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		c.putMyResource("stats", "text/plain", "123");
 		assertEquals("123", a.getNodeString(0, "stats"));
 		NodeResource r = a.getNodeResource(0, "stats");
 		assertEquals("202cb962ac59075b964b07152d234b70", r.getMD5String());
 		
-	}
-	
-	// TODO implement websocket tests
-	@Test
-	public void testWebsocket() throws Exception{
-		WebSocketClient client = new WebSocketClient();
-		ClientWebsocket websocket = new ClientWebsocket();
-		ClientUpgradeRequest req = new ClientUpgradeRequest();
-		// set authentication headers for socket handshake
-		TestClient.setAuthenticatedHeaders(req::setHeader, CLIENT_01_SERIAL, CLIENT_01_DN);
-		websocket.prepareForMessages(1);
-		client.start();
-		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker/my/websocket"), req);
-		System.out.println("Connecting..");
-		Session s = f.get(5, TimeUnit.SECONDS);
-		s.getClass(); // don't need the session
-		// connected, wait for messages
-		websocket.waitForMessages(5, TimeUnit.SECONDS);
-		Assert.assertEquals("Welcome message expected from after websocket connect", 1, websocket.messages.size());
-
-
-		// add request
-		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
-		String testId = "01";
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
-		int qid = a.createRequest("text/x-test-1", "test1");
-		// expect notification for published request
-		websocket.messages.clear();
-		websocket.prepareForMessages(1);
-		// publish request
-		a.publishRequest(qid);
-		// wait for notification
-		websocket.waitForMessages(5, TimeUnit.SECONDS);
-		Assert.assertEquals("request notification expected", 1, websocket.messages.size());
-		Assert.assertEquals("published 0", websocket.messages.get(0));
-
-		// expect notification for closed request
-		websocket.messages.clear();
-		websocket.prepareForMessages(1);
-		// close request
-		a.closeRequest(qid);
-		// wait for notification
-		websocket.waitForMessages(5, TimeUnit.SECONDS);
-		Assert.assertEquals("request notification expected", 1, websocket.messages.size());
-		Assert.assertEquals("closed 0", websocket.messages.get(0));
-
-		// terminate websocket client
-		client.stop();
 	}
 }

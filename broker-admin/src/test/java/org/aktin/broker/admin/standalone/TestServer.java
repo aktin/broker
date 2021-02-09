@@ -18,7 +18,7 @@ import org.aktin.broker.auth.CascadedAuthProvider;
 import org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider;
 import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
 import org.aktin.broker.client.BrokerAdmin;
-import org.aktin.broker.client.BrokerClient;
+import org.aktin.broker.client.BrokerClientImpl;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
 import org.aktin.broker.server.auth.AuthProvider;
 import org.aktin.broker.xml.RequestStatus;
@@ -165,7 +165,7 @@ public class TestServer implements Configuration{
 
 	public void simulateNodes() throws IOException {
 		// add some nodes
-		BrokerClient c = new BrokerClient(http.getBrokerServiceURI());
+		BrokerClientImpl c = new BrokerClientImpl(http.getBrokerServiceURI());
 		c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey123"));
 		try( InputStream in = TestServer.class.getResourceAsStream("/stats-example1.xml") ){
 			c.putMyResource("stats", "application/xml", in);

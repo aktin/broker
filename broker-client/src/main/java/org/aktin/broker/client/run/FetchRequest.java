@@ -3,7 +3,7 @@ package org.aktin.broker.client.run;
 import java.io.IOException;
 import java.net.URI;
 
-import org.aktin.broker.client.BrokerClient;
+import org.aktin.broker.client.BrokerClientImpl;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
 
 /**
@@ -31,7 +31,7 @@ public class FetchRequest {
 		}
 		String mediaType = args[3];
 		
-		BrokerClient client = new BrokerClient(URI.create(brokerUrl));
+		BrokerClientImpl client = new BrokerClientImpl(URI.create(brokerUrl));
 		client.setClientAuthenticator(HttpApiKeyAuth.newBearer(apiKey));
 		String s = client.getMyRequestDefinitionString(requestId, mediaType);
 		System.out.print(s);

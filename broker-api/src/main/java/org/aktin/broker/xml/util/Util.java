@@ -1,6 +1,7 @@
 package org.aktin.broker.xml.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -39,6 +40,7 @@ public class Util {
 		}while(c>0);
 		return builder.toString();
 	}
+	@Deprecated
 	public static Document parseDocument(Reader reader) throws IOException{
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -47,6 +49,18 @@ public class Util {
 		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 		try {
 			return factory.newDocumentBuilder().parse(new InputSource(reader));
+		} catch (ParserConfigurationException | SAXException e) {
+			throw new IOException(e);
+		}
+	}
+	public static Document parseDocument(InputStream is) throws IOException{
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		// disable external entity access
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+		try {
+			return factory.newDocumentBuilder().parse(is);
 		} catch (ParserConfigurationException | SAXException e) {
 			throw new IOException(e);
 		}

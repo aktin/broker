@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 
-public class NodeResource extends ResourceMetadata {
+public class NodeResource extends ResourceMetadataImpl {
 
 	public NodeResource(HttpURLConnection c, String name){
 		super(c, name);
