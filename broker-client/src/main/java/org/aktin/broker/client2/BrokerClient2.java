@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import javax.xml.bind.JAXB;
 
@@ -59,6 +61,10 @@ public class BrokerClient2 implements BrokerClient{
 		this.endpointUri = endpointURI;
 		this.client = HttpClient.newHttpClient();
 		// TODO auth filter
+	}
+
+	public void setAuthFilter(AuthFilter auth) {
+		this.authFilter = auth;
 	}
 //	private final HttpRequest createRequest(String method, String spec, BodyPublisher publisher) throws IOException{
 //		HttpRequest.Builder builder = createRequest(spec);
@@ -328,12 +334,26 @@ public class BrokerClient2 implements BrokerClient{
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 
-	public CompletableFuture<WebSocket> openWebsocket(NotificationListener listener) throws IOException {
+	public WebSocket openWebsocket(NotificationListener listener) throws IOException {
 		WebSocket.Builder wsb = client.newWebSocketBuilder();
 		if( authFilter != null ) {
 			authFilter.addAuthentication(wsb);
 		}
-		return wsb.buildAsync(endpointUri.resolve("my/websocket"), new WebsocketListener(listener));
+		try {
+			URI wsuri = new URI("ws", endpointUri.resolve("my/websocket").getRawSchemeSpecificPart(), null);
+			System.err.println("Websocket target: "+wsuri.toString());
+			return wsb.buildAsync(wsuri, new WebsocketListener(listener)).get();
+		} catch (InterruptedException e ) {
+			throw new IOException("Websocket open operation interrupted", e);
+		} catch( ExecutionException e ) {
+			if( e.getCause() instanceof IOException ) {
+				throw (IOException)e.getCause();
+			}else {
+				throw new IOException("Websocket connection failed",e.getCause());
+			}
+		} catch (URISyntaxException e) {
+			throw new IOException("Synstax error during URI construction",e);
+		}
 	}
 	@Override
 	public BrokerStatus getBrokerStatus() throws IOException {
