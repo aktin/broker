@@ -23,7 +23,7 @@
 				<directory>src/main/resources</directory>
 			</resource>
 			<resource>
-				<directory>target/generated-resources</directory>
+				<directory>target/generated-resources/schemagen</directory>
 			</resource>
 		</resources>
 		<plugins>
