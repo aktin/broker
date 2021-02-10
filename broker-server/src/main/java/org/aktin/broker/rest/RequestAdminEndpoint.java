@@ -355,9 +355,15 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 
 			// update published timestamp
 			db.setRequestPublished(requestId, Instant.now());
-
+			
 			// broadcast to connected websocket clients
-			MyBrokerWebsocket.broadcastRequestPublished(requestId);
+			int[] nodeIds = null;
+			if( info.targeted ) {
+				// notify only selected nodes
+				nodeIds = db.getRequestTargets(requestId);
+			}
+			MyBrokerWebsocket.broadcastRequestPublished(requestId, nodeIds);
+
 			RequestAdminWebsocket.broadcastRequestPublished(requestId);
 		}
 	}
@@ -385,7 +391,12 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 			db.setRequestClosed(requestId, Instant.now());
 
 			// broadcast to connected websocket clients
-			MyBrokerWebsocket.broadcastRequestClosed(requestId);
+			int[] nodeIds = null;
+			if( info.targeted ) {
+				// notify only selected nodes
+				nodeIds = db.getRequestTargets(requestId);
+			}
+			MyBrokerWebsocket.broadcastRequestClosed(requestId, nodeIds);
 		}
 	}
 	@Override

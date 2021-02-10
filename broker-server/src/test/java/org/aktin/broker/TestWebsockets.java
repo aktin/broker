@@ -3,11 +3,12 @@ package org.aktin.broker;
 import java.net.URI;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
 
 import org.aktin.broker.client.AuthFilterImpl;
 import org.aktin.broker.client.BrokerAdmin;
-import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.ClientWebsocket;
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
@@ -68,18 +69,26 @@ public class TestWebsockets extends AbstractTestBroker{
 		server.stop();
 		server.destroy();
 	}
-
+	
 	/**
-	 * Test basic websocket functionality without using the broker-client libraries
+	 * Make sure that request notifications are recieved via websocket using the client library.
+	 * Clients not targeted by the request should not receive notifications.
 	 * @throws Exception unexpected test failure
 	 */
 	@Test
-	public void testClientRequestNotifications() throws Exception{
-		BrokerClient2 c = initializeClient(CLIENT_01_SERIAL);
+	public void clientRequestNotificationsOnlyForTargetedNodes() throws Exception{
+		BrokerClient2 c1 = initializeClient(CLIENT_01_SERIAL);
+		BrokerClient2 c2 = initializeClient(CLIENT_02_SERIAL);
+		// make sure that the clients are known by the broker,
+		// by contacting the broker first
+		c1.listMyRequests();
+		c2.listMyRequests();
+		// initialize async variables
 		AtomicInteger publishedId = new AtomicInteger(-1);
 		AtomicInteger closedId = new AtomicInteger(-1);
-
-		c.openWebsocket(new NotificationListener() {
+		AtomicBoolean thirdPartyNotification = new AtomicBoolean(false);
+		// receive expected notifications
+		c1.openWebsocket(new NotificationListener() {
 			@Override
 			public void onResourceChanged(String resourceName) {}
 			
@@ -93,17 +102,47 @@ public class TestWebsockets extends AbstractTestBroker{
 				closedId.set(requestId);
 			}
 		});
+		// fail with unwanted notifications of third party
+		c2.openWebsocket(new NotificationListener() {
+			@Override
+			public void onResourceChanged(String resourceName) {
+				thirdPartyNotification.set(true);
+			}
+			
+			@Override
+			public void onRequestPublished(int requestId) {
+				thirdPartyNotification.set(true);
+			}
+			
+			@Override
+			public void onRequestClosed(int requestId) {
+				thirdPartyNotification.set(true);
+			}
+		});
 		
 		BrokerAdmin a = initializeAdmin();
 		int qid = a.createRequest("text/x-test-1", "test1");
 		Thread.sleep(300);
 		// make sure the publication was not sent yet
 		Assert.assertEquals(-1, publishedId.get());
+		Assert.assertFalse(thirdPartyNotification.get());
+		// make sure selected node is c1
+		int selectedNode = 0;
+		Assert.assertEquals(CLIENT_01_DN, a.getNode(selectedNode).clientDN);
+		// limit request to only c1
+		a.setRequestTargetNodes(qid, new int[] {selectedNode});
 		// publish request
 		a.publishRequest(qid);
 		Thread.sleep(300);
 		// make sure the publication was broadcast
 		Assert.assertEquals(qid, publishedId.get());
+		Assert.assertEquals(-1, closedId.get());
+		// same with closed id
+		a.closeRequest(qid);
+		Thread.sleep(300);
+		Assert.assertEquals(qid, closedId.get());
+		// make sure that other nodes did not get any notification if the request was not targeted for them
+		Assert.assertFalse(thirdPartyNotification.get());
 		
 	}
 

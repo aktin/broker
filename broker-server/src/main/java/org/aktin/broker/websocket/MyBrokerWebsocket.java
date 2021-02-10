@@ -18,14 +18,27 @@ public class MyBrokerWebsocket extends AbstractBroadcastWebsocket{
 	private static final Logger log = Logger.getLogger(MyBrokerWebsocket.class.getName());
 	/** set of connected sessions, needs to be static and local */ 
 	private static Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
-	
-	public static void broadcastRequestPublished(int requestId){
-		// transmitted to all clients and administrators
-		broadcast(clients, "published "+requestId);
+
+	private static Set<Integer> integerArraySet(int[] values){
+		Set<Integer> nodes = new HashSet<Integer>(values.length);
+		for( int i=0; i<values.length; i++ ) {
+			nodes.add(values[i]);
+		}
+		return nodes;
 	}
-	public static void broadcastRequestClosed(int requestId){
-		// transmitted to all clients and administrators		
-		broadcast(clients, "closed "+requestId);
+	private static void broadcastToSubset(String message, int[] nodeIds) {
+		if( nodeIds == null ) {
+			broadcast(clients, message);
+		}else {
+			final Set<Integer> nodes = integerArraySet(nodeIds);
+			broadcast(clients, message, p -> nodes.contains(p.getNodeId()));
+		}		
+	}
+	public static void broadcastRequestPublished(int requestId, int[] nodeIds){
+		broadcastToSubset("published "+requestId, nodeIds);
+	}
+	public static void broadcastRequestClosed(int requestId, int[] nodeIds){
+		broadcastToSubset("closed "+requestId, nodeIds);
 	}
 
 	public static void broadcastToNode(int nodeId, String message){
@@ -33,9 +46,6 @@ public class MyBrokerWebsocket extends AbstractBroadcastWebsocket{
 		broadcast(clients, message, p -> p.getNodeId() == nodeId);
 	}
 
-	public static void broadcastNodeResourceChange(int nodeId, String resource) {
-		broadcastToNode(nodeId, "resource "+resource);		
-	}
 
 	@Override
 	protected boolean isAuthorized(Principal principal) {
