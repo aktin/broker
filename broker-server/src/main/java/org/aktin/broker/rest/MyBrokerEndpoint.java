@@ -29,7 +29,6 @@ import javax.ws.rs.core.SecurityContext;
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.util.RequestTypeManager;
-import org.aktin.broker.websocket.MyBrokerWebsocket;
 import org.aktin.broker.websocket.RequestAdminWebsocket;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
@@ -67,8 +66,6 @@ public class MyBrokerEndpoint extends AbstractRequestEndpoint{
 		log.info("Resource uploaded by node "+nodeId+": "+resourceId);
 		try {
 			db.updateNodeResource(user.getNodeId(), resourceId, headers.getMediaType(), content);
-			// TODO notify single nde
-			MyBrokerWebsocket.broadcastNodeResourceChange(nodeId, resourceId);
 			RequestAdminWebsocket.broadcastNodeResourceChange(nodeId, resourceId);
 
 		} catch (IOException | SQLException e) {

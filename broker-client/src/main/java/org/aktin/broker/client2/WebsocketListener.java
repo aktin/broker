@@ -34,9 +34,6 @@ public class WebsocketListener implements WebSocket.Listener{
 			case "closed":
 				listener.onRequestClosed(Integer.valueOf(arg));
 				break;
-			case "resource":
-				listener.onResourceChanged(arg);
-				break;
 			default:
 				// ignoring unsupported websocket command
 				// TODO log warning
