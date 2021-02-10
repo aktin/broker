@@ -10,12 +10,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.net.http.HttpResponse.BodySubscriber;
+import java.net.http.HttpResponse.BodySubscribers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -23,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import javax.xml.bind.JAXB;
@@ -73,7 +75,8 @@ public class BrokerClient2 implements BrokerClient{
 	
 	protected HttpRequest.Builder createRequest(String urispec) throws IOException{
 		HttpRequest.Builder builder = HttpRequest.newBuilder();
-		builder.uri(endpointUri.resolve(urispec));
+		URI uri = endpointUri.resolve(urispec);
+		builder.uri(uri).version(Version.HTTP_1_1);
 		if( authFilter != null ) {
 			authFilter.addAuthentication(builder);
 		}
@@ -104,14 +107,15 @@ public class BrokerClient2 implements BrokerClient{
 			return Collections.emptyList();
 		}		
 	}
+	
 	private <T> T sendAndExpectJaxb(HttpRequest req, Class<T> type) throws IOException {
-		HttpResponse<T> resp;
+		HttpResponse<Supplier<T>> resp;
 		try {
 			resp = client.send(req, JaxbBodyHandler.forType(type));
 		} catch (InterruptedException e) {
 			throw new IOException("HTTP connection interrupted",e);
 		}
-		return resp.body();
+		return resp.body().get();
 	}
 	private void sendAndExpectStatus(HttpRequest req, int expectedStatus) throws IOException {
 		int responseCode;
