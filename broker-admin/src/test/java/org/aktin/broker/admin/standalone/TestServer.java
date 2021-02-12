@@ -18,7 +18,7 @@ import org.aktin.broker.auth.CascadedAuthProvider;
 import org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider;
 import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
 import org.aktin.broker.auth.openid.OpenIdAuthProvider;
-import org.aktin.broker.client.BrokerAdmin;
+import org.aktin.broker.client.BrokerAdminImpl;
 import org.aktin.broker.client.BrokerClientImpl;
 import org.aktin.broker.client.auth.HttpApiKeyAuth;
 import org.aktin.broker.server.auth.AuthProvider;
@@ -154,7 +154,7 @@ public class TestServer implements Configuration{
 		// get authentication token
 		String authToken = retrieveAdminAuthToken();
 		System.out.println("Retrieved token for admin authentication: "+authToken);
-		BrokerAdmin admin = new BrokerAdmin(http.getBrokerServiceURI());
+		BrokerAdminImpl admin = new BrokerAdminImpl(http.getBrokerServiceURI());
 		admin.setClientAuthenticator(HttpApiKeyAuth.newBearer(authToken));
 		
 		if( admin.listAllRequests().isEmpty() ) {

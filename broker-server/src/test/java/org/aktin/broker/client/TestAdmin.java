@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 
 import org.aktin.broker.util.AuthFilterSSLHeaders;
 
-public class TestAdmin extends BrokerAdmin{
+public class TestAdmin extends BrokerAdminImpl{
 
 	private String certId;
 	private String clientDn;
