@@ -17,8 +17,6 @@ import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.net.http.HttpResponse.BodySubscriber;
-import java.net.http.HttpResponse.BodySubscribers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -43,44 +41,11 @@ import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Document;
 
 
-public class BrokerClient2 implements BrokerClient{
-	private URI endpointUri;
-	private HttpClient client;
-	private Charset defaultCharset;
-	private AuthFilter authFilter;
-
-	private static final int HTTP_STATUS_204_NO_CONTENT = 204;
-	
-	protected URI getQueryBaseURI() {
-		return resolveBrokerURI("my/request/");
-	}
-	protected URI resolveBrokerURI(String spec){
-		return endpointUri.resolve(spec);
-	}
+public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 
 	public BrokerClient2(URI endpointURI) {
-		this.defaultCharset = StandardCharsets.UTF_8;
-		this.endpointUri = endpointURI;
-		this.client = HttpClient.newHttpClient();
-		// TODO auth filter
-	}
-
-	public void setAuthFilter(AuthFilter auth) {
-		this.authFilter = auth;
-	}
-//	private final HttpRequest createRequest(String method, String spec, BodyPublisher publisher) throws IOException{
-//		HttpRequest.Builder builder = createRequest(spec);
-//		return builder.method(method, publisher).build();
-//	}
-	
-	protected HttpRequest.Builder createRequest(String urispec) throws IOException{
-		HttpRequest.Builder builder = HttpRequest.newBuilder();
-		URI uri = endpointUri.resolve(urispec);
-		builder.uri(uri).version(Version.HTTP_1_1);
-		if( authFilter != null ) {
-			authFilter.addAuthentication(builder);
-		}
-		return builder;
+		super();
+		setEndpoint(endpointURI);
 	}
 //	// aggregator functions
 //	private void putResource(String urispec, String contentType, OutputWriter writer) throws IOException{
@@ -131,7 +96,7 @@ public class BrokerClient2 implements BrokerClient{
 
 	@Override
 	public List<RequestInfo> listMyRequests() throws IOException{
-		HttpRequest req = createRequest("my/request").GET().build();
+		HttpRequest req = createBrokerRequest("my/request").GET().build();
 		RequestList resp = sendAndExpectJaxb(req, RequestList.class);
 		return postprocessRequestList(resp);
 	}
@@ -143,17 +108,17 @@ public class BrokerClient2 implements BrokerClient{
 	}
 	@Override
 	public RequestInfo getRequestInfo(int id) throws IOException {
-		HttpRequest req = createRequest("my/request/"+id).method("OPTIONS", BodyPublishers.noBody()).build();
+		HttpRequest req = createBrokerRequest("my/request/"+id).method("OPTIONS", BodyPublishers.noBody()).build();
 		return sendAndExpectJaxb(req, RequestInfo.class);
 	}
 	@Override
 	public void deleteMyRequest(int id) throws IOException {
-		HttpRequest req = createRequest("my/request/"+id).DELETE().build();
+		HttpRequest req = createBrokerRequest("my/request/"+id).DELETE().build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 
 	private HttpRequest createRequestForRequest(int id, String mediaType) throws IOException{
-		HttpRequest.Builder rb = createRequest("my/request/"+id).GET();
+		HttpRequest.Builder rb = createBrokerRequest("my/request/"+id).GET();
 		if( mediaType != null ) {
 			rb.header("Accept", mediaType);
 		}
@@ -162,7 +127,10 @@ public class BrokerClient2 implements BrokerClient{
 	@Override
 	public Reader getMyRequestDefinitionReader(int id, String mediaType) throws IOException {
 		HttpResponse<InputStream> resp = getMyRequestDefinition(id, mediaType, BodyHandlers.ofInputStream());
-		// TODO check response status, e.g. 404 or 406
+		// check response status, e.g. 404 or 406
+		if( resp.statusCode() == 404 ) {
+			return null;
+		}
 		String contentType = resp.headers().firstValue("Content-Type").orElse(null);
 		return Utils.contentReaderForInputStream(resp.body(), contentType, defaultCharset);
 	}
@@ -174,6 +142,9 @@ public class BrokerClient2 implements BrokerClient{
 	@Override
 	public Document getMyRequestDefinitionXml(int id, String mediaType) throws IOException {
 		HttpResponse<InputStream> resp = getMyRequestDefinition(id, mediaType, BodyHandlers.ofInputStream());
+		if( resp.statusCode() == 404 ) {
+			return null;
+		}
 		return Util.parseDocument(resp.body());
 	}
 	
@@ -187,12 +158,16 @@ public class BrokerClient2 implements BrokerClient{
 	}
 	@Override
 	public String getMyRequestDefinitionString(int id, String mediaType) throws IOException {
-		return getMyRequestDefinition(id, mediaType, BodyHandlers.ofString()).body();
+		HttpResponse<String> resp = getMyRequestDefinition(id, mediaType, BodyHandlers.ofString());
+		if( resp.statusCode() == 404 ) {
+			return null;
+		}
+		return resp.body();
 	}
 
 	@Override
 	public Node getMyNode() throws IOException{
-		HttpRequest req = createRequest("my/node").GET().build();
+		HttpRequest req = createBrokerRequest("my/node").GET().build();
 		return sendAndExpectJaxb(req, Node.class);
 	}
 	private static <T> Supplier<T> singleSupplier(T item){
@@ -255,7 +230,7 @@ public class BrokerClient2 implements BrokerClient{
 		return props;
 	}
 	private HttpRequest.Builder createRequestForNodeResource(String name)throws IOException{
-		return createRequest("my/node/"+URLEncoder.encode(name, StandardCharsets.UTF_8));
+		return createBrokerRequest("my/node/"+URLEncoder.encode(name, StandardCharsets.UTF_8));
 	}
 	protected static ResourceMetadata wrapResource(HttpResponse<InputStream> resp, String name) throws IOException{
 		if( resp.statusCode() == 404 ){
@@ -272,13 +247,13 @@ public class BrokerClient2 implements BrokerClient{
 	@Override
 	public void putMyResource(String name, String contentType, String content) throws IOException{
 		HttpRequest req = createRequestForNodeResource(name)
-				.header("Content-Type", contentType+"; charset=UTF-8")
+				.header(CONTENT_TYPE_HEADER, contentType+"; charset=UTF-8")
 				.PUT(BodyPublishers.ofString(content)).build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);		
 	}
 	@Override
 	public void deleteMyResource(String name) throws IOException {
-		HttpRequest req = createRequest("my/request").DELETE().build();
+		HttpRequest req = createRequestForNodeResource(name).DELETE().build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 
@@ -288,12 +263,18 @@ public class BrokerClient2 implements BrokerClient{
 	}
 	@Override
 	public void putRequestResult(int requestId, String contentType, InputStream content) throws IOException {
-		HttpRequest req = createRequest("my/request").PUT(BodyPublishers.ofInputStream( () -> content )).build();
+		HttpRequest req = createAggregatorRequest("my/request/"+requestId+"/result")
+				.header(CONTENT_TYPE_HEADER, contentType)
+				.PUT(BodyPublishers.ofInputStream( () -> content ))
+				.build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);		
 	}
 	@Override
 	public void putRequestResult(int requestId, String contentType, String content) throws IOException {
-		HttpRequest req = createRequest("my/request").PUT(BodyPublishers.ofString(content, StandardCharsets.UTF_8)).build();
+		HttpRequest req = createAggregatorRequest("my/request/"+requestId+"/result")
+				.header(CONTENT_TYPE_HEADER, contentType)
+				.PUT(BodyPublishers.ofString(content, StandardCharsets.UTF_8))
+				.build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 	@Override
@@ -323,7 +304,7 @@ public class BrokerClient2 implements BrokerClient{
 	}
 	@Override
 	public void postRequestStatus(int requestId, RequestStatus status, Instant date, String description) throws IOException{
-		HttpRequest.Builder rb = createRequest("my/request/"+requestId+"/status/"+status.name());
+		HttpRequest.Builder rb = createBrokerRequest("my/request/"+requestId+"/status/"+status.name());
 		if( date != null ) {
 			rb.header("Date", Util.formatHttpDate(date));			
 		}
@@ -339,29 +320,11 @@ public class BrokerClient2 implements BrokerClient{
 	}
 
 	public WebSocket openWebsocket(NotificationListener listener) throws IOException {
-		WebSocket.Builder wsb = client.newWebSocketBuilder();
-		if( authFilter != null ) {
-			authFilter.addAuthentication(wsb);
-		}
-		try {
-			URI wsuri = new URI("ws", endpointUri.resolve("my/websocket").getRawSchemeSpecificPart(), null);
-			System.err.println("Websocket target: "+wsuri.toString());
-			return wsb.buildAsync(wsuri, new WebsocketListener(listener)).get();
-		} catch (InterruptedException e ) {
-			throw new IOException("Websocket open operation interrupted", e);
-		} catch( ExecutionException e ) {
-			if( e.getCause() instanceof IOException ) {
-				throw (IOException)e.getCause();
-			}else {
-				throw new IOException("Websocket connection failed",e.getCause());
-			}
-		} catch (URISyntaxException e) {
-			throw new IOException("Synstax error during URI construction",e);
-		}
+		return super.openWebsocket("my/websocket", new WebsocketListener(listener));
 	}
 	@Override
 	public BrokerStatus getBrokerStatus() throws IOException {
-		HttpRequest req = createRequest("status").GET().build();
+		HttpRequest req = createBrokerRequest("status").GET().build();
 		return sendAndExpectJaxb(req, BrokerStatus.class);
 	}
 

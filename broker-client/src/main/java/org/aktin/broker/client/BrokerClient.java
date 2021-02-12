@@ -3,6 +3,7 @@ package org.aktin.broker.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,20 @@ import org.aktin.broker.xml.RequestStatus;
 import org.w3c.dom.Document;
 
 public interface BrokerClient {
+
+	public void setAggregatorEndpoint(URI uri);
+	/**
+	 * Set the endpoint URI. This method will be called automatically 
+	 * from the constructor. If using a different constructor,
+	 * make sure that the endpoint URI is set before any client method is
+	 * called.
+	 * Setting the endpoint will automatically call {@link #setAggregatorEndpoint(URI)}
+	 * to set the aggregator endpoint accordingly. If a different aggregator endpoint should
+	 * be used, call {@link #setAggregatorEndpoint(URI)} manually after this method.
+	 * 
+	 * @param endpointURI endpoint URI
+	 */
+	public void setEndpoint(URI endpointURI);
 
 	/**
 	 * Retrieve status information about the broker.

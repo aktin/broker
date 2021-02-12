@@ -15,7 +15,10 @@ import java.util.Random;
 
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
+import org.aktin.broker.client2.AuthFilter;
+import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.db.BrokerImpl;
+import org.aktin.broker.client.AuthFilterImpl;
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.NodeResource;
@@ -41,17 +44,35 @@ public class TestBroker extends AbstractTestBroker {
 	private static final String ADMIN_00_DN = "CN=Test Adm,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
 	private static final String ADMIN_00_SERIAL = "00";
 
+
 	@Override
-	public BrokerClient initializeClient(String arg) {
+	public BrokerClient2 initializeClient(String arg) {
+		AuthFilter auth;
 		switch( arg ) {
 		case CLIENT_01_SERIAL:
-			return new TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+			 auth = new AuthFilterImpl(CLIENT_01_SERIAL, CLIENT_01_DN);
+			 break;
 		case CLIENT_02_SERIAL:
-			return new TestClient(server.getBrokerServiceURI(), CLIENT_02_SERIAL, CLIENT_02_DN);
+			 auth = new AuthFilterImpl(CLIENT_02_SERIAL, CLIENT_02_DN);
+			 break;
 		default:
 			throw new IllegalArgumentException();
 		}
+		BrokerClient2 c = new BrokerClient2(server.getBrokerServiceURI());
+		c.setAuthFilter(auth);
+		return c;
 	}
+//	@Override
+//	public BrokerClient initializeClient(String arg) {
+//		switch( arg ) {
+//		case CLIENT_01_SERIAL:
+//			return new TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+//		case CLIENT_02_SERIAL:
+//			return new TestClient(server.getBrokerServiceURI(), CLIENT_02_SERIAL, CLIENT_02_DN);
+//		default:
+//			throw new IllegalArgumentException();
+//		}
+//	}
 
 	@Override
 	public BrokerAdmin initializeAdmin() {
@@ -64,7 +85,7 @@ public class TestBroker extends AbstractTestBroker {
 		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen";
 		String testId = "01";
 		TestClient c = new  TestClient(server.getBrokerServiceURI(), testId, testCn);
-		TestAdmin a = new  TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin a = initializeAdmin();
 		c.postSoftwareVersions(Collections.singletonMap("TEST", "test1"));
 		Properties m = a.getNodeProperties(0, "versions");
 		System.out.println(m);
@@ -107,9 +128,7 @@ public class TestBroker extends AbstractTestBroker {
 	}
 	@Test
 	public void testAddDeleteQuery() throws IOException{
-		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen,OU=admin";
-		String testId = "01";
-		TestAdmin c = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		BrokerAdmin c = initializeAdmin();
 		// assume list is empty
 		List<RequestInfo> l = c.listAllRequests();
 		Assert.assertTrue(l.isEmpty());
@@ -131,7 +150,7 @@ public class TestBroker extends AbstractTestBroker {
 	public void testQueryCharsetConversion() throws IOException{
 		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen,OU=admin";
 		String testId = "01";
-		TestAdmin c = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
+		BrokerAdmin c = new  TestAdmin(server.getBrokerServiceURI(), testId, testCn);
 		// assume list is empty
 		List<RequestInfo> l = c.listAllRequests();
 		Assert.assertTrue(l.isEmpty());
@@ -154,10 +173,9 @@ public class TestBroker extends AbstractTestBroker {
 	public void expect404ForNonExistentRequests() throws IOException{
 		BrokerAdmin a = initializeAdmin();
 		assertNull(a.getRequestDefinition(0, "text/plain"));
-		BrokerClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		assertNull(c.getMyRequestDefinitionString(0, "text/plain"));
 		assertNull(c.getMyRequestDefinitionXml(0, "text/plain"));
-		assertNull(c.getMyRequestDefinitionLines(0, "text/plain"));
 	}
 	@Test
 	public void reportAndReadRequestStatus() throws IOException{
@@ -329,7 +347,7 @@ public class TestBroker extends AbstractTestBroker {
 		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
 		// submit result with aggregatorClient
@@ -347,7 +365,7 @@ public class TestBroker extends AbstractTestBroker {
 		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
 
-		TestClient c = new  TestClient(server.getBrokerServiceURI(), CLIENT_01_SERIAL, CLIENT_01_DN);
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		List<RequestInfo> l = c.listMyRequests();
 		Assert.assertEquals(1, l.size());
 		// we should have a timestamp for last contact of the client
