@@ -8,8 +8,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
@@ -50,9 +52,12 @@ public class AggregatorEndpoint {
 	@Authenticated
 	@PUT
 	@Path("my/request/{id}/result")
-	public void submitResult(@PathParam("id") String requestId, @Context HttpHeaders headers, @Context SecurityContext sec, InputStream content) throws URISyntaxException{
+	public void submitResult(@PathParam("id") String requestId, @HeaderParam("Content-type") MediaType type, @Context SecurityContext sec, InputStream content) throws URISyntaxException{
 		Principal user = (Principal)sec.getUserPrincipal();
-		MediaType type = headers.getMediaType();
+//		MediaType type = headers.getMediaType();
+		if( type == null ) {
+			throw new BadRequestException("required Content-type header missing");
+		}
 		int nodeId = user.getNodeId();
 		log.info("Result received from node "+nodeId+": "+type.toString());
 		int request = Integer.parseInt(requestId);
