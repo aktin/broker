@@ -24,7 +24,7 @@ import javax.xml.transform.TransformerException;
 
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClientImpl.OutputWriter;
-import org.aktin.broker.client.ResourceMetadata;
+import org.aktin.broker.client.ResponseWithMetadata;
 import org.aktin.broker.xml.NodeList;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
@@ -96,7 +96,7 @@ public class BrokerAdmin2 extends AbstractBrokerClient implements BrokerAdmin{
 	}
 
 	@Override
-	public ResourceMetadata getNodeResource(int nodeId, String resourceId) throws IOException {
+	public ResponseWithMetadata getNodeResource(int nodeId, String resourceId) throws IOException {
 		HttpResponse<InputStream> resp = getNodeResourceResponse(nodeId, resourceId, BodyHandlers.ofInputStream());
 		return wrapResource(resp, resourceId);
 	}
@@ -282,19 +282,22 @@ public class BrokerAdmin2 extends AbstractBrokerClient implements BrokerAdmin{
 	}
 
 	@Override
-	public String getResultString(int requestId, int nodeId, String acceptMediaType) throws IOException {
-		return getResult(requestId, nodeId, acceptMediaType, BodyHandlers.ofString()).body();
+	public String getResultString(int requestId, int nodeId) throws IOException {
+		return getResult(requestId, nodeId, BodyHandlers.ofString()).body();
 	}
-	public <T> HttpResponse<T> getResult(int requestId, int nodeId, String acceptMediaType, BodyHandler<T> handler) throws IOException {
+	public <T> HttpResponse<T> getResult(int requestId, int nodeId, BodyHandler<T> handler) throws IOException {
 		HttpRequest.Builder rb = createAggregatorRequest("request/"+requestId+"/result/"+nodeId).GET();
-		if( acceptMediaType != null ) {
-			rb.header(ACCEPT_HEADER, acceptMediaType);
-		}
 		try {
 			return client.send(rb.build(), handler);
 		} catch (InterruptedException e) {
 			throw new IOException(e);
 		}
+	}
+
+	@Override
+	public ResponseWithMetadata getResult(int requestId, int nodeId) throws IOException {
+		HttpResponse<InputStream> resp = getResult(requestId, nodeId, BodyHandlers.ofInputStream());
+		return wrapResource(resp, requestId+"_result_"+nodeId);
 	}
 
 	@Override

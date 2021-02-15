@@ -5,7 +5,7 @@
 // to the resolved url.
 
 function resolveIndirectDownload(url, success){
-	$.get({
+	$.post({
 		url: url,
 		dataType: 'text',
 		success: function(data){

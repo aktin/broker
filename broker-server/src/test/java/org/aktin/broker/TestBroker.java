@@ -3,7 +3,9 @@ package org.aktin.broker;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Arrays;
@@ -15,6 +17,7 @@ import java.util.Random;
 
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
+import org.aktin.broker.client.Utils;
 import org.aktin.broker.client2.AuthFilter;
 import org.aktin.broker.client2.BrokerAdmin2;
 import org.aktin.broker.client2.BrokerClient2;
@@ -22,7 +25,7 @@ import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.client.AuthFilterImpl;
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClient;
-import org.aktin.broker.client.ResourceMetadata;
+import org.aktin.broker.client.ResponseWithMetadata;
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
@@ -360,7 +363,15 @@ public class TestBroker extends AbstractTestBroker {
 		List<ResultInfo> r = a.listResults(l.get(0).getId());
 		Assert.assertEquals(1, r.size());
 		Assert.assertEquals("test/vnd.test.result", r.get(0).type);
-		System.err.println("Result: "+a.getResultString(l.get(0).getId(), r.get(0).node, null));
+		Assert.assertEquals("test-result-data", a.getResultString(l.get(0).getId(), r.get(0).node));
+		// verify getResult method
+		ResponseWithMetadata data = a.getResult(l.get(0).getId(), r.get(0).node);
+		Assert.assertEquals("test/vnd.test.result", data.getContentType());
+		Assert.assertNotEquals(0, data.getLastModified());
+		try( InputStream in = data.getInputStream() ){
+			String line = Utils.contentReaderForInputStream(in, null, StandardCharsets.UTF_8).readLine();
+			Assert.assertEquals("test-result-data", line);
+		}
 
 		a.deleteRequest(qid);
 		Assert.assertTrue( c.listMyRequests().isEmpty() );
@@ -408,7 +419,7 @@ public class TestBroker extends AbstractTestBroker {
 		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		c.putMyResource("stats", "text/plain", "123");
 		assertEquals("123", a.getNodeString(0, "stats"));
-		ResourceMetadata r = a.getNodeResource(0, "stats");
+		ResponseWithMetadata r = a.getNodeResource(0, "stats");
 		assertEquals("202cb962ac59075b964b07152d234b70", r.getMD5String());
 		assertNotEquals(0,r.getLastModified());
 		

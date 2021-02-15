@@ -108,7 +108,7 @@ function init(){
 					$('#results').remove();
 				}else list.each(function(){
 					var node_id = $(this).find('node').text();
-					$('#results tbody').append('<tr data-node-id="'+node_id+'"><td>'+node_id+'</td><td><a class="indirectDownload" data-url="/aggregator/request/'+id+'/result/'+node_id+'" href="about:blank">'+$(this).find('type').text()+'</a></td></tr>');
+					$('#results tbody').append('<tr data-node-id="'+node_id+'"><td>'+node_id+'</td><td><a class="indirectDownload" data-url="/aggregator/request/'+id+'/result/'+node_id+'/download" href="about:blank">'+$(this).find('type').text()+'</a></td></tr>');
 				});
 			}
 		}).catch(function(){return $.Deferred().resolve({}).promise();})

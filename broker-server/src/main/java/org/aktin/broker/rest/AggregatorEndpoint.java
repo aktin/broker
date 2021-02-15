@@ -3,6 +3,7 @@ package org.aktin.broker.rest;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,12 +15,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -30,6 +31,8 @@ import org.aktin.broker.download.Download;
 import org.aktin.broker.download.DownloadManager;
 import org.aktin.broker.download.RequestBundleExport;
 import org.aktin.broker.server.DateDataSource;
+import org.aktin.broker.util.FileStreamingResponse;
+import org.aktin.broker.util.PathDataSource;
 import org.aktin.broker.websocket.RequestAdminWebsocket;
 import org.aktin.broker.xml.ResultInfo;
 import org.aktin.broker.xml.ResultList;
@@ -94,18 +97,11 @@ public class AggregatorEndpoint {
 		return new ResultList(results);
 	}
 
-	// TODO return StreamingOutput and stream the file directly. To create a download, change method to POST .../download
-	@Authenticated
-	@RequireAdmin
-	@GET
-	@Produces(MediaType.TEXT_PLAIN)
-	@Path("request/{id}/result/{nodeId}")
-	public String listResultsForRequest(@PathParam("id") String requestId, @PathParam("nodeId") String nodeId){
-		int request = Integer.parseInt(requestId);
-		int node = Integer.parseInt(nodeId);
+
+	private DateDataSource getResultForNode(int requestId, int nodeId) throws InternalServerErrorException, NotFoundException{
 		DateDataSource data;
 		try {
-			data = db.getResult(request, node);
+			data = db.getResult(requestId, nodeId);
 		} catch (SQLException e) {
 			log.log(Level.SEVERE, "Unable to retrieve data", e);
 			throw new InternalServerErrorException(e);
@@ -114,13 +110,52 @@ public class AggregatorEndpoint {
 			// no data for this request/node combination
 			throw new NotFoundException();
 		}else{
-			String ext = RequestBundleExport.guessFileExtension(data.getContentType());
-			if( ext == null ) {
-				ext = "";
-			}
-			Download download = downloads.createDataSourceDownload(data, requestId+"_result_"+nodeId+ext);
-			return download.getId().toString();
+			return data;
 		}
+	}
+	/**
+	 * Create a download id to download the result uploaded for the request id and node id.
+	 * @param requestId request id of the desired result
+	 * @param nodeId node id of the desired result
+	 * @return download id to be used with the download endpoint
+	 */
+	@Authenticated
+	@RequireAdmin
+	@POST
+	@Produces(MediaType.TEXT_PLAIN)
+	@Path("request/{id}/result/{nodeId}/download")
+	public String createResultNodeDownload(@PathParam("id") int requestId, @PathParam("nodeId") int nodeId){
+		DateDataSource data = getResultForNode(requestId, nodeId);
+		String ext = RequestBundleExport.guessFileExtension(data.getContentType());
+		if( ext == null ) {
+			ext = "";
+		}
+		Download download = downloads.createDataSourceDownload(data, requestId+"_result_"+nodeId+ext);
+		return download.getId().toString();
+	}
+
+	/**
+	 * Create a download id to download the result uploaded for the request id and node id.
+	 * @param requestId request id of the desired result
+	 * @param nodeId node id of the desired result
+	 * @return download id to be used with the download endpoint
+	 */
+	@Authenticated
+	@RequireAdmin
+	@GET
+	@Path("request/{id}/result/{nodeId}")
+	public Response getResultNodeDataStream(@PathParam("id") int requestId, @PathParam("nodeId") int nodeId){
+		DateDataSource data = getResultForNode(requestId, nodeId);
+		// this should be changed later to use the interface e.g. passing the path via interface
+		if( !(data instanceof PathDataSource) ) {
+			throw new InternalServerErrorException("Unexpected interface for result data source");
+		}
+		PathDataSource path = (PathDataSource)data;
+
+		return Response.ok(new FileStreamingResponse(path.getPath()), data.getContentType())
+			.lastModified(Date.from(data.getLastModified()))
+			.header("Content-length", data.getContentLength())
+			.build();
 	}
 
 }

@@ -3,7 +3,7 @@ package org.aktin.broker.client;
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface ResourceMetadata {
+public interface ResponseWithMetadata {
 
 	long getLastModified();
 

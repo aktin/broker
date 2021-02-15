@@ -32,7 +32,7 @@ public interface BrokerAdmin {
 	Reader getRequestNodeMessage(int requestId, int nodeId) throws IOException;
 
 	// TODO also return media type, e.g. via Datasource wrapping HttpURLConnection
-	ResourceMetadata getNodeResource(int nodeId, String resourceId) throws IOException;
+	ResponseWithMetadata getNodeResource(int nodeId, String resourceId) throws IOException;
 
 	<T> T getNodeResourceJAXB(int nodeId, String resourceId, Class<T> type) throws IOException;
 
@@ -98,8 +98,8 @@ public interface BrokerAdmin {
 	// TODO ResultInfo getResultInfo(int requestId, String nodeId)
 
 
-	String getResultString(int requestId, int nodeId, String acceptMediaType) throws IOException;
-//	TODO add ResourceMetadata getResult(int requestId, int nodeId, String acceptMediaType) throws IOException;
+	String getResultString(int requestId, int nodeId) throws IOException;
+	ResponseWithMetadata getResult(int requestId, int nodeId) throws IOException;
 
 	int[] getRequestTargetNodes(int requestId) throws IOException;
 

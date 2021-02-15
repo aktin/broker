@@ -8,7 +8,7 @@ import java.util.Base64;
 
 import javax.activation.DataSource;
 
-public class ResourceMetadataImpl implements DataSource, ResourceMetadata{
+public class ResourceMetadataImpl implements DataSource, ResponseWithMetadata{
 	protected HttpURLConnection c;
 	protected String name;
 

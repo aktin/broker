@@ -22,7 +22,7 @@ import java.util.Properties;
 
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.BrokerClientImpl.OutputWriter;
-import org.aktin.broker.client.ResourceMetadata;
+import org.aktin.broker.client.ResponseWithMetadata;
 import org.aktin.broker.client.Utils;
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;
@@ -172,7 +172,7 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 		return createBrokerRequest("my/node/"+URLEncoder.encode(name, StandardCharsets.UTF_8));
 	}
 	@Override
-	public ResourceMetadata getMyResource(String name) throws IOException{
+	public ResponseWithMetadata getMyResource(String name) throws IOException{
 		return wrapResource(getMyResource(name, BodyHandlers.ofInputStream()), name);
 	}
 	@Override

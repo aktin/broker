@@ -105,7 +105,7 @@ public interface BrokerClient {
 
 	Properties getMyResourceProperties(String name) throws IOException;
 
-	ResourceMetadata getMyResource(String name) throws IOException;
+	ResponseWithMetadata getMyResource(String name) throws IOException;
 
 	void putMyResource(String name, String contentType, String content) throws IOException;
 

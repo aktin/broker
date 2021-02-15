@@ -22,7 +22,6 @@ import javax.inject.Singleton;
 import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
 
-import org.aktin.broker.server.DateDataSource;
 import org.aktin.broker.util.PathDataSource;
 import org.aktin.broker.xml.ResultInfo;
 
@@ -124,15 +123,15 @@ public class AggregatorImpl implements AggregatorBackend {
 	 * @see org.aktin.broker.db.AggregatorBackend#getResult(int, int)
 	 */
 	@Override
-	public DateDataSource getResult(int requestId, int nodeId) throws SQLException{
-		DateDataSource data;
+	public PathDataSource getResult(int requestId, int nodeId) throws SQLException{
+		PathDataSource data;
 		try( Connection dbc = ds.getConnection(); 
 				Statement st = dbc.createStatement() ){
 			// find is result is already present
 			ResultSet rs = st.executeQuery("SELECT media_type, last_modified, data_file FROM request_node_results WHERE request_id="+requestId+" AND node_id="+nodeId);
 			if( rs.next() ){
 				Timestamp ts = rs.getTimestamp(2);
-				data = new PathDataSource(dataDir.resolve(rs.getString(3)), rs.getString(1), (ts==null)?null:ts.toInstant());
+				data = new PathDataSource(dataDir.resolve(rs.getString(3)), rs.getString(1), ts.toInstant());
 			}else{
 				data = null;
 			}

@@ -3,7 +3,7 @@ package org.aktin.broker.rest;
 import java.io.IOException;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -33,7 +33,7 @@ public class ExportEndpoint {
 
 		@Authenticated
 		@RequireAdmin
-		@GET
+		@POST
 		@Path("request-bundle/{id}")
 		@Produces(MediaType.TEXT_PLAIN)
 		public String downloadBundle(@PathParam("id") int requestId) throws IOException, JAXBException {

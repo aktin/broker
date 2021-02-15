@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 
 import javax.xml.bind.JAXB;
 
-import org.aktin.broker.client.ResourceMetadata;
+import org.aktin.broker.client.ResponseWithMetadata;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 
@@ -72,7 +72,7 @@ public abstract class AbstractBrokerClient {
 //		return builder.method(method, publisher).build();
 //	}
 
-	protected static ResourceMetadata wrapResource(HttpResponse<InputStream> resp, String name) throws IOException{
+	protected static ResponseWithMetadata wrapResource(HttpResponse<InputStream> resp, String name) throws IOException{
 		if( resp.statusCode() == 404 ){
 			return null;
 		}else if( resp.statusCode() != 200 ){

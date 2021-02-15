@@ -63,13 +63,13 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	}
 	// TODO also return media type, e.g. via Datasource wrapping HttpURLConnection
 	@Override
-	public ResourceMetadata getNodeResource(int nodeId, String resourceId) throws IOException{
+	public ResponseWithMetadata getNodeResource(int nodeId, String resourceId) throws IOException{
 		HttpURLConnection c = openConnection("GET", "node/"+nodeId+"/"+URLEncoder.encode(resourceId,"UTF-8"));
 		return wrapResource(c, resourceId);
 	}
 	@Override
 	public <T> T getNodeResourceJAXB(int nodeId, String resourceId, Class<T> type) throws IOException{
-		ResourceMetadata r = getNodeResource(nodeId, resourceId);
+		ResponseWithMetadata r = getNodeResource(nodeId, resourceId);
 		try( InputStream in = r.getInputStream() ){
 			// TODO verify content type xml
 			return JAXB.unmarshal(in, type);
@@ -78,7 +78,7 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	@Override
 	public Properties getNodeProperties(int nodeId, String resourceId) throws IOException{
 		Properties props;
-		ResourceMetadata r = getNodeResource(nodeId, resourceId);
+		ResponseWithMetadata r = getNodeResource(nodeId, resourceId);
 		try( InputStream in = r.getInputStream() ){
 			props = new Properties();
 			props.loadFromXML(in);
@@ -87,7 +87,7 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	}
 	@Override
 	public String getNodeString(int nodeId, String resourceId) throws IOException{
-		ResourceMetadata r = getNodeResource(nodeId, resourceId);
+		ResponseWithMetadata r = getNodeResource(nodeId, resourceId);
 		// TODO parse and use charset from concent type
 		try( Reader reader = new InputStreamReader(r.getInputStream()) ){
 			return Util.readContent(reader);
@@ -274,11 +274,8 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 		}
 	}
 
-	private <T> T getResult(int requestId, int nodeId, String acceptMediaType, Function<DataSource,T> unmarshaller) throws IOException{
+	private <T> T getResult(int requestId, int nodeId, Function<DataSource,T> unmarshaller) throws IOException{
 		HttpURLConnection c = openConnection("GET", resolveAggregatorURI("request/"+requestId+"/result/"+nodeId));
-		if( acceptMediaType != null ){
-			c.setRequestProperty("Accept", acceptMediaType);
-		}
 		if( c.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND ){
 			return null;
 		}
@@ -292,9 +289,9 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	}
 
 	@Override
-	public String getResultString(int requestId, int nodeId, String acceptMediaType) throws IOException{
+	public String getResultString(int requestId, int nodeId) throws IOException{
 		// TODO can we use Function in Java7?
-		return getResult(requestId, nodeId, acceptMediaType, new Function<DataSource, String>() {
+		return getResult(requestId, nodeId, new Function<DataSource, String>() {
 
 			@Override
 			public String apply(DataSource ds) {
@@ -347,5 +344,9 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 		HttpURLConnection c = openConnection("DELETE", uri.resolve(uri.getPath()+"/nodes"));
 		c.setDoOutput(false);
 		c.getInputStream().close();		
+	}
+	@Override
+	public ResponseWithMetadata getResult(int requestId, int nodeId) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 }

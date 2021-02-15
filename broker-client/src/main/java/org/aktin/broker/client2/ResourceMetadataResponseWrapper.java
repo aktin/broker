@@ -8,10 +8,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Optional;
 
-import org.aktin.broker.client.ResourceMetadata;
+import org.aktin.broker.client.ResponseWithMetadata;
 import org.aktin.broker.client.Utils;
 
-public class ResourceMetadataResponseWrapper implements ResourceMetadata {
+public class ResourceMetadataResponseWrapper implements ResponseWithMetadata {
 	private String name;
 	private HttpResponse<InputStream> resp;
 
