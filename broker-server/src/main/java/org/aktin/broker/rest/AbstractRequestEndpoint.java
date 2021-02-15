@@ -6,11 +6,10 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Variant;
-
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.util.RequestConverter;
 import org.aktin.broker.util.RequestTypeManager;
@@ -31,7 +30,7 @@ public abstract class AbstractRequestEndpoint {
 		return new MediaType(type.getType(), type.getSubtype());
 	}
 
-	protected Response getRequest(int requestId, List<MediaType> accept) throws SQLException, IOException, NotFoundException{
+	protected Response getRequest(int requestId, List<MediaType> accept) throws SQLException, IOException, NotFoundException, NotAcceptableException{
 		MediaType[] available = getTypeManager().createMediaTypes(getBroker().getRequestTypes(requestId));
 		if( available.length == 0 ){
 			throw new NotFoundException();
@@ -41,7 +40,8 @@ public abstract class AbstractRequestEndpoint {
 	
 		if( rc == null ){
 			// no acceptable response type available
-			return Response.notAcceptable(Variant.mediaTypes(available).build()).build();			
+			throw new NotAcceptableException();
+			// could also return Response.notAcceptable(Variant.mediaTypes(available).build()).build();
 		}else{
 			Reader def = getBroker().getRequestDefinition(requestId, rc.getConsumedType());
 			// transform

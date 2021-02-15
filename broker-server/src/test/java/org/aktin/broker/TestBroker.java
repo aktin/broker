@@ -16,12 +16,13 @@ import java.util.Random;
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
 import org.aktin.broker.client2.AuthFilter;
+import org.aktin.broker.client2.BrokerAdmin2;
 import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.db.BrokerImpl;
 import org.aktin.broker.client.AuthFilterImpl;
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClient;
-import org.aktin.broker.client.NodeResource;
+import org.aktin.broker.client.ResourceMetadata;
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
@@ -76,7 +77,10 @@ public class TestBroker extends AbstractTestBroker {
 
 	@Override
 	public BrokerAdmin initializeAdmin() {
-		return new TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+//		return new TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+		BrokerAdmin2 admin = new BrokerAdmin2(server.getBrokerServiceURI());
+		admin.setAuthFilter(new AuthFilterImpl(ADMIN_00_SERIAL, ADMIN_00_DN));
+		return admin;
 	}
 
 	@Test
@@ -354,10 +358,12 @@ public class TestBroker extends AbstractTestBroker {
 		c.putRequestResult(l.get(0).getId(), "test/vnd.test.result", new ByteArrayInputStream("test-result-data".getBytes()));
 		// list results with aggregatorAdmin
 		List<ResultInfo> r = a.listResults(l.get(0).getId());
-		a.deleteRequest(qid);
-		Assert.assertTrue( c.listMyRequests().isEmpty() );
 		Assert.assertEquals(1, r.size());
 		Assert.assertEquals("test/vnd.test.result", r.get(0).type);
+		System.err.println("Result: "+a.getResultString(l.get(0).getId(), r.get(0).node, null));
+
+		a.deleteRequest(qid);
+		Assert.assertTrue( c.listMyRequests().isEmpty() );
 	}
 	@Test
 	public void verifyLastContactUpdated() throws IOException{
@@ -402,8 +408,9 @@ public class TestBroker extends AbstractTestBroker {
 		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
 		c.putMyResource("stats", "text/plain", "123");
 		assertEquals("123", a.getNodeString(0, "stats"));
-		NodeResource r = a.getNodeResource(0, "stats");
+		ResourceMetadata r = a.getNodeResource(0, "stats");
 		assertEquals("202cb962ac59075b964b07152d234b70", r.getMD5String());
+		assertNotEquals(0,r.getLastModified());
 		
 	}
 }

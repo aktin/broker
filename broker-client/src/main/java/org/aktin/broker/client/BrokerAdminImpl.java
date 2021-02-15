@@ -39,7 +39,7 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	public void setEndpoint(URI brokerEndpoint){
 		super.setEndpoint(brokerEndpoint);
 		// TODO retrieve aggregator URL from broker info
-		setAggregatorEndpoint(brokerEndpoint.resolve("/aggregator/"));		
+		setAggregatorEndpoint(brokerEndpoint.resolve("/aggregator/"));
 	}
 	@Override
 	protected URI getQueryBaseURI() {
@@ -63,13 +63,13 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	}
 	// TODO also return media type, e.g. via Datasource wrapping HttpURLConnection
 	@Override
-	public NodeResource getNodeResource(int nodeId, String resourceId) throws IOException{
+	public ResourceMetadata getNodeResource(int nodeId, String resourceId) throws IOException{
 		HttpURLConnection c = openConnection("GET", "node/"+nodeId+"/"+URLEncoder.encode(resourceId,"UTF-8"));
 		return wrapResource(c, resourceId);
 	}
 	@Override
 	public <T> T getNodeResourceJAXB(int nodeId, String resourceId, Class<T> type) throws IOException{
-		NodeResource r = getNodeResource(nodeId, resourceId);
+		ResourceMetadata r = getNodeResource(nodeId, resourceId);
 		try( InputStream in = r.getInputStream() ){
 			// TODO verify content type xml
 			return JAXB.unmarshal(in, type);
@@ -78,7 +78,7 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	@Override
 	public Properties getNodeProperties(int nodeId, String resourceId) throws IOException{
 		Properties props;
-		NodeResource r = getNodeResource(nodeId, resourceId);
+		ResourceMetadata r = getNodeResource(nodeId, resourceId);
 		try( InputStream in = r.getInputStream() ){
 			props = new Properties();
 			props.loadFromXML(in);
@@ -87,7 +87,7 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	}
 	@Override
 	public String getNodeString(int nodeId, String resourceId) throws IOException{
-		NodeResource r = getNodeResource(nodeId, resourceId);
+		ResourceMetadata r = getNodeResource(nodeId, resourceId);
 		// TODO parse and use charset from concent type
 		try( Reader reader = new InputStreamReader(r.getInputStream()) ){
 			return Util.readContent(reader);

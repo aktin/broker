@@ -3,8 +3,13 @@ package org.aktin.broker.client2;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpResponse;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.Optional;
 
 import org.aktin.broker.client.ResourceMetadata;
+import org.aktin.broker.client.Utils;
 
 public class ResourceMetadataResponseWrapper implements ResourceMetadata {
 	private String name;
@@ -16,26 +21,36 @@ public class ResourceMetadataResponseWrapper implements ResourceMetadata {
 	}
 	@Override
 	public long getLastModified() {
-		// TODO Auto-generated method stub
-		return 0;
+		Optional<String> str = resp.headers().firstValue(AbstractBrokerClient.LAST_MODIFIED_HEADER);
+		if( str.isPresent() ) {
+			return Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(str.get())).getEpochSecond();
+		}else {
+			return 0;
+		}
 	}
 
 	@Override
 	public byte[] getMD5() {
-		// TODO Auto-generated method stub
-		return null;
+		Optional<String> base64 = resp.headers().firstValue(AbstractBrokerClient.CONTENTMD5_HEADER);
+		if( base64.isPresent() ) {
+			return Base64.getUrlDecoder().decode(base64.get());
+		}else {
+			return null;
+		}
 	}
 
 	@Override
 	public String getMD5String() {
-		// TODO Auto-generated method stub
-		return null;
+		byte[] md5 = getMD5();
+		if( md5 == null ) {
+			return null;
+		}
+		return Utils.toHexString(md5);
 	}
 
 	@Override
 	public String getContentType() {
-		// TODO Auto-generated method stub
-		return null;
+		return resp.headers().firstValue(AbstractBrokerClient.CONTENT_TYPE_HEADER).orElse(null);
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.aktin.broker.auth.Principal;
@@ -93,6 +94,7 @@ public class AggregatorEndpoint {
 		return new ResultList(results);
 	}
 
+	// TODO return StreamingOutput and stream the file directly. To create a download, change method to POST .../download
 	@Authenticated
 	@RequireAdmin
 	@GET

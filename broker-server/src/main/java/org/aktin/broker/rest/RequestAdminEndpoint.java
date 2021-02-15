@@ -15,6 +15,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -194,10 +195,11 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 * @throws SQLException SQL error
 	 * @throws IOException IO error
 	 * @throws NotFoundException request id does not exist
+	 * @throws NotAcceptableException requested media type not available
 	 */
 	@GET
 	@Path("{id}")
-	public Response getRequest(@PathParam("id") Integer requestId, @Context HttpHeaders headers) throws SQLException, IOException, NotFoundException{
+	public Response getRequest(@PathParam("id") Integer requestId, @Context HttpHeaders headers) throws SQLException, IOException, NotFoundException, NotAcceptableException{
 			List<MediaType> accept = headers.getAcceptableMediaTypes();
 			return getRequest(requestId, accept);
 	}

@@ -32,17 +32,7 @@ public class ResourceMetadataImpl implements DataSource, ResourceMetadata{
 	}
 	@Override
 	public String getMD5String(){
-		StringBuilder b = new StringBuilder(16*2);
-		byte[] md5 = getMD5();
-		for( int i=0; i<md5.length; i++ ){
-			String hex = Integer.toHexString(Byte.toUnsignedInt(md5[i]));
-			if( hex.length() == 1 ){
-				// prefix with 0
-				b.append('0');
-			}
-			b.append(hex);
-		}
-		return b.toString();
+		return Utils.toHexString(getMD5());
 	}
 	@Override
 	public String getContentType() {

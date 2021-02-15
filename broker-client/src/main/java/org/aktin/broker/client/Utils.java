@@ -22,5 +22,17 @@ public class Utils {
 		return new BufferedReader(new InputStreamReader(in, charset));
 	}
 
+	public static final String toHexString(byte[] bytes) {
+		StringBuilder b = new StringBuilder(16*2);
+		for( int i=0; i<bytes.length; i++ ){
+			String hex = Integer.toHexString(Byte.toUnsignedInt(bytes[i]));
+			if( hex.length() == 1 ){
+				// prefix with 0
+				b.append('0');
+			}
+			b.append(hex);
+		}
+		return b.toString();
+	}
 
 }

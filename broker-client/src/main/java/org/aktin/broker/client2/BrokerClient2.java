@@ -7,26 +7,18 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
-import javax.xml.bind.JAXB;
 
 import org.aktin.broker.client.BrokerClient;
 import org.aktin.broker.client.BrokerClientImpl.OutputWriter;
@@ -61,38 +53,11 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 //		}
 //		c.getInputStream().close();
 //	}
+	@Override
+	protected URI getQueryBaseURI() {
+		return resolveBrokerURI("my/request/");
+	}
 
-	protected List<RequestInfo> postprocessRequestList(RequestList list) throws IOException{
-		if( list == null ){
-			throw new IOException("Unmarshalling of request list failed");
-		}
-		if( list.getRequests() != null ){
-			return list.getRequests();
-		}else{
-			return Collections.emptyList();
-		}		
-	}
-	
-	private <T> T sendAndExpectJaxb(HttpRequest req, Class<T> type) throws IOException {
-		HttpResponse<Supplier<T>> resp;
-		try {
-			resp = client.send(req, JaxbBodyHandler.forType(type));
-		} catch (InterruptedException e) {
-			throw new IOException("HTTP connection interrupted",e);
-		}
-		return resp.body().get();
-	}
-	private void sendAndExpectStatus(HttpRequest req, int expectedStatus) throws IOException {
-		int responseCode;
-		try {
-			responseCode = client.send(req, BodyHandlers.discarding()).statusCode();
-		} catch (InterruptedException e) {
-			throw new IOException("HTTP connection interrupted",e);
-		}
-		if( responseCode != expectedStatus ) {
-			throw new IOException("Unexpected response code "+responseCode+" instead of expected "+expectedStatus);
-		}
-	}
 
 	@Override
 	public List<RequestInfo> listMyRequests() throws IOException{
@@ -150,11 +115,7 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 	
 	public <T> HttpResponse<T> getMyRequestDefinition(int id, String mediaType, BodyHandler<T> handler) throws IOException {
 		HttpRequest req = createRequestForRequest(id, mediaType);
-		try {
-			return client.send(req, handler);
-		} catch (InterruptedException e) {
-			throw new IOException(e);
-		}
+		return sendRequest(req, handler);
 	}
 	@Override
 	public String getMyRequestDefinitionString(int id, String mediaType) throws IOException {
@@ -170,19 +131,6 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 		HttpRequest req = createBrokerRequest("my/node").GET().build();
 		return sendAndExpectJaxb(req, Node.class);
 	}
-	private static <T> Supplier<T> singleSupplier(T item){
-		return new Supplier<T>() {
-			private boolean supplied;
-			@Override
-			public T get() {
-				if( supplied ) {
-					return null;
-				}
-				this.supplied = true;
-				return item;
-			}
-		};
-	}
 	@Override
 	@Deprecated
 	public void putMyResource(String name, String contentType, final InputStream content) throws IOException{
@@ -194,12 +142,7 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 	}
 	@Override
 	public void putMyResourceXml(String name, Object jaxbObject) throws IOException{
-		StringWriter w = new StringWriter();
-		JAXB.marshal(jaxbObject, w);
-		
-		HttpRequest req = createRequestForNodeResource(name)
-				.header("Content-Type", "application/xml; charset=utf-8")
-				.PUT(BodyPublishers.ofString(w.toString(), StandardCharsets.UTF_8)).build();
+		HttpRequest req = putJAXB(createRequestForNodeResource(name), jaxbObject).build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 	@Override
@@ -213,11 +156,7 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 	}
 	public <T> HttpResponse<T> getMyResource(String name, BodyHandler<T> handler) throws IOException {
 		HttpRequest req = createRequestForNodeResource(name).GET().build();
-		try {
-			return client.send(req, handler);
-		} catch (InterruptedException e) {
-			throw new IOException(e);
-		}
+		return sendRequest(req, handler);
 	}
 
 	@Override
@@ -231,14 +170,6 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 	}
 	private HttpRequest.Builder createRequestForNodeResource(String name)throws IOException{
 		return createBrokerRequest("my/node/"+URLEncoder.encode(name, StandardCharsets.UTF_8));
-	}
-	protected static ResourceMetadata wrapResource(HttpResponse<InputStream> resp, String name) throws IOException{
-		if( resp.statusCode() == 404 ){
-			return null;
-		}else if( resp.statusCode() != 200 ){
-			throw new IOException("Unexpected HTTP response code "+resp.statusCode());
-		}
-		return new ResourceMetadataResponseWrapper(name, resp);
 	}
 	@Override
 	public ResourceMetadata getMyResource(String name) throws IOException{
@@ -327,5 +258,7 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 		HttpRequest req = createBrokerRequest("status").GET().build();
 		return sendAndExpectJaxb(req, BrokerStatus.class);
 	}
+
+
 
 }
