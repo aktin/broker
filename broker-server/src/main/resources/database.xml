@@ -121,7 +121,7 @@
 				<constraints nullable="false"/>
 			</column>
 			<column name="data_file" type="VARCHAR(64)">
-				<!-- flat JSON map containing report options -->
+				<!-- file containing the result data -->
 				<constraints nullable="true"/>
 			</column>
 		</createTable>
