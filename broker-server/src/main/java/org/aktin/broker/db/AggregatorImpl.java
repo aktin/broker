@@ -114,7 +114,7 @@ public class AggregatorImpl implements AggregatorBackend {
 			ResultSet rs = st.executeQuery("SELECT node_id, media_type FROM request_node_results WHERE request_id="+requestId);
 			// compile list
 			while( rs.next() ){
-				list.add(new ResultInfo(rs.getString(1), rs.getString(2)));
+				list.add(new ResultInfo(rs.getInt(1), rs.getString(2)));
 			}
 			rs.close();
 		}

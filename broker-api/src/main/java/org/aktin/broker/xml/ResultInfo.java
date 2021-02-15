@@ -10,7 +10,7 @@ public class ResultInfo {
 	 * Node id which submitted the result
 	 * XXX change to int?
 	 */
-	public String node;
+	public int node;
 	/**
 	 * Media type for the result
 	 */
@@ -20,7 +20,7 @@ public class ResultInfo {
 	protected ResultInfo(){ 
 
 	}
-	public ResultInfo(String node, String type){
+	public ResultInfo(int node, String type){
 		this.node = node;
 		this.type = type;
 	}

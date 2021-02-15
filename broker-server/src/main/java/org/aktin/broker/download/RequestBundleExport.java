@@ -122,7 +122,7 @@ public class RequestBundleExport {
 				name = info.node+"_"+URLEncoder.encode(type, charset.name())+ext;
 			}
 			ZipEntry entry = new ZipEntry(name);
-			DateDataSource dds = aggregator.getResult(requestId, Integer.parseInt(info.node));
+			DateDataSource dds = aggregator.getResult(requestId, info.node);
 			entry.setTime(dds.getLastModified().toEpochMilli());
 			zip.putNextEntry(entry);
 			try( InputStream in = dds.getInputStream() ){
