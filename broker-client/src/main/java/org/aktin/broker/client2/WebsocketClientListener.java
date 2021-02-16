@@ -6,16 +6,14 @@ import java.net.http.WebSocket.Listener;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import lombok.AllArgsConstructor;
 
-public class WebsocketListener implements WebSocket.Listener{
+@AllArgsConstructor
+public class WebsocketClientListener implements WebSocket.Listener{
 	private NotificationListener listener;
 
-	public WebsocketListener(NotificationListener listener) {
-		this.listener = listener;
-	}
 	@Override
 	public void onOpen(WebSocket webSocket) {
-		// TODO Auto-generated method stub
 		Listener.super.onOpen(webSocket);
 	}
 

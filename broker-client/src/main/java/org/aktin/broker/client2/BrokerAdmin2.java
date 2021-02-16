@@ -13,6 +13,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
+import java.net.http.WebSocket;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Collections;
@@ -326,6 +327,9 @@ public class BrokerAdmin2 extends AbstractBrokerClient implements BrokerAdmin{
 		HttpRequest req = createBrokerRequest("request/"+requestId+"/nodes")
 				.DELETE().build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
+	}
+	public WebSocket openWebsocket(AdminNotificationListener listener) throws IOException {
+		return super.openWebsocket("websocket", new WebsocketAdminListener(listener));
 	}
 
 }

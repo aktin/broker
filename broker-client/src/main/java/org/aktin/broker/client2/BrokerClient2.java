@@ -251,7 +251,7 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 	}
 
 	public WebSocket openWebsocket(NotificationListener listener) throws IOException {
-		return super.openWebsocket("my/websocket", new WebsocketListener(listener));
+		return super.openWebsocket("my/websocket", new WebsocketClientListener(listener));
 	}
 	@Override
 	public BrokerStatus getBrokerStatus() throws IOException {

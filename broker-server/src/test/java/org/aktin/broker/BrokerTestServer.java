@@ -10,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.sql.DataSource;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpoint;
 import javax.websocket.server.ServerEndpointConfig;
 
 import org.aktin.broker.auth.AuthenticationRequestFilter;
@@ -85,11 +86,16 @@ public class BrokerTestServer {
 		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
 		//ServerContainer c = (ServerContainer)context.getAttribute( javax.websocket.server.ServerContainer.class.getName() );
 		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(auth, binder.getAuthCache());
-		c.addEndpoint(ServerEndpointConfig.Builder
-			.create(MyBrokerWebsocket.class, MyBrokerWebsocket.REST_PATH)
-			.configurator(sc)
-			.build()
-		);
+		for( Class<?> websocketClass : Broker.WEBSOCKETS ) {
+			// retrieve path
+			String restPath = websocketClass.getAnnotation(ServerEndpoint.class).value();
+			// add websocket endpoint to server with custom authenticator
+			c.addEndpoint(ServerEndpointConfig.Builder
+					.create(websocketClass, restPath)
+					.configurator(sc)
+					.build()
+			);
+		}
 	}
 	public void start(InetSocketAddress addr) throws Exception{
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);

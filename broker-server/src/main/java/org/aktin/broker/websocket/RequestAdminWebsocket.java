@@ -14,7 +14,7 @@ import org.aktin.broker.auth.Principal;
 
 @ServerEndpoint(value=RequestAdminWebsocket.REST_PATH, configurator = HeaderAuthSessionConfigurator.class)
 public class RequestAdminWebsocket extends AbstractBroadcastWebsocket{
-	public static final String REST_PATH = "/broker/request/websocket";
+	public static final String REST_PATH = "/broker/websocket";
 	/** set of connected sessions, needs to be static and local */ 
 	private static Set<Session> clients = Collections.synchronizedSet(new HashSet<Session>());
 

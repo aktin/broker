@@ -1,21 +1,29 @@
 package org.aktin.broker;
 
+import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.aktin.broker.client.AuthFilterImpl;
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.ClientWebsocket;
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
+import org.aktin.broker.client2.AdminNotificationListener;
 import org.aktin.broker.client2.AuthFilter;
+import org.aktin.broker.client2.BrokerAdmin2;
 import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.client2.NotificationListener;
 import org.aktin.broker.util.AuthFilterSSLHeaders;
+import org.aktin.broker.xml.RequestInfo;
+import org.aktin.broker.xml.RequestStatus;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -53,8 +61,10 @@ public class TestWebsockets extends AbstractTestBroker{
 	}
 
 	@Override
-	public BrokerAdmin initializeAdmin() {
-		return new TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
+	public BrokerAdmin2 initializeAdmin() {
+		BrokerAdmin2 a = new BrokerAdmin2(server.getBrokerServiceURI());
+		a.setAuthFilter(new AuthFilterImpl(ADMIN_00_SERIAL, ADMIN_00_DN));
+		return a;
 	}
 
 	@Before
@@ -69,14 +79,21 @@ public class TestWebsockets extends AbstractTestBroker{
 		server.stop();
 		server.destroy();
 	}
-	
+
+	private static final void sleepForWebsocketAction() {
+		try {
+			Thread.sleep(300);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	/**
 	 * Make sure that request notifications are recieved via websocket using the client library.
 	 * Clients not targeted by the request should not receive notifications.
-	 * @throws Exception unexpected test failure
+	 * @throws IOException unexpected test failure
 	 */
 	@Test
-	public void clientRequestNotificationsOnlyForTargetedNodes() throws Exception{
+	public void clientRequestNotificationsOnlyForTargetedNodes() throws IOException {
 		BrokerClient2 c1 = initializeClient(CLIENT_01_SERIAL);
 		BrokerClient2 c2 = initializeClient(CLIENT_02_SERIAL);
 		// make sure that the clients are known by the broker,
@@ -122,7 +139,7 @@ public class TestWebsockets extends AbstractTestBroker{
 		
 		BrokerAdmin a = initializeAdmin();
 		int qid = a.createRequest("text/x-test-1", "test1");
-		Thread.sleep(300);
+		sleepForWebsocketAction();
 		// make sure the publication was not sent yet
 		Assert.assertEquals(-1, publishedId.get());
 		Assert.assertFalse(thirdPartyNotification.get());
@@ -133,19 +150,144 @@ public class TestWebsockets extends AbstractTestBroker{
 		a.setRequestTargetNodes(qid, new int[] {selectedNode});
 		// publish request
 		a.publishRequest(qid);
-		Thread.sleep(300);
+		sleepForWebsocketAction();
 		// make sure the publication was broadcast
 		Assert.assertEquals(qid, publishedId.get());
 		Assert.assertEquals(-1, closedId.get());
 		// same with closed id
 		a.closeRequest(qid);
-		Thread.sleep(300);
+		sleepForWebsocketAction();
 		Assert.assertEquals(qid, closedId.get());
 		// make sure that other nodes did not get any notification if the request was not targeted for them
 		Assert.assertFalse(thirdPartyNotification.get());
 		
 	}
 
+	@Test
+	public void adminNotificationsForAllClientActions() throws IOException{
+		BrokerAdmin2 a = initializeAdmin();
+
+		// initialize async variables
+		AtomicReference<String> action = new AtomicReference<>();
+		AtomicReference<List<Object>> args = new AtomicReference<>();
+
+		// open websocket
+		a.openWebsocket(new AdminNotificationListener() {
+			@Override
+			public void onResourceUpdate(int nodeId, String resourceId) {
+				action.set("resource");
+				args.set(Arrays.asList(nodeId, resourceId));
+			}
+			
+			@Override
+			public void onRequestStatusUpdate(int requestId, int nodeId, String status) {
+				action.set("status");
+				args.set(Arrays.asList(requestId, nodeId, RequestStatus.valueOf(status)));
+			}
+			
+			@Override
+			public void onRequestResultUpdate(int requestId, int nodeId, String mediaType) {
+				action.set("result");
+				args.set(Arrays.asList(requestId, nodeId, mediaType));
+			}
+			
+			@Override
+			public void onRequestPublished(int requestId) {
+				action.set("published");
+				args.set(Collections.singletonList(requestId));
+			}
+			
+			@Override
+			public void onRequestCreated(int requestId) {
+				action.set("created");
+				args.set(Collections.singletonList(requestId));
+			}
+			
+			@Override
+			public void onRequestClosed(int requestId) {
+				action.set("closed");
+				args.set(Collections.singletonList(requestId));
+			}
+		});
+
+		BrokerClient2 c1 = initializeClient(CLIENT_01_SERIAL);
+		BrokerClient2 c2 = initializeClient(CLIENT_02_SERIAL);
+		// make sure that the clients are known by the broker,
+		// by contacting the broker first
+		c1.listMyRequests();
+		c2.listMyRequests();
+		
+		// create request
+		int rid = a.createRequest();
+		sleepForWebsocketAction();
+		Assert.assertEquals("created", action.get());
+		Assert.assertEquals(rid, args.get().get(0));
+		
+		// add request definitions
+		a.putRequestDefinition(rid, "application/xml", "<xml/>");
+		a.putRequestDefinition(rid, "application/json", "{}");
+		sleepForWebsocketAction();
+		// make sure there were no other notifications for adding request definitions
+		Assert.assertEquals("created", action.get());
+
+		// publish request
+		a.publishRequest(rid);
+		sleepForWebsocketAction();
+		Assert.assertEquals("published", action.get());
+		Assert.assertEquals(rid, args.get().get(0));
+
+		// fetch requests
+		List<RequestInfo> l = c2.listMyRequests();
+		Assert.assertEquals(1, l.size());
+		l = c1.listMyRequests();
+		Assert.assertEquals(1, l.size());
+		RequestInfo ri = l.get(0);
+		
+		// listing should not generate a notification
+		sleepForWebsocketAction();
+		Assert.assertEquals("published", action.get());
+		// post retrieved status for node 0
+		c1.postRequestStatus(ri.getId(), RequestStatus.retrieved);
+		sleepForWebsocketAction();
+		Assert.assertEquals("status", action.get());
+		Assert.assertEquals(rid, args.get().get(0));
+		Assert.assertEquals(0, args.get().get(1)); // should be node 0
+		Assert.assertEquals(RequestStatus.retrieved, args.get().get(2)); // should be node 0
+		// no need to test all statuses. they are processed on the server in the same method
+
+		// post failed status for node 1
+		c2.postRequestFailed(ri.getId(), "failed", new RuntimeException("bla"));
+		sleepForWebsocketAction();
+		Assert.assertEquals("status", action.get());
+		Assert.assertEquals(rid, args.get().get(0));
+		Assert.assertEquals(1, args.get().get(1)); // should be node 1
+		Assert.assertEquals(RequestStatus.failed, args.get().get(2)); // should be node 0
+		
+		// post result
+		c1.putRequestResult(ri.getId(), "text/plain+result", "result-content");
+		sleepForWebsocketAction();
+		Assert.assertEquals("result", action.get());
+		Assert.assertEquals(rid, args.get().get(0));
+		Assert.assertEquals(0, args.get().get(1)); // should be node 1
+		Assert.assertEquals("text/plain+result", args.get().get(2)); // posted media type
+
+		// close result
+		a.closeRequest(rid);
+		sleepForWebsocketAction();
+		Assert.assertEquals("closed", action.get());
+		Assert.assertEquals(rid, args.get().get(0));
+
+		
+		// verify resource updates
+		c1.putMyResource("bla", "application/json", "{}");
+		sleepForWebsocketAction();
+		Assert.assertEquals("resource", action.get());
+		Assert.assertEquals(0, args.get().get(0)); // should be node 0
+		Assert.assertEquals("bla", args.get().get(1)); // should be node 0
+		
+	}
+
+	
 	/**
 	 * Test basic websocket functionality without using the broker-client libraries
 	 * @throws Exception unexpected test failure

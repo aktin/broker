@@ -125,7 +125,7 @@ public abstract class AbstractBrokerClient {
 	protected HttpRequest.Builder createAggregatorRequest(String urispec) throws IOException{
 		return createRequest(aggregatorEndpoint, urispec);
 	}
-	protected WebSocket openWebsocket(String urlspec, WebsocketListener listener) throws IOException {
+	protected WebSocket openWebsocket(String urlspec, WebSocket.Listener listener) throws IOException {
 		WebSocket.Builder wsb = client.newWebSocketBuilder();
 		if( authFilter != null ) {
 			authFilter.addAuthentication(wsb);

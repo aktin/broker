@@ -399,6 +399,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 				nodeIds = db.getRequestTargets(requestId);
 			}
 			MyBrokerWebsocket.broadcastRequestClosed(requestId, nodeIds);
+			RequestAdminWebsocket.broadcastRequestClosed(requestId);
 		}
 	}
 	@Override
