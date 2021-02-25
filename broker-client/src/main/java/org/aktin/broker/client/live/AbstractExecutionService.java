@@ -90,7 +90,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 * pending and running executions.
 	 */
 	@SuppressWarnings("unchecked")
-	public void shutdown() {
+	public List<T> shutdown() {
 		websocket.abort();
 		this.abort.set(true);
 		List<Runnable> aborted = executor.shutdownNow();
@@ -98,6 +98,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		List<T> list = new ArrayList<>(aborted.size());
 		aborted.forEach( (r) -> list.add(((PendingExecution)r).execution) );
 		onShutdown(list);
+		return list;
 	}
 
 	@Override /* allowed to throw IOException, but we don't */
@@ -135,6 +136,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			// request not pending previously
 			// this is the normal case
 			p = new PendingExecution(initializeExecution(requestId));
+			p.execution.setClient(client);
 			p.execution.setGlobalAbort(abort::get);
 			p.execution.setStatusListener((e,s) -> this.onStatusUpdate((T)e, s));
 			pending.put(requestId, p);

@@ -2,8 +2,9 @@ package org.aktin.broker.client;
 
 import javax.net.ssl.KeyManagerFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 
 public class TestMisc {
 
@@ -11,7 +12,7 @@ public class TestMisc {
 	public void misc(){
 		// output algorithm
 		String defaultAlgo = KeyManagerFactory.getDefaultAlgorithm();
-		Assert.assertNotNull(defaultAlgo);
+		Assertions.assertNotNull(defaultAlgo);
 		System.out.println("KeyManagerFactory.defaultAlgo: "+defaultAlgo);
 	}
 

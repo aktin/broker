@@ -25,9 +25,10 @@ public abstract class AbstractRequestExecution implements Runnable {
 	@Setter
 	protected BrokerClient2 client;
 
-	protected long startTimestamp;
+	@Getter
+	private long startTimestamp;
 	/** when the processing was ended, regardless of successful termination, failure or timeout*/
-	protected long exitTimestamp;
+	private long exitTimestamp;
 
 	/** Throwable explaining the failure. Can be null e.g. if the process was aborted or had exit code != 0 */
 	@Getter
@@ -44,7 +45,7 @@ public abstract class AbstractRequestExecution implements Runnable {
 	}
 
 	public boolean isRunning() {
-		return exitTimestamp != 0;
+		return exitTimestamp == 0;
 	}
 	public boolean isFailed() {
 		return !isRunning() && !success;
@@ -108,11 +109,7 @@ public abstract class AbstractRequestExecution implements Runnable {
 		}
 
 		statusListener.accept(this, RequestStatus.failed);
-
 		// TODO improve logging
-		if( cause != null ) {
-			cause.printStackTrace();
-		}
 		System.err.println("Request "+requestId+" failed: "+message);
 
 	}
@@ -153,6 +150,7 @@ public abstract class AbstractRequestExecution implements Runnable {
 		statusListener.accept(this, RequestStatus.processing);
 		try {
 			prepareExecution();
+			startTimestamp = System.currentTimeMillis();
 		} catch (IOException e) {
 			this.cause = e;
 			this.exitTimestamp = System.currentTimeMillis();

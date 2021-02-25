@@ -3,27 +3,38 @@ package org.aktin.broker.client.live.sysproc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
-import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
 
 import org.aktin.broker.client.live.AbortableRequestExecution;
 import org.aktin.broker.xml.RequestStatus;
 
+import lombok.Setter;
+
 /**
  * Single process execution.
  * To abort a running execution, make sure the isAborted {@link BooleanSupplier} returns false 
  * and interrupt the running thread.
- * 
+ *
+ * In case of an execution timeout, {@link #getCause()} will contain an instance of {@link TimeoutException}.
+ * In case of abort during execution, {@link #getCause()} will contain an instance of {@link CancellationException}
  * @author R.W.Majeed
  *
  */
 public class ProcessExecution extends AbortableRequestExecution{
 	private ProcessExecutionConfig config;
 	
+	/**
+	 * Whether or not to keep temporary files. If set to {@code false} the stdin and stdou
+	 * of the process are not deleted after completion.
+	 * To delete these files manually, you can call {@link #cleanTempFiles()}
+	 */
+	@Setter
 	private boolean keepTempFiles;
 
 	private ProcessBuilder pb;
@@ -38,14 +49,15 @@ public class ProcessExecution extends AbortableRequestExecution{
 
 	@Override
 	protected void prepareExecution() throws IOException {
-		// remember timestamp 
-		this.startTimestamp = System.currentTimeMillis();
 
 		stdin = Files.createTempFile("stdin", null);
 		System.out.println("Loading request definition "+requestId+" to temp file "+stdin.toString());
 		// retrieve request
-		client.getMyRequestDefinition(requestId, config.getRequestMediatype(), BodyHandlers.ofFile(stdin, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE));
-
+		Path resp = client.getMyRequestDefinition(requestId, config.getRequestMediatype(), stdin, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+		if( resp == null ) {
+			throw new IOException("Request not found");
+		}
+		
 		this.pb = new ProcessBuilder(config.getCommand());
 		// add env pb.environment().put(key, value)
 		// add env from .env properties file
@@ -60,13 +72,15 @@ public class ProcessExecution extends AbortableRequestExecution{
 	protected void doExecution() throws IOException{
 		this.proc = pb.start();
 		// notify broker that we are now processing the query
+		long readProgressIntervalMillis = 10*1000;
+		long maxWait = Math.min(readProgressIntervalMillis, config.getProcessTimeoutMillis());
 		client.postRequestStatus(requestId, RequestStatus.processing);
 		try( InputStream stderr = proc.getErrorStream() ){
-			while( !isAborted() && proc.isAlive() && (System.currentTimeMillis()-this.startTimestamp) < config.getProcessTimeoutMillis() ) {
+			while( !isAborted() && proc.isAlive() && (System.currentTimeMillis()-getStartTimestamp()) < config.getProcessTimeoutMillis() ) {
 				// later, check here for progress in stderr. 
 				// waitFor(10s) will continuously allow the progress to be read
 				try {
-					proc.waitFor(60, TimeUnit.SECONDS);
+					proc.waitFor(maxWait, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {
 					// interruptions may occur regularly. e.g. by adding to the queue
 				}
@@ -104,26 +118,24 @@ public class ProcessExecution extends AbortableRequestExecution{
 
 	
 
-	private void cleanTempFiles() {
-		if( !keepTempFiles ) {
-			// clear temp files
-			try {
-				Files.delete(stdin);
-			} catch (IOException e) {
-				if( cause != null ) {
-					cause.addSuppressed(e);
-				}
-				// TODO log warning
+	public void cleanTempFiles() {
+		// clear temp files
+		try {
+			Files.delete(stdin);
+		} catch (IOException e) {
+			if( cause != null ) {
+				cause.addSuppressed(e);
 			}
-			try {
-				Files.delete(stdout);
-			} catch (IOException e) {
-				if( cause != null ) {
-					cause.addSuppressed(e);
-				}
-				// TODO log warning
+			// TODO log warning
+		}
+		try {
+			Files.delete(stdout);
+		} catch (IOException e) {
+			if( cause != null ) {
+				cause.addSuppressed(e);
 			}
-		}		
+			// TODO log warning
+		}
 	}
 
 	@Override
@@ -140,34 +152,42 @@ public class ProcessExecution extends AbortableRequestExecution{
 			if( proc.isAlive() ) {
 				proc.destroy();
 			}
-			reportFailure("Process termination by controlled abort");
+			this.cause = new CancellationException("Process termination by controlled abort");
+			reportFailure(this.cause.getMessage());
 		}
 		// check if timeout occurred
 		else if( proc.isAlive() ) {
 			// we have a timeout, kill process
 			proc.destroy();
-			reportFailure("External process timeout");
+			this.cause = new TimeoutException("External process timeout");
+			reportFailure(this.cause.getMessage());
 
 		}else if( proc.exitValue() == 0 ) {
 			// normal termination
-			reportCompleted();
+			reportCompleted(); // will upload the result
+			
 
 		}else {
 			// abnormal termination
 			reportFailure("External process failed with exit code "+proc.exitValue());
 
 		}
-		cleanTempFiles();		
+		if( !keepTempFiles ) {
+			cleanTempFiles();
+		}
 	}
+
 
 	@Override
 	protected String getResultMediatype() {
-		return config.getRequestMediatype();
+		return config.getResultMediatype();
 	}
 
 	@Override
 	protected InputStream getResultData() throws IOException{
-		return Files.newInputStream(stdout);
+		return Files.newInputStream(getResultPath());
 	}
-	
+	protected Path getResultPath() {
+		return stdout;
+	}
 }

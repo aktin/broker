@@ -15,6 +15,8 @@ import java.net.http.WebSocket;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -107,10 +109,20 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 	@Override
 	public Document getMyRequestDefinitionXml(int id, String mediaType) throws IOException {
 		HttpResponse<InputStream> resp = getMyRequestDefinition(id, mediaType, BodyHandlers.ofInputStream());
-		if( resp.statusCode() == 404 ) {
+		if( resp.statusCode() == HTTP_STATUS_404_NOT_FOUND ) {
 			return null;
 		}
 		return Util.parseDocument(resp.body());
+	}
+	public Path getMyRequestDefinition(int id, String mediaType, Path dest, OpenOption...openOptions) throws IOException {
+		HttpResponse<Path> resp = getMyRequestDefinition(id, mediaType, BodyHandlers.ofFile(dest, openOptions));
+		if( resp.statusCode() == HTTP_STATUS_404_NOT_FOUND ) {
+			return null;
+		}else if( resp.statusCode() != 200 ) {
+			throw new IOException("Request retrieval failed with status code "+resp.statusCode());
+		}else {
+			return resp.body();
+		}
 	}
 	
 	public <T> HttpResponse<T> getMyRequestDefinition(int id, String mediaType, BodyHandler<T> handler) throws IOException {
