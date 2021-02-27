@@ -10,7 +10,7 @@ function compileForm(requestId){
 }
 
 function getFormMediaType(){
-	return 'application/x.test.request';
+	return 'text/plain+x.test.request';
 }
 
 
