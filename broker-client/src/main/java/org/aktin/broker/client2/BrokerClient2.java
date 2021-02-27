@@ -81,7 +81,16 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 	@Override
 	public void deleteMyRequest(int id) throws IOException {
 		HttpRequest req = createBrokerRequest("my/request/"+id).DELETE().build();
-		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
+		HttpResponse<Void> resp = sendRequest(req, BodyHandlers.discarding());
+		switch( resp.statusCode() ) {
+		case HTTP_STATUS_404_NOT_FOUND:
+			// not found is also ok, since the request is not there anymore
+		case HTTP_STATUS_204_NO_CONTENT:
+			// success
+			break;
+		default:
+			throw new IOException("Unexpected HTTP response code "+resp.statusCode()+" instead of "+HTTP_STATUS_204_NO_CONTENT);
+		}
 	}
 
 	private HttpRequest createRequestForRequest(int id, String mediaType) throws IOException{
@@ -114,10 +123,12 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 		}
 		return Util.parseDocument(resp.body());
 	}
-	public Path getMyRequestDefinition(int id, String mediaType, Path dest, OpenOption...openOptions) throws IOException {
+	public Path getMyRequestDefinition(int id, String mediaType, Path dest, OpenOption...openOptions) throws MediaTypeNotAcceptableException, IOException {
 		HttpResponse<Path> resp = getMyRequestDefinition(id, mediaType, BodyHandlers.ofFile(dest, openOptions));
 		if( resp.statusCode() == HTTP_STATUS_404_NOT_FOUND ) {
 			return null;
+		}else if( resp.statusCode() == HTTP_STATUS_406_NOT_ACCEPTABLE ) {
+			throw new MediaTypeNotAcceptableException(mediaType);
 		}else if( resp.statusCode() != 200 ) {
 			throw new IOException("Request retrieval failed with status code "+resp.statusCode());
 		}else {
@@ -130,10 +141,12 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 		return sendRequest(req, handler);
 	}
 	@Override
-	public String getMyRequestDefinitionString(int id, String mediaType) throws IOException {
+	public String getMyRequestDefinitionString(int id, String mediaType) throws MediaTypeNotAcceptableException, IOException {
 		HttpResponse<String> resp = getMyRequestDefinition(id, mediaType, BodyHandlers.ofString());
-		if( resp.statusCode() == 404 ) {
+		if( resp.statusCode() == HTTP_STATUS_404_NOT_FOUND ) {
 			return null;
+		}else if( resp.statusCode() == HTTP_STATUS_406_NOT_ACCEPTABLE ) {
+			throw new MediaTypeNotAcceptableException(mediaType);
 		}
 		return resp.body();
 	}

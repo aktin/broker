@@ -30,6 +30,7 @@ public abstract class AbstractBrokerClient {
 	protected static final int HTTP_STATUS_204_NO_CONTENT = 204;
 	protected static final int HTTP_STATUS_201_CREATED = 201;
 	protected static final int HTTP_STATUS_404_NOT_FOUND = 404;
+	protected static final int HTTP_STATUS_406_NOT_ACCEPTABLE = 406;
 	protected static final String LAST_MODIFIED_HEADER = "Last-Modified";
 	protected static final String CONTENT_TYPE_HEADER = "Content-type";
 	protected static final String ACCEPT_HEADER = "Accept";
@@ -132,7 +133,6 @@ public abstract class AbstractBrokerClient {
 		}
 		try {
 			URI wsuri = new URI("ws", brokerEndpoint.resolve(urlspec).getRawSchemeSpecificPart(), null);
-			System.err.println("Websocket target: "+wsuri.toString());
 			return wsb.buildAsync(wsuri, listener).get();
 		} catch (InterruptedException e ) {
 			throw new IOException("Websocket open operation interrupted", e);

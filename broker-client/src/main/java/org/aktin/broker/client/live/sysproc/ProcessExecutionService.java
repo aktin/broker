@@ -3,11 +3,14 @@ package org.aktin.broker.client.live.sysproc;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.aktin.broker.client.live.AbstractExecutionService;
 import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.xml.RequestStatus;
+
+import lombok.extern.java.Log;
 
 
 /**
@@ -15,11 +18,17 @@ import org.aktin.broker.xml.RequestStatus;
  * @author R.W.Majeed
  *
  */
-public class ProcessExecutionService extends AbstractExecutionService<ProcessExecution>{
+@Log
+public class ProcessExecutionService extends AbstractExecutionService<ProcessExecution> implements Runnable{
 	private ProcessExecutionConfig config;
 
-	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config) throws IOException {
+	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config) {
 		super(client, Executors.newSingleThreadExecutor());
+		this.config = config;
+	}
+
+	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config, ExecutorService executor) {
+		super(client, executor);
 		this.config = config;
 	}
 
@@ -35,13 +44,78 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 
 	@Override
 	protected void onStatusUpdate(ProcessExecution execution, RequestStatus status) {
-		if( status == RequestStatus.failed ) {
-			// print exception
+		if( status == RequestStatus.failed && execution.getCause() != null ) {
+			if( execution.isAborted() ) {
+				log.warning("aborted "+execution.getRequestId());
+			}else {
+				// print exception
+				execution.getCause().printStackTrace();
+				System.err.println();
+			}
 		}
+		log.info("status "+execution.getRequestId()+" -> "+status.toString());
 	}
 
 	@Override
 	public void loadQueue() {
 		// no resume of previous requests
+	}
+
+	@Override
+	protected void onWebsocketClosed(int status) {
+		if( !isAborted() ) {
+			// websocket closed by server
+			log.warning("websocket closed "+status);
+			synchronized( this ) {
+				this.notifyAll();
+			}
+		}
+	}
+
+	@Override
+	public void run() {
+		try {
+			startupWebsocketListener();
+		} catch (IOException e) {
+			log.severe("websocket connection failed: "+e.getMessage());
+			// exit if the initial websocket connection fails?
+			// for now, just continue trying to establish the connection
+		}
+		log.info("websocket connection established");
+
+		// nothing to do, wait for exit
+		while( !isAborted() ) {
+
+			if( isWebsocketClosed() ) {
+				// websocket closed by server
+				if( config.getWebsocketReconnectSeconds() == -1 ) {
+					log.info("websocket retry disabled. exiting.");
+					shutdown();
+					break;
+				}
+				log.info("websocket retry after "+config.getWebsocketReconnectSeconds()+"s");
+				try {
+					Thread.sleep(1000*config.getWebsocketReconnectSeconds());
+					startupWebsocketListener();
+					log.info("websocket connection re-established");
+					// websocket established. poll for missed requests
+					pollRequests();
+				} catch (IOException e) {
+					log.warning("websocket connection failed: "+e.getMessage());
+				} catch (InterruptedException e) {
+					// interrupted during sleep, try again..
+				}
+			}else {
+				// websocket established, wait for something to happen
+				// e.g. shutdown or websocket closing
+				synchronized( this ) {
+					try {
+						this.wait();
+					} catch (InterruptedException e) {
+						// we expected this interruption
+					}
+				}
+			}
+		}
 	}
 }

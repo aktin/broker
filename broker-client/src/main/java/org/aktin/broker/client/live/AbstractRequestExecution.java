@@ -109,9 +109,6 @@ public abstract class AbstractRequestExecution implements Runnable {
 		}
 
 		statusListener.accept(this, RequestStatus.failed);
-		// TODO improve logging
-		System.err.println("Request "+requestId+" failed: "+message);
-
 	}
 	protected void reportCompleted() {
 		// read stout and report to broker

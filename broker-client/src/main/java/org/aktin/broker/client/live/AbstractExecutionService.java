@@ -17,8 +17,21 @@ import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.client2.NotificationListener;
 import org.aktin.broker.xml.RequestStatus;
 
+import lombok.Getter;
+
+/**
+ * Abstract execution service running request executions with the provided executor.
+ * Once the service is running, it can be stopped via {@link #shutdown()}. To wait for
+ * the service to be finished, call {@link #wait()} on this instance. If woken up from {@link #wait()},
+ * check {@link #isAborted()} to make sure a shutdown was initiated (and not any other interruption).
+ * 
+ * @author R.W.Majeed
+ *
+ * @param <T> request execution implementation
+ */
 public abstract class AbstractExecutionService<T extends AbortableRequestExecution> implements Function<Integer, Future<T>>, Closeable {
 
+	@Getter
 	protected BrokerClient2 client;
 	protected AtomicBoolean abort;
 	private ExecutorService executor;
@@ -26,7 +39,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 
 	private Map<Integer, PendingExecution> pending;
 
-	public AbstractExecutionService(BrokerClient2 client, ExecutorService executor) throws IOException {
+	public AbstractExecutionService(BrokerClient2 client, ExecutorService executor){
 		this.abort = new AtomicBoolean();
 		this.client = client;
 		this.pending = Collections.synchronizedMap(new HashMap<>());
@@ -53,6 +66,9 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		}
 	}
 
+	public boolean isAborted() {
+		return abort.get();
+	}
 	/**
 	 * Load the previous executions. Implementation might call {@link #pollRequests()} to load
 	 * the execution queue from the server. 
@@ -60,12 +76,19 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 */
 	public abstract void loadQueue();
 
+	public boolean isWebsocketClosed() {
+		return websocket == null || websocket.isInputClosed();
+	}
 	/**
 	 * Start the websocket listener to retrieve live updates about published or closed requests.
 	 * To close the websocket connection, call shutdown or close
 	 * @throws IOException
 	 */
 	public void startupWebsocketListener() throws IOException {
+		if( this.websocket != null ) {
+			// close previous websocket
+			this.websocket.abort();
+		}
 		this.websocket = client.openWebsocket(new NotificationListener() {
 			
 			@Override
@@ -83,11 +106,19 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			public void onRequestClosed(int requestId) {
 				cancelRequest(requestId, true);
 			}
+
+			@Override
+			public void onWebsocketClosed(int statusCode, String reason) {
+				AbstractExecutionService.this.onWebsocketClosed(statusCode);
+			}
 		});
 	}
 	/**
 	 * Abort the executor by shutting down the websocket and aborting all
 	 * pending and running executions.
+	 * The method will also call {@link #notifyAll()} to notify threads waiting
+	 * for a successful shutdown. If woken up, check {@link #isAborted()} whether
+	 * a shutdown is in progress.
 	 */
 	@SuppressWarnings("unchecked")
 	public List<T> shutdown() {
@@ -98,6 +129,12 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		List<T> list = new ArrayList<>(aborted.size());
 		aborted.forEach( (r) -> list.add(((PendingExecution)r).execution) );
 		onShutdown(list);
+
+		// notify threads waiting on this object
+		synchronized( this ) {
+			this.notifyAll();
+		}
+
 		return list;
 	}
 
@@ -113,6 +150,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 */
 	protected abstract void onShutdown(List<T> unprocessedExecutions);
 	protected abstract void onStatusUpdate(T execution, RequestStatus status);
+	protected abstract void onWebsocketClosed(int status);
 
 	protected abstract T initializeExecution(Integer requestId);
 

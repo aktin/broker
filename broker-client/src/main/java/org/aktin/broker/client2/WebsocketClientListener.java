@@ -45,8 +45,8 @@ public class WebsocketClientListener implements WebSocket.Listener{
 
 	@Override
 	public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-		// TODO Auto-generated method stub
-		return Listener.super.onClose(webSocket, statusCode, reason);
+		listener.onWebsocketClosed(statusCode, reason);
+		return null; // websocket can be closed immediately
 	}
 
 }

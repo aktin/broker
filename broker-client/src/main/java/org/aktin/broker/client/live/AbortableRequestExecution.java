@@ -27,7 +27,7 @@ public abstract class AbortableRequestExecution extends AbstractRequestExecution
 	 * Check whether a local or global abort is flagged.
 	 * @return true iif local abort or global abort is true
 	 */
-	protected boolean isAborted() {
+	public boolean isAborted() {
 		return localAbort || globalAbort.getAsBoolean();
 	}
 

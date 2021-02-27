@@ -51,7 +51,7 @@ public class ProcessExecution extends AbortableRequestExecution{
 	protected void prepareExecution() throws IOException {
 
 		stdin = Files.createTempFile("stdin", null);
-		System.out.println("Loading request definition "+requestId+" to temp file "+stdin.toString());
+//		System.out.println("Loading request definition "+requestId+" to temp file "+stdin.toString());
 		// retrieve request
 		Path resp = client.getMyRequestDefinition(requestId, config.getRequestMediatype(), stdin, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
 		if( resp == null ) {
