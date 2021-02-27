@@ -74,10 +74,16 @@ function loadTemplateTypes(){
 function deleteRequest(id){
 	if( confirm('Please confirm to delete request id '+id) ){				
 		$.ajax({
-			type: 'DELETE',
-			url: rest_base+'/broker/request/'+id,
+			type: 'POST',
+			url: rest_base+'/broker/request/'+id+'/close',
 			success: function(){
-				$('.req[data-id="'+id+'"]').remove();
+				$.ajax({
+					type: 'DELETE',
+					url: rest_base+'/broker/request/'+id,
+					success: function(){
+						$('.req[data-id="'+id+'"]').remove();
+					}
+				});
 			}
 		});
 	}
@@ -103,7 +109,7 @@ function loadRequestList(){
 		$.get({url: rest_base+'/broker/request', dataType: "xml"})
 	).done(function(xsl, xml){
 			var xp = new XSLTProcessor();
-		  	xp.importStylesheet(xsl[0]);
+			xp.importStylesheet(xsl[0]);
 			var frag = xp.transformToFragment(xml[0], document);
 			$('#requests').empty();
 			document.getElementById("requests").appendChild(frag);
