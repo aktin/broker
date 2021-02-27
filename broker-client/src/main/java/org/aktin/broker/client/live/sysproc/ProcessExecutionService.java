@@ -82,28 +82,40 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 			// for now, just continue trying to establish the connection
 		}
 		log.info("websocket connection established");
+		long previousConnection = System.currentTimeMillis();
 
 		// nothing to do, wait for exit
 		while( !isAborted() ) {
 
 			if( isWebsocketClosed() ) {
 				// websocket closed by server
+				// first try to re-establish the connection immediately. if this fails <= reconnectSeconds, then wait for requested delay
 				if( config.getWebsocketReconnectSeconds() == -1 ) {
 					log.info("websocket retry disabled. exiting.");
 					shutdown();
 					break;
 				}
-				log.info("websocket retry after "+config.getWebsocketReconnectSeconds()+"s");
+				long currentAttempt = System.currentTimeMillis();
+				if( currentAttempt - previousConnection < config.getWebsocketReconnectSeconds()*1000 ) {
+					// we need to wait the specified amout before next retry
+					log.info("websocket retry after "+config.getWebsocketReconnectSeconds()+"s");
+					try {
+						Thread.sleep(1000*config.getWebsocketReconnectSeconds());
+					} catch (InterruptedException e) {
+						// interrupted during sleep, try again..
+						continue;
+					}
+				}else {
+					// immediate retry
+				}
 				try {
-					Thread.sleep(1000*config.getWebsocketReconnectSeconds());
+					previousConnection = System.currentTimeMillis();
 					startupWebsocketListener();
 					log.info("websocket connection re-established");
 					// websocket established. poll for missed requests
 					pollRequests();
 				} catch (IOException e) {
 					log.warning("websocket connection failed: "+e.getMessage());
-				} catch (InterruptedException e) {
-					// interrupted during sleep, try again..
 				}
 			}else {
 				// websocket established, wait for something to happen
