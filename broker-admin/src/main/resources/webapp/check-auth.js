@@ -38,7 +38,8 @@ function getNodes(success, error){
 					link:function(){
 						return $('<a/>',{href:'nodes.html#'+this.id, text:this.cn, title:this.dn});
 					},
-					seen: nodes[i].childNodes[2].innerHTML
+					seen: nodes[i].childNodes[2].innerHTML,
+					websocket: nodes[i].childNodes[3].innerHTML
 				};
 			}
 			success(a);

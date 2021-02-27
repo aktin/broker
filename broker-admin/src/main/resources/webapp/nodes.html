@@ -11,7 +11,7 @@ function init(){
 	getNodes(function(nodes){
 		for( var i=0; i<nodes.length; i++ ){
 			var node = nodes[i];
-			$('#nodes tbody').append('<tr data-node-id="'+node.id+'"><td>'+node.id+'</td><td>'+node.dn+'</td><td>'+node.seen+'</td><td><a href="#'+node.id+'/stats">stats</a>|<a href="#'+node.id+'/versions">versions</a></td></tr>');
+			$('#nodes tbody').append('<tr data-node-id="'+node.id+'"><td>'+node.id+'</td><td>'+node.dn+'</td><td>'+node.seen+'</td><td><a href="#'+node.id+'/stats">stats</a>|<a href="#'+node.id+'/versions">versions</a></td><td>'+node.websocket+'</td></tr>');
 		}
 		// check if node is selected by url hash
 		if( window.location.hash != '' ){
@@ -29,7 +29,7 @@ function init(){
 		url: 'xslt/stats-fragment.xsl',
 		success: function(data) {
 			var xp = new XSLTProcessor();
-		  	xp.importStylesheet(data);
+			xp.importStylesheet(data);
 			// store for later use
 			window.xslt['stats'] = xp;
 		},
@@ -40,7 +40,7 @@ function init(){
 		url: 'xslt/props-fragment.xsl',
 		success: function(data) {
 			var xp = new XSLTProcessor();
-		  	xp.importStylesheet(data);
+			xp.importStylesheet(data);
 			// store for later use
 			window.xslt['versions'] = xp;
 		},
@@ -108,6 +108,7 @@ function showNodeResource(id,res){
 					<td>DN</td>
 					<td>Last contact</td>
 					<td>Resources</td>
+					<td>Websocket</td>
 				</tr>
 			</thead>
 			<tbody></tbody>
