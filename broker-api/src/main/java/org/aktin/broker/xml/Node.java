@@ -22,7 +22,7 @@ public class Node {
 	@XmlElement(name="last-contact")
 	public Instant lastContact;
 	@XmlElement
-	public boolean realtime;
+	public boolean websocket;
 	/**
 	 * Relevant software modules running at the client. The first element must be "broker-api" with
 	 * the current version information.

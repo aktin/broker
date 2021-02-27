@@ -110,7 +110,7 @@ public class AuthCache implements Flushable, Closeable{
 			if( ts != null ){
 				node.lastContact = Instant.ofEpochMilli(ts);
 			}
-			node.realtime = (p.getWebsocketCount() > 0);
+			node.websocket = (p.getWebsocketCount() > 0);
 		}
 	}
 	// TODO also flush sometimes before close, e.g. using timer

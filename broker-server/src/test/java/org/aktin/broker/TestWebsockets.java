@@ -118,6 +118,10 @@ public class TestWebsockets extends AbstractTestBroker{
 			public void onRequestClosed(int requestId) {
 				closedId.set(requestId);
 			}
+
+			@Override
+			public void onWebsocketClosed(int statusCode, String reason) {
+			}
 		});
 		// fail with unwanted notifications of third party
 		c2.openWebsocket(new NotificationListener() {
@@ -134,6 +138,9 @@ public class TestWebsockets extends AbstractTestBroker{
 			@Override
 			public void onRequestClosed(int requestId) {
 				thirdPartyNotification.set(true);
+			}
+			@Override
+			public void onWebsocketClosed(int statusCode, String reason) {
 			}
 		});
 		
