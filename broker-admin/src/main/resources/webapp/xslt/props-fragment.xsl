@@ -4,7 +4,9 @@
 <xsl:template match="/">
 	<html><body>
 			<table border="1"><tbody>
-				<xsl:apply-templates select="/properties/entry"/>
+				<xsl:apply-templates select="/properties/entry">
+					<xsl:sort select="@key"/>
+				</xsl:apply-templates>
 			</tbody></table>		
 	</body></html>
 </xsl:template>
