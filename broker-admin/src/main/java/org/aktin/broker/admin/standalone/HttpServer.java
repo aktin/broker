@@ -141,7 +141,9 @@ public class HttpServer {
 
 	private void setupWebsockets(ServletContextHandler context) throws Exception{
 		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
-		// TODO use HeaderAuthentication
+		// TODO verify session idle timeout and increase accordingly. e.g. 60 minutes 
+		c.setDefaultMaxSessionIdleTimeout(1000*60*10);
+		// use HeaderAuthentication
 		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(this.auth, binder.getAuthCache());
 		for( Class<?> websocketClass : Broker.WEBSOCKETS ) {
 			// retrieve path
