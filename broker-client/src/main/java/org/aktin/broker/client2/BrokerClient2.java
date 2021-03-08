@@ -246,7 +246,7 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 			b.append(message);
 		}
 		if( throwable != null ) {
-			if( !b.isEmpty() ) {
+			if( b.length() > 0 ) {
 				b.append('\n');
 			}
 			// append stack trace
