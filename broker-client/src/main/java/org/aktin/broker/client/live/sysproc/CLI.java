@@ -72,6 +72,7 @@ public class CLI implements Runnable {
 
 		// if this method fails, it serves an early indicator of connection problems
 		client.putMyResourceProperties("versions", props);
+
 		return client;
 	}
 
@@ -85,7 +86,6 @@ public class CLI implements Runnable {
 				exec.shutdown();
 			}
 		});
-
 
 		exec.run();
 			

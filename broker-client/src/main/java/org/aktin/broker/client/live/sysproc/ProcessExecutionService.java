@@ -57,8 +57,16 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 	}
 
 	@Override
-	public void loadQueue() {
-		// no resume of previous requests
+	public void loadQueue() throws IOException {
+		pollRequests();
+	}
+
+	@Override
+	public void pollRequests() throws IOException {
+		if( config.websocketReconnectPolling ) {
+			log.info("polling for open requests");
+			super.pollRequests();			
+		}
 	}
 
 	@Override
@@ -76,12 +84,15 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 	public void run() {
 		try {
 			startupWebsocketListener();
+			log.info("websocket connection established");
+			// try to load queue. this will do nothing if disabled by configuration
+			loadQueue();
 		} catch (IOException e) {
 			log.severe("websocket connection failed: "+e.getMessage());
 			// exit if the initial websocket connection fails?
 			// for now, just continue trying to establish the connection
 		}
-		log.info("websocket connection established");
+		
 		long previousConnection = System.currentTimeMillis();
 
 		// nothing to do, wait for exit
@@ -115,7 +126,7 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 					// websocket established. poll for missed requests
 					pollRequests();
 				} catch (IOException e) {
-					log.warning("websocket connection failed: "+e.getMessage());
+					log.warning("websocket reconnect failed: "+e.getMessage());
 				}
 			}else {
 				// websocket established, wait for something to happen
@@ -124,7 +135,7 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 					try {
 						this.wait();
 					} catch (InterruptedException e) {
-						// we expected this interruption
+						;// we expected this interruption
 					}
 				}
 			}

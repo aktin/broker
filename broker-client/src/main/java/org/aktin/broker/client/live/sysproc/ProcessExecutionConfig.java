@@ -28,6 +28,7 @@ public class ProcessExecutionConfig implements Configuration{
 	String authParam;
 
 	int websocketReconnectSeconds;
+	boolean websocketReconnectPolling;
 
 	// specific config
 	private long processTimeoutMillis;
@@ -49,6 +50,7 @@ public class ProcessExecutionConfig implements Configuration{
 		this.authParam = props.getProperty("client.auth.param");
 		
 		this.websocketReconnectSeconds = Integer.valueOf(props.getProperty("client.websocket.reconnect.seconds"));
+		this.websocketReconnectPolling = Boolean.valueOf(props.getProperty("client.websocket.reconnect.polling"));
 		this.processTimeoutMillis = 1000*Long.valueOf(props.getProperty("process.timeout.seconds"));
 		
 		String cmd = props.getProperty("process.command");

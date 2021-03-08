@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.client2.NotificationListener;
+import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 
 import lombok.Getter;
@@ -73,8 +74,9 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 * Load the previous executions. Implementation might call {@link #pollRequests()} to load
 	 * the execution queue from the server. 
 	 * Alternatively, local persistence can be used to load requests e.g. from a database.
+	 * @throws IOException IO error during loading of queue
 	 */
-	public abstract void loadQueue();
+	public abstract void loadQueue() throws IOException;
 
 	public boolean isWebsocketClosed() {
 		return websocket == null || websocket.isInputClosed();
@@ -167,6 +169,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 * @param requestId request id to add/execute
 	 * @return Future for the request. If the request is already pending, the previous (unfinished) future is returned.
 	 */
+	@SuppressWarnings("unchecked")
 	public Future<T> addRequest(Integer requestId){
 		// if request already pending, return existing future
 		PendingExecution p = pending.get(requestId);
@@ -215,8 +218,34 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 
 	/**
 	 * Poll the server for new requests.
+	 * @throws IOException IO error during polling
 	 */
-	public void pollRequests() {
-		// TODO implement. ask for requests compare with pending and call cancelRequest or addRequest for changes
+	public void pollRequests() throws IOException {
+		List<RequestInfo> list = client.listMyRequests();
+		for( RequestInfo request : list ) {
+			if( request.closed != null ) {
+				// closed request. see if it is in the queue
+				PendingExecution p = pending.get(request.getId());
+				if( p != null ) {
+					p.abortLocally();
+				}else {
+					// we don't have the execution in our queue
+					;// nothing to do
+				}
+				client.deleteMyRequest(request.getId());
+			}else{
+				// request still open, check if it is already queued
+				PendingExecution p = pending.get(request.getId());
+				if( p == null ) {
+					// add request to queue
+					addRequest(request.getId());
+				}else {
+					// request already queued
+					;// nothing to do
+				}
+				
+			}
+		}
+		// TODO there might be requests queued, which are no longer on the server. these should be canceled too
 	}
 }
