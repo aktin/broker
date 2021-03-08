@@ -74,6 +74,13 @@
 			<artifactId>broker-api</artifactId>
 			<version>1.2-SNAPSHOT</version>
 		</dependency>
+		<!-- jaxb implementation -->
+		<dependency>
+		    <groupId>com.sun.xml.bind</groupId>
+		    <artifactId>jaxb-impl</artifactId>
+		    <version>2.3.3</version>
+		    <scope>runtime</scope>
+		</dependency>
 		<!-- tests via junit 5 -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
