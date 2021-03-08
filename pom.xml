@@ -58,6 +58,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.release>11</maven.compiler.release>
 	</properties>
 	<build>
 		<pluginManagement>
@@ -112,6 +113,15 @@
 					<artifactId>maven-gpg-plugin</artifactId>
 					<version>1.6</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.2.0</version>
+					<configuration>
+						<doclint>none</doclint>
+						<failOnWarnings>false</failOnWarnings>
+					</configuration>
+				</plugin>
 			</plugins>
 
 		</pluginManagement>
@@ -153,11 +163,6 @@
 	</profiles>
 	<reporting>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0</version>
-			</plugin>
 		</plugins>
 	</reporting>
 
