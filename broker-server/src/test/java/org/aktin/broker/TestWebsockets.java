@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.aktin.broker.client.AuthFilterImpl;
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.ClientWebsocket;
-import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
 import org.aktin.broker.client2.AdminNotificationListener;
 import org.aktin.broker.client2.AuthFilter;
@@ -214,6 +213,10 @@ public class TestWebsockets extends AbstractTestBroker{
 			public void onRequestClosed(int requestId) {
 				action.set("closed");
 				args.set(Collections.singletonList(requestId));
+			}
+
+			@Override
+			public void onWebsocketClosed(int statusCode, String reason) {
 			}
 		});
 
