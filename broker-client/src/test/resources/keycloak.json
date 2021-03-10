@@ -1,0 +1,10 @@
+{
+  "realm": "myrealm",
+  "auth-server-url": "myauthserver",
+  "ssl-required": "external",
+  "resource": "myclientid",
+  "credentials": {
+    "secret": "myclientsecret"
+  },
+  "confidential-port": 0
+}
