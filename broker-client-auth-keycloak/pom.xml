@@ -1,13 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<name>AKTIN : Broker : Client</name>
+	<name>AKTIN : Broker : Client Authentication via Keycloak</name>
 
-	<artifactId>broker-client</artifactId>
+	<artifactId>broker-client-auth-keycloak</artifactId>
 
 	<description>
-		Broker client library. This library can be used
-		to retrieve queries from a broker, request/submit
-		status information and submit query results.
+		Broker client authentication library
+		using keycloak for authentication.
 	</description>
 	
 	
@@ -24,25 +23,6 @@
 
   	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>          
-				<configuration>
-					<source>11</source>
-					<target>11</target>
-				</configuration>
-			</plugin>
 			<!-- copy dependencies to target/lib during build process -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -71,31 +51,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.aktin</groupId>
-			<artifactId>broker-api</artifactId>
+			<artifactId>broker-client</artifactId>
 			<version>1.1.2-SNAPSHOT</version>
 		</dependency>
-		<!-- jaxb implementation -->
 		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-impl</artifactId>
-		    <version>2.3.3</version>
-		    <scope>runtime</scope>
-		</dependency>
-		<!-- tests via junit 5 -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-		</dependency>
-		<!-- mockito -->
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>3.8.0</version>
-			<scope>test</scope>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-authz-client</artifactId>
+			<version>12.0.4</version>
 		</dependency>
 	</dependencies>
 </project>
