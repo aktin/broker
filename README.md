@@ -169,12 +169,44 @@ user interface - for a better user experience, external customized frontents sho
 To access the frontend, go to http://localhost:8080/admin/html/index.html once the broker is running.
 For login, use the username *admin*. The admin password is specified in the startup script and defaults to *CHANGEME*.
 
+The minimal web frontend currently only supports the `org.aktin.broker.auth.cred.CredentialTokenAuthProvider`. 
+Without this auth provider, the frontend will not function. Nevertheless, the broker will be fully function
 
 
 Using the broker-client library
 -------------------------------
 To use broker functionality in java client applications, you can use the broker-client dependency 
-(https://mvnrepository.com/artifact/org.aktin/broker-client). For a code example on how to use the client, see
+(https://mvnrepository.com/artifact/org.aktin/broker-client).
+
+The client library comes with two runnable implementations:
+1. `org.aktin.broker.client.live.sysproc.CLI` for a command line implementation with executes custom OS processes to automatically handle requests.
+2. `org.aktin.broker.client.live.util.AdminListener` which connects to the server and listens/prints any changes and updates.
+For more information, see broker-client/README.md
+
+
+For a code example of other clients, see
 the following implementations:
 - https://github.com/li2b2/li2b2-shrine/tree/master/node/i2b2/i2b2-node
 - https://github.com/li2b2/li2b2-shrine/tree/master/node/dktk/dktk-node
+
+
+Using other authentication methods and authentication providers
+===============================================================
+
+Multiple authentication/authorization providers are supported.
+Default method is API key authentication.
+
+OpenConnect, OAuth, KeyCloak
+----------------------------
+
+Client now retrieves keycloak token. Broker does no longer use the introspection endpoint but checks the token itself.
+
+To get it running, the following is needed:
+
+keycloak.json: get it from keycloak. Go to your client there, and click on the "installation" tab and select "keycloak oidc json" 
+format. Copy the file to the target folder (where sysproc.properties is copied to as well)
+add the OpenIdAuthProvider to the list of providers. 
+
+In run_broker.sh, add `-Dbroker.auth.provider=org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider,org.aktin.broker.auth.cred.CredentialTokenAuthProvider,org.aktin.broker.auth.openid.OpenIdAuthProvider` or if wanted, add it to the defaultconfig
+adapt openid-config.properties (broker-admin) to contain the correct urls to your keycloak and copy 
+it to the place where you extracted the broker admin dist zip to (place it where api-keys.properties is)
