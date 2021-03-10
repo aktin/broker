@@ -49,7 +49,7 @@ public class AdminListener implements AdminNotificationListener, Runnable{
 		private String authParam;		
 	}
 	public static void main(String[] args) {
-		if( args.length != 2 ) {
+		if( args.length != 3 ) {
 			System.err.println("Usage: "+AdminListener.class.getPackageName()+"."+AdminListener.class.getName()+" <BROKER_ENDPOINT_URI> <AuthFilterImplementationClass> <AuthFilterArgument>");
 			System.err.println("e.g.: "+AdminListener.class.getPackageName()+"."+AdminListener.class.getName()+" http://localhost:8080/broker/ org.aktin.broker.client2.auth.ApiKeyAuthentication xxxAdmin1234");			
 			return;
