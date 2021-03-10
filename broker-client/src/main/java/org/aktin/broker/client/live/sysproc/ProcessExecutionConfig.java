@@ -2,8 +2,6 @@ package org.aktin.broker.client.live.sysproc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -14,13 +12,12 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.aktin.broker.client.live.Configuration;
-import org.aktin.broker.client2.AuthFilter;
+import org.aktin.broker.client.live.ClientConfiguration;
 
 import lombok.Data;
 
 @Data
-public class ProcessExecutionConfig implements Configuration{
+public class ProcessExecutionConfig implements ClientConfiguration{
 	String requestMediatype;
 	String resultMediatype;
 	URI brokerEndpointURI;
@@ -80,15 +77,5 @@ public class ProcessExecutionConfig implements Configuration{
 		return sb.toString();
 	}
 
-	public AuthFilter instantiateAuthFilter() throws IllegalArgumentException {
-		try {
-			Class<?> clazz = Class.forName(authClass);
-			Constructor<? extends AuthFilter> constructor 
-				= clazz.asSubclass(AuthFilter.class).getConstructor(String.class);
-			return constructor.newInstance(authParam);
-		} catch (InvocationTargetException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | ClassNotFoundException | InstantiationException e) {
-			throw new IllegalArgumentException("Unable to instantiate AuthFilter for class "+authClass, e);
-		}
-	}
 
 }

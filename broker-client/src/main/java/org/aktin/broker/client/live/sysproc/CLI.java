@@ -7,21 +7,17 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Properties;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 
 import org.aktin.broker.client2.AuthFilter;
 import org.aktin.broker.client2.BrokerClient2;
 
-import lombok.extern.java.Log;
 
 
-@Log
+//@Log
 public class CLI implements Runnable {
 	private ProcessExecutionService exec;
-	private ProcessExecutionConfig config;
 
 	public CLI(ProcessExecutionConfig config, BrokerClient2 client)  {
-		this.config = config;
 		this.exec = new ProcessExecutionService(client, config, Executors.newSingleThreadExecutor());
 	}
 

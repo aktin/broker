@@ -5,30 +5,27 @@ import java.net.URI;
 import java.net.http.WebSocket;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.aktin.broker.client.live.BrokerConfiguration;
 import org.aktin.broker.client2.AdminNotificationListener;
-import org.aktin.broker.client2.AuthFilter;
 import org.aktin.broker.client2.BrokerAdmin2;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+/**
+ * Standalone program which connects to a broker with admin privileges and listens
+ * to any changes or updates via websocket. All updates are printed to {@code stdout}.
+ *
+ * Arguments to {@link #main(String[])}: broker endpoint uri, auth filter implementation class, authentication argument.
+ * e.g. {@code http://localhost:8080/broker/ org.aktin.broker.client2.auth.ApiKeyAuthentication xxxAdmin1234}
+ *
+ * @author R.W.Majeed
+ *
+ */
 public class AdminListener implements AdminNotificationListener, Runnable{
 	private BrokerAdmin2 admin;
 	private AtomicBoolean abort;
 	private WebSocket websocket;
-
-    @AllArgsConstructor
-    private static class ApiKeyAuthFilter implements AuthFilter{
-    	private String key;
-		@Override
-		public void addAuthentication(WebSocket.Builder builder) throws IOException {
-			builder.header("Authorization", "Bearer "+key);
-		}
-
-		@Override
-		public void addAuthentication(java.net.http.HttpRequest.Builder builder) throws IOException {
-			builder.header("Authorization", "Bearer "+key);
-		}
-    }
 
 	public AdminListener(BrokerAdmin2 admin) throws IOException{
 		this.admin = admin;
@@ -44,13 +41,22 @@ public class AdminListener implements AdminNotificationListener, Runnable{
 		});
 	}
 
+	@Getter
+	@AllArgsConstructor
+	public static class Config implements BrokerConfiguration{
+		private URI brokerEndpointURI;
+		private String authClass;
+		private String authParam;		
+	}
 	public static void main(String[] args) {
 		if( args.length != 2 ) {
-			System.err.println("Usage: "+AdminListener.class.getPackageName()+"."+AdminListener.class.getName()+" <BROKER_ENDPOINT_URI> <APIKEY>");
+			System.err.println("Usage: "+AdminListener.class.getPackageName()+"."+AdminListener.class.getName()+" <BROKER_ENDPOINT_URI> <AuthFilterImplementationClass> <AuthFilterArgument>");
+			System.err.println("e.g.: "+AdminListener.class.getPackageName()+"."+AdminListener.class.getName()+" http://localhost:8080/broker/ org.aktin.broker.client2.auth.ApiKeyAuthentication xxxAdmin1234");			
 			return;
 		}
-		BrokerAdmin2 admin = new BrokerAdmin2(URI.create(args[0]));
-		admin.setAuthFilter(new ApiKeyAuthFilter(args[1]));
+		Config config = new Config(URI.create(args[0]), args[1], args[2]);
+		BrokerAdmin2 admin = new BrokerAdmin2(config.getBrokerEndpointURI());
+		admin.setAuthFilter(config.instantiateAuthFilter());
 		try {
 			new AdminListener(admin).run();
 		} catch (IOException e) {
