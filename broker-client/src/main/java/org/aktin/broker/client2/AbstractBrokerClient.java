@@ -131,8 +131,18 @@ public abstract class AbstractBrokerClient {
 		if( authFilter != null ) {
 			authFilter.addAuthentication(wsb);
 		}
+		String scheme;
+		switch( brokerEndpoint.getScheme() ) {
+		case "http":
+			scheme = "ws"; break;
+		case "https":
+			scheme = "wss"; break;
+		default:
+			throw new IOException("Websocket connection requires http or https scheme in broker URI");
+		};
+		
 		try {
-			URI wsuri = new URI("ws", brokerEndpoint.resolve(urlspec).getRawSchemeSpecificPart(), null);
+			URI wsuri = new URI(scheme, brokerEndpoint.resolve(urlspec).getRawSchemeSpecificPart(), null);
 			return wsb.buildAsync(wsuri, listener).get();
 		} catch (InterruptedException e ) {
 			throw new IOException("Websocket open operation interrupted", e);
