@@ -1,31 +1,25 @@
 package org.aktin.broker.auth.openid;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import org.aktin.broker.server.auth.AuthInfo;
 import org.aktin.broker.server.auth.AuthInfoImpl;
 import org.aktin.broker.server.auth.AuthRole;
 import org.aktin.broker.server.auth.HeaderAuthentication;
 import org.aktin.broker.server.auth.HttpBearerAuthentication;
+import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
+import org.jose4j.jwk.HttpsJwks;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
 
 public class OpenIdAuthenticator implements HeaderAuthentication {
 
-  public static final String CLIENT_ID = "client_id";
-  public static final String CLIENT_SECRET = "client_secret";
-  public static final String TOKEN = "token";
-  public static final String TOKEN_INTROSPECTION_PATH = "protocol/openid-connect/token/introspect";
   public static final String KEY_JWT_USERNAME = "clientId";
   private final OpenIdConfig config;
 
@@ -39,45 +33,49 @@ public class OpenIdAuthenticator implements HeaderAuthentication {
     String accessTokenSerialized = HttpBearerAuthentication.extractBearerToken(getHeader.apply(
         HttpHeaders.AUTHORIZATION));
 
-    // Use token introspection endpoint to validate and decode token
-    String introspectionResponse = introspectToken(accessTokenSerialized);
-    JsonElement jsonElement = JsonParser.parseString(introspectionResponse);
+    try {
+      JwtClaims jwtClaims = verifyToken(accessTokenSerialized);
+      String siteId = jwtClaims.getClaimValueAsString(KEY_JWT_USERNAME);
+      String siteName = jwtClaims.getClaimValueAsString(config.getSiteNameClaim());
 
-    String siteId = jsonElement.getAsJsonObject().get(KEY_JWT_USERNAME).getAsString();
-    String siteName = jsonElement.getAsJsonObject().get(config.getSiteNameClaim()).getAsString();
-
-    // Currently, the definition is that only diz-clients get a site name claim. This might change.
-    Set<AuthRole> roles = new HashSet<>();
-    if (siteName != null && !siteName.isEmpty()) {
-      roles.add(AuthRole.NODE_READ);
-      roles.add(AuthRole.NODE_WRITE);
+      // Currently, the definition is that only diz-clients get a site name claim. This might change.
+      Set<AuthRole> roles = new HashSet<>();
+      if (siteName != null && !siteName.isEmpty()) {
+        roles.add(AuthRole.NODE_READ);
+        roles.add(AuthRole.NODE_WRITE);
+      }
+      return new AuthInfoImpl(siteId, "CN=" + siteName, roles);
+    } catch (IllegalAccessException e) {
+      return new AuthInfoImpl("invalid", "CN=invalid", new HashSet<>());
     }
-
-    return new AuthInfoImpl(siteId, "CN=" + siteName, roles);
   }
 
 	/**
 	 * Take an access token and check its viability.
 	 * @param accessTokenSerialized the serialized access token as received in the Auth header
-	 * @return the introspection result string received from the oauth server
+	 * @return the set of claims contained in the token
 	 */
-  private String introspectToken(String accessTokenSerialized) {
-    Client client = ClientBuilder.newClient();
+  private JwtClaims verifyToken(String accessTokenSerialized)
+      throws IllegalAccessException {
+    try {
+      HttpsJwks httpsJwks = new HttpsJwks(config.getJwks_uri());
+      HttpsJwksVerificationKeyResolver httpsJwksKeyResolver = new HttpsJwksVerificationKeyResolver(httpsJwks);
 
-    WebTarget webTarget
-        = client.target(config.getAuth_host());
-    WebTarget introspectionWebTarget
-        = webTarget.path(TOKEN_INTROSPECTION_PATH);
+      JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+          .setRequireExpirationTime()
+          .setAllowedClockSkewInSeconds(10)
+          .setRequireSubject()
+          .setExpectedIssuer(config.getAuth_host())
+          .setSkipDefaultAudienceValidation() // TODO: take audience requirement into config?
+          .setVerificationKeyResolver(httpsJwksKeyResolver)
+          .setJwsAlgorithmConstraints(
+              ConstraintType.PERMIT, config.getAllowedAlgorithms().toArray(new String[0]))
+          .build();
 
-    MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
-    formData.add(CLIENT_ID, config.getClientId());
-    formData.add(CLIENT_SECRET, config.getClientSecret());
-    formData.add(TOKEN, accessTokenSerialized);
-
-    Response response
-        = introspectionWebTarget.request().post(Entity.form(formData));
-
-    return response.readEntity(String.class);
+      return jwtConsumer.processToClaims(accessTokenSerialized);
+    } catch (InvalidJwtException e) {
+      throw new IllegalAccessException();
+    }
   }
 
 }

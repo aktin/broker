@@ -11,6 +11,10 @@ import org.aktin.broker.server.auth.HeaderAuthentication;
 public class OpenIdAuthProvider extends AbstractAuthProvider{
 	private OpenIdConfig config;
 
+	public OpenIdAuthProvider() {
+		config = null; // lazy init, load later in getInstance by using supplied path
+	}
+
 	public OpenIdAuthProvider(InputStream in) {
 		this.config = new OpenIdConfig(in);
 	}
