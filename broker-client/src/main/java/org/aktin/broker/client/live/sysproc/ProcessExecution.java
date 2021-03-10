@@ -57,6 +57,7 @@ public class ProcessExecution extends AbortableRequestExecution{
 		if( resp == null ) {
 			throw new IOException("Request not found");
 		}
+		client.postRequestStatus(requestId, RequestStatus.retrieved);
 		
 		this.pb = new ProcessBuilder(config.getCommand());
 		// add env pb.environment().put(key, value)
