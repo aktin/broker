@@ -1,5 +1,10 @@
 
 
+
+Other TODOs
+==============
+
+
 Last contact does not work after restart
 --
 Last-contact information should be written to file/database on exit and reloaded on start.

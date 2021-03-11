@@ -10,7 +10,8 @@ http paths: `/broker/*` and `/aggregator/*`.
 For proxying websocket connections, the following paths must be 
 configured with protocol upgrade functionality: `/broker/websocket` and `broker/my/websocket`.
 
- 
+
+A HL7 FHIR API specification is available in [README-HL7-FHIR-API.md](README-HL7-FHIR-API.md)
 
 
 Authentication
