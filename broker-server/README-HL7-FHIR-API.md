@@ -114,8 +114,10 @@ GET /my/fhir/Task?_summary=true
 ```
 
 # Retrieve a particular request
+```
 GET /my/fhir/Task/123
 ```
+
 # Update node request status
 ```
 <Task>
