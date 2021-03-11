@@ -97,8 +97,12 @@ For node/client access to the broker, the base URI is typically `/my/fhir` or `/
 Listed below are the possible operations for a broker client.
 
 # List all/pending requests
+Request
 ```
 GET /my/fhir/Task?_summary=true
+```
+Response
+```xml
 <Bundle>
 ...
   <entry>
@@ -114,12 +118,13 @@ GET /my/fhir/Task?_summary=true
 ```
 
 # Retrieve a particular request
+Request
 ```
 GET /my/fhir/Task/123
 ```
+Response is a task resource similar to the example above, but without `output` elements.
 
-# Update node request status
-```
+```xml
 <Task>
 	<status value="requested"/><!-- will always be 'requested' when the task is available to the node initially -->
 	<intent value="proposal"/><!-- fixed -->
@@ -132,7 +137,12 @@ GET /my/fhir/Task/123
 ```
 
 # Report updated status for a particular request
+Request
+```
 PATCH /my/fhir/Task/123
+```
+Request body
+```xml
 <diff>
  <replace sel="Task/status/@value">failed</replace>
 </diff>
@@ -142,8 +152,12 @@ Allowed status updates are `received`, `accepted` (queued), `rejected`, `on-hold
 
 
 # Uppload result data for a specific query
+Request
 ```
 PATCH /my/fhir/Task/123
+```
+Request body
+```xml
 <diff>
  <add sel="Task">
   <output>
@@ -167,17 +181,16 @@ PATCH /my/fhir/Task/123
 DELETE /my/fhir/Task/123
 ```
 
-
 # Websocket notifications
 Advertised by the `websocket` extension in the capability statement.
 Will usually be the URL `/my/fhir/notification`.
 Once a client is subscribed, it will retrieve events in the form
-```
+```json
 {
   "lastUpdated":"2016-06-01T10:36:23.232-05:00",
   "location":"Task/123",
   "operationType":"update",
-  "resourceId":"123",
+  "resourceId":"123"
 }
 ```
 This is implemented analoguous to the IBM FHIR server.
