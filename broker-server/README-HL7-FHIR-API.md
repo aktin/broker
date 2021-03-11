@@ -4,6 +4,8 @@ HL7 FHIR-API
 
 Specification for a HL7 FHIR API for basic request broker and federated query execution operations.
 
+This specification is currently a draft and not fully implemented.
+
 A request always represented as a `Task` resource. E.g.
 ```xml
 <Task>
