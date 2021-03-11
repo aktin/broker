@@ -35,18 +35,23 @@ public class OpenIdAuthenticator implements HeaderAuthentication {
 
     try {
       JwtClaims jwtClaims = verifyToken(accessTokenSerialized);
-      String siteId = jwtClaims.getClaimValueAsString(KEY_JWT_USERNAME);
+      String userId = jwtClaims.getClaimValueAsString(KEY_JWT_USERNAME);
       String siteName = jwtClaims.getClaimValueAsString(config.getSiteNameClaim());
 
       // Currently, the definition is that only diz-clients get a site name claim. This might change.
       Set<AuthRole> roles = new HashSet<>();
       if (siteName != null && !siteName.isEmpty()) {
-        roles.add(AuthRole.NODE_READ);
-        roles.add(AuthRole.NODE_WRITE);
+		roles.add(AuthRole.NODE_READ);
+		roles.add(AuthRole.NODE_WRITE);
+      }else {
+    	  // no site claim -> admin access
+    	  siteName = userId; // use userId as common name
+    	  roles.add(AuthRole.ADMIN_READ);
+    	  roles.add(AuthRole.NODE_WRITE);
       }
-      return new AuthInfoImpl(siteId, "CN=" + siteName, roles);
+      return new AuthInfoImpl(userId, "CN=" + siteName, roles);
     } catch (IllegalAccessException e) {
-      return new AuthInfoImpl("invalid", "CN=invalid", new HashSet<>());
+      return null;
     }
   }
 
