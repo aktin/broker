@@ -11,9 +11,9 @@ import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
-import java.net.http.WebSocket;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.net.http.WebSocket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -35,7 +35,7 @@ import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Document;
 
 
-public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
+public class BrokerClient2 extends AbstractBrokerClient<ClientNotificationListener> implements BrokerClient{
 
 	public BrokerClient2(URI endpointURI) {
 		super();
@@ -275,13 +275,36 @@ public class BrokerClient2 extends AbstractBrokerClient implements BrokerClient{
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 
-	public WebSocket openWebsocket(NotificationListener listener) throws IOException {
-		return super.openWebsocket("my/websocket", new WebsocketClientListener(listener));
+	public WebSocket connectWebsocket() throws IOException {
+		super.connectWebsocket("my/websocket");
+		return this.getWebsocket();
 	}
+//	public WebSocket openWebsocket(ClientNotificationListener listener) throws IOException {
+//		return super.openWebsocket("my/websocket", new WebsocketClientListener(listener));
+//	}
 	@Override
 	public BrokerStatus getBrokerStatus() throws IOException {
 		HttpRequest req = createBrokerRequest("status").GET().build();
 		return sendAndExpectJaxb(req, BrokerStatus.class);
+	}
+	@Override
+	protected void onWebsocketText(String text) {
+		int sep = text.indexOf(' ');
+		String command = text.substring(0, sep);
+		String arg = text.substring(sep+1);
+		switch( command ) {
+		case "published":
+			for( ClientNotificationListener listener : listeners )
+			listener.onRequestPublished(Integer.valueOf(arg));
+			break;
+		case "closed":
+			for( ClientNotificationListener listener : listeners )
+			listener.onRequestClosed(Integer.valueOf(arg));
+			break;
+		default:
+			// ignoring unsupported websocket command
+			// TODO log warning
+		}
 	}
 
 

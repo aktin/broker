@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import org.aktin.broker.client2.BrokerClient2;
-import org.aktin.broker.client2.NotificationListener;
+import org.aktin.broker.client2.ClientNotificationListener;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 
@@ -45,6 +45,29 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		this.client = client;
 		this.pending = Collections.synchronizedMap(new HashMap<>());
 		this.executor = executor;
+		this.client.addListener(new ClientNotificationListener() {
+			
+			@Override
+			public void onResourceChanged(String resourceName) {
+				// nothing happens
+			}
+			
+			@Override
+			public void onRequestPublished(int requestId) {
+				// check if request already pending
+				addRequest(requestId);
+			}
+			
+			@Override
+			public void onRequestClosed(int requestId) {
+				cancelRequest(requestId, true);
+			}
+
+			@Override
+			public void onWebsocketClosed(int statusCode) {
+				AbstractExecutionService.this.onWebsocketClosed(statusCode);
+			}
+		});
 	}
 
 	private class PendingExecution implements Runnable{
@@ -91,29 +114,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			// close previous websocket
 			this.websocket.abort();
 		}
-		this.websocket = client.openWebsocket(new NotificationListener() {
-			
-			@Override
-			public void onResourceChanged(String resourceName) {
-				// nothing happens
-			}
-			
-			@Override
-			public void onRequestPublished(int requestId) {
-				// check if request already pending
-				addRequest(requestId);
-			}
-			
-			@Override
-			public void onRequestClosed(int requestId) {
-				cancelRequest(requestId, true);
-			}
-
-			@Override
-			public void onWebsocketClosed(int statusCode, String reason) {
-				AbstractExecutionService.this.onWebsocketClosed(statusCode);
-			}
-		});
+		this.websocket = client.connectWebsocket();
 	}
 	/**
 	 * Abort the executor by shutting down the websocket and aborting all

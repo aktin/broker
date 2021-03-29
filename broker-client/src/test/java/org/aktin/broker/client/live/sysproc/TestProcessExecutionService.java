@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.aktin.broker.client2.BrokerClient2;
-import org.aktin.broker.client2.NotificationListener;
+import org.aktin.broker.client2.ClientNotificationListener;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,14 +46,15 @@ public class TestProcessExecutionService {
 	@Test
 	public void startupAndShutdown() throws IOException, InterruptedException, ExecutionException {
 		Assertions.assertNotNull(client);
-		ArgumentCaptor<NotificationListener> captor = ArgumentCaptor.forClass(NotificationListener.class);
+		ArgumentCaptor<ClientNotificationListener> captor = ArgumentCaptor.forClass(ClientNotificationListener.class);
 
-		when(client.openWebsocket(Mockito.any())).thenReturn(websocket);
+		when(client.connectWebsocket()).thenReturn(websocket);
+		when(client.getWebsocket()).thenReturn(websocket);
 		ProcessExecutionService service = new ProcessExecutionService(client, loadConfig());
 		service.startupWebsocketListener();
 		
 		// make sure websocket was opened and we captured the notification listener
-		verify(client, Mockito.times(1)).openWebsocket(captor.capture());
+		verify(client, Mockito.times(1)).addListener(captor.capture());
 		// publish one request
 		Assertions.assertEquals(1, captor.getAllValues().size());
 		//captor.getValue().onRequestPublished(100);
