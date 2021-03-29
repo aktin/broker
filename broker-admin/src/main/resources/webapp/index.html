@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<link rel="stylesheet" type="text/css" href="default.css"/>
 		<link rel="stylesheet" type="text/css" href="requests.css"/>
 		<!--<script src="https://code.jquery.com/jquery-3.2.1.min.js"
 		  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -14,8 +15,8 @@
 		<script src="indirect-download.js"></script>
 	</head>
 	<body>
+		<h1>Requests</h1>
 		<section>
-			<h1>Requests</h1>
 			<div>
 				<a href="nodes.html">View connected nodes</a>
 			</div>
@@ -28,13 +29,13 @@
 			<button>Show form</button>
 		</form>
 		<section id="create">
-			<h1>From existing template</h1>
+			<h2>From existing template</h2>
 			<form id="load_template">
 				<legend>Load from existing template ID <input type="text" id="template" /></legend>
 				<button onclick="fillFormFromTemplate($('#template').val());return false;">Load</button>
 			</form>
 			<hr/>
-			<h1>New request</h1>
+			<h2>New request</h2>
 			<form id="node_limit">
 				<fieldset>
 					<legend>Recipients</legend>
