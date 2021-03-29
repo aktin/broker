@@ -14,15 +14,29 @@
 		<artifactId>broker</artifactId>
 		<version>1.1.2-SNAPSHOT</version>
 	</parent>
-	<build><!--
+	<build>
 		<plugins>
+	<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>3.0.0</version>
 			</plugin>
-		</plugins>
 		-->
+			<!-- add implementation entries to access version information -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+
 	</build>
 
 	<dependencies>

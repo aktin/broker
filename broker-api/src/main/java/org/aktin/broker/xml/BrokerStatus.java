@@ -11,6 +11,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import lombok.Getter;
+
 @XmlRootElement(name="broker-status")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class BrokerStatus {
@@ -24,7 +26,8 @@ public class BrokerStatus {
 	 */
 	@XmlElementWrapper(name="node-software")
 	@XmlElement(name="module")
-	List<SoftwareModule> nodeSoftware;
+	@Getter
+	List<SoftwareModule> software;
 
 	
 	protected BrokerStatus(){
@@ -34,13 +37,13 @@ public class BrokerStatus {
 		BrokerStatus b = new BrokerStatus();
 		b.timestamp = Instant.now();
 		// TODO calculate uptime
-		b.nodeSoftware = new ArrayList<>();
-		b.nodeSoftware.add(SoftwareModule.BROKER_API);
+		b.software = new ArrayList<>();
+		b.software.add(SoftwareModule.BROKER_API);
 		return b;
 	}
 
 	@Override
 	public String toString(){
-		return "BrokerStatus[timestamp="+timestamp.toString()+", api-version="+nodeSoftware.get(0).version+"]";
+		return "BrokerStatus[timestamp="+timestamp.toString()+", api-version="+software.get(0).version+"]";
 	}
 }

@@ -5,12 +5,28 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
+import lombok.Getter;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SoftwareModule {
+	/**
+	 * Software module ID
+	 */
 	@XmlAttribute(required=true)
+	@Getter
 	String id;
+
+	/**
+	 * Software version associated with the {@link #id}
+	 */
+	@Getter
 	@XmlElement(required=true)
 	String version;
+
+	/**
+	 * Optional URL for the software module
+	 */
+	@Getter
 	@XmlElement(required=false)
 	String url;
 
@@ -22,6 +38,4 @@ public class SoftwareModule {
 		this.version = version;
 		this.id = id;
 	}
-	public String getId(){return id;}
-	public String getVersion(){return version;}
 }
