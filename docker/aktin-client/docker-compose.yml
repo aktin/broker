@@ -3,8 +3,8 @@ services:
   aktin-client:
     container_name: aktin-client
     build:
-      context: ..
-      dockerfile: docker/Dockerfile.client
+      context: ../..
+      dockerfile: docker/aktin-client/Dockerfile
     volumes:
       - ./client-exec-scripts/echo.sh:/opt/codex-aktin/echo.sh
       - ./client-exec-scripts/return-request.sh:/opt/codex-aktin/return-request.sh

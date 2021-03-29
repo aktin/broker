@@ -4,12 +4,10 @@ services:
     container_name: aktin-broker
     environment:
       PASSWORD: ${AKTIN_ADMIN_PW:-changeme}
-      HOST_AND_PORT: ${AKTIN_BROKER_HOST_AND_PORT:-0.0.0.0:8080}
     build:
-      context: ..
-      dockerfile: docker/Dockerfile.broker
+      context: ../..
+      dockerfile: docker/aktin-broker/Dockerfile
     volumes:
-    - ./run_broker.sh:/opt/codex-aktin/run_broker.sh
     - ./api-keys.properties:/opt/codex-aktin/api-keys.properties
     ports:
     - ${AKTIN_BROKER_PORT:-127.0.0.1:8080}:8080

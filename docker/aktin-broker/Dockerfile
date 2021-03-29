@@ -11,6 +11,8 @@ FROM openjdk:15
 
 WORKDIR /opt/codex-aktin
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-admin-dist/target/deploy .
+COPY docker/aktin-broker/run_broker.sh ./run_broker.sh
+RUN chmod 644 run_broker.sh
 
 ARG VERSION=0.0.0
 ENV APP_VERSION=${VERSION} \
@@ -20,12 +22,12 @@ ENTRYPOINT ["sh", "run_broker.sh"]
 
 ARG GIT_REF=""
 ARG BUILD_TIME=""
-LABEL maintainer="num-codex" \
+LABEL maintainer="aktin" \
     org.opencontainers.image.created=${BUILD_TIME} \
-    org.opencontainers.image.authors="num-codex" \
-    org.opencontainers.image.source="https://github.com/num-codex/codex-middleware-aktin" \
+    org.opencontainers.image.authors="aktin" \
+    org.opencontainers.image.source="https://github.com/aktin/broker" \
     org.opencontainers.image.version=${VERSION} \
     org.opencontainers.image.revision=${GIT_REF} \
-    org.opencontainers.image.vendor="num-codex" \
-    org.opencontainers.image.title="codex aktin version: broker" \
-    org.opencontainers.image.description="Middleware broker for distribution of feasibility queries"
+    org.opencontainers.image.vendor="aktin" \
+    org.opencontainers.image.title="aktin broker" \
+    org.opencontainers.image.description="Aktin broker for distribution of queries"

@@ -11,10 +11,10 @@ WORKDIR /opt/codex-aktin
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/*.jar ./lib/
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/lib ./lib/
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/src/test/resources/sysproc.properties .
-COPY docker/run_client.sh ./run_client.sh
+COPY docker/aktin-client/run_client.sh ./run_client.sh
 RUN chmod 644 run_client.sh
 
-RUN apt update && apt-get install -y curl && apt-get install -y jq && apt-get install -y uuid-runtime
+RUN apt-get update && apt-get install -y curl && apt-get install -y jq && apt-get install -y uuid-runtime
 
 ARG VERSION=0.0.0
 ENV APP_VERSION=${VERSION} \
@@ -24,12 +24,12 @@ ENTRYPOINT ["sh", "run_client.sh"]
 
 ARG GIT_REF=""
 ARG BUILD_TIME=""
-LABEL maintainer="num-codex" \
+LABEL maintainer="aktin" \
     org.opencontainers.image.created=${BUILD_TIME} \
-    org.opencontainers.image.authors="num-codex" \
-    org.opencontainers.image.source="https://github.com/num-codex/codex-middleware-aktin" \
+    org.opencontainers.image.authors="aktin" \
+    org.opencontainers.image.source="https://github.com/aktin/broker" \
     org.opencontainers.image.version=${VERSION} \
     org.opencontainers.image.revision=${GIT_REF} \
-    org.opencontainers.image.vendor="num-codex" \
-    org.opencontainers.image.title="codex aktin version: client" \
-    org.opencontainers.image.description="Middleware client for execution of feasibility queries"
+    org.opencontainers.image.vendor="aktin" \
+    org.opencontainers.image.title="aktin client" \
+    org.opencontainers.image.description="Aktin client for execution of queries"
