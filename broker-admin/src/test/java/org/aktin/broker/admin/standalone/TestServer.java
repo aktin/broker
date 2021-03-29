@@ -163,6 +163,9 @@ public class TestServer implements Configuration{
 			admin.publishRequest(num);
 			
 			num = admin.createRequest("application/x.test.request", "test 2");
+			admin.putRequestDefinition(num, "text/plain+x.test.request", "test 2 second definition");
+			admin.putRequestDefinition(num, "application/sql", "SELECT 1");
+			
 			admin.publishRequest(num);
 		}
 
