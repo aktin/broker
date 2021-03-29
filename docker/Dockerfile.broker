@@ -4,7 +4,7 @@ COPY . /tmp/
 WORKDIR /tmp/
 RUN mvn package
 RUN apt-get update && apt-get install -y zip
-RUN cd /tmp/broker-admin-dist/target && unzip broker-admin-dist-1.0.4-SNAPSHOT.zip -d deploy
+RUN cd /tmp/broker-admin-dist/target && unzip *.zip -d deploy
 
 
 FROM openjdk:15
