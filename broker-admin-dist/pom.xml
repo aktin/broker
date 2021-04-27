@@ -11,7 +11,12 @@
 		<artifactId>broker</artifactId>
 		<version>1.3-SNAPSHOT</version>
 	</parent>
-  
+	
+	<properties>
+		<!-- skip deployment of the distribution to nexus/mavencentral -->
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.aktin</groupId>
