@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
@@ -36,6 +37,28 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 	public ProcessExecutionConfig(InputStream in) throws IOException {
 		Properties props = new Properties();
 		props.load(in);
+		
+		String mapvars = props.getProperty("properties.mapvars",""); 
+		if( mapvars.equals("") || mapvars.equals(Boolean.FALSE.toString()) ){
+			// no mapping
+		}else {
+			Function<String,String> mapping;
+			if( mapvars.equals("env") ) {
+				mapping = System.getenv()::get;
+			}else if( mapvars.equals("system") ) {
+				mapping = System::getProperty;
+			}else {
+				throw new IllegalArgumentException("Illegal value for properties.mapvars. Use one of false,env,system");
+			}
+			// map environment variable placeholders in all properties
+			Enumeration<Object> keys = props.keys();
+			while( keys.hasMoreElements() ) {
+				String key = keys.nextElement().toString();
+				String value = props.getProperty(key);
+				props.setProperty(key, lookupPlaceholders(value, mapping));
+			}
+		}
+
 		this.requestMediatype = props.getProperty("broker.request.mediatype");
 		this.resultMediatype = props.getProperty("broker.result.mediatype");
 		try {
@@ -51,10 +74,6 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 		this.processTimeoutMillis = 1000*Long.valueOf(props.getProperty("process.timeout.seconds"));
 		
 		String cmd = props.getProperty("process.command");
-		if( props.getProperty("process.command.mapenv","").contentEquals(Boolean.TRUE.toString()) ){
-			// map environment variable placeholders in command
-			cmd = lookupPlaceholders(cmd, System.getenv()::get);
-		}
 		command = new ArrayList<>();
 		command.add(cmd);
 		command.addAll(Arrays.asList(props.getProperty("process.args").split("\\s+")));
