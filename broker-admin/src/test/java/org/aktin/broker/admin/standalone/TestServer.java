@@ -210,7 +210,7 @@ public class TestServer implements Configuration{
 
 	@Override
 	public long getWebsocketIdleTimeoutMillis() {
-		return 1000;
+		return 30000;
 	}
 
 
