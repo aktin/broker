@@ -36,7 +36,6 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	protected BrokerClient2 client;
 	protected AtomicBoolean abort;
 	private ExecutorService executor;
-	private WebSocket websocket;
 
 	private Map<Integer, PendingExecution> pending;
 
@@ -102,7 +101,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	public abstract void loadQueue() throws IOException;
 
 	public boolean isWebsocketClosed() {
-		return websocket == null || websocket.isInputClosed();
+		return client.getWebsocket() == null || client.getWebsocket().isInputClosed();
 	}
 	/**
 	 * Start the websocket listener to retrieve live updates about published or closed requests.
@@ -110,11 +109,11 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 * @throws IOException
 	 */
 	public void startupWebsocketListener() throws IOException {
-		if( this.websocket != null ) {
+		if( client.getWebsocket() != null ) {
 			// close previous websocket
-			this.websocket.abort();
+			client.closeWebsocket();
 		}
-		this.websocket = client.connectWebsocket();
+		client.connectWebsocket();
 	}
 	/**
 	 * Abort the executor by shutting down the websocket and aborting all
@@ -125,7 +124,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 */
 	@SuppressWarnings("unchecked")
 	public List<T> shutdown() {
-		websocket.abort();
+		client.closeWebsocket();
 		this.abort.set(true);
 		List<Runnable> aborted = executor.shutdownNow();
 		// extract executions from local wrapper PendingExecution
