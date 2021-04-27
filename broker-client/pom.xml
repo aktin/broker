@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.aktin</groupId>
 		<artifactId>broker</artifactId>
-		<version>1.2.1</version>
+		<version>1.3-SNAPSHOT</version>
 	</parent>
 	
 	<properties>
@@ -72,7 +72,7 @@
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-api</artifactId>
-			<version>1.2.1</version>
+			<version>1.3-SNAPSHOT</version>
 		</dependency>
 		<!-- jaxb implementation -->
 		<dependency>
