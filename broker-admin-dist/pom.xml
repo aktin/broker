@@ -9,14 +9,14 @@
 	<parent>
 		<groupId>org.aktin</groupId>
 		<artifactId>broker</artifactId>
-		<version>1.2.1</version>
+		<version>1.3-SNAPSHOT</version>
 	</parent>
   
 	<dependencies>
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-admin</artifactId>
-			<version>1.2.1</version>
+			<version>1.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.enterprise</groupId>
@@ -33,12 +33,12 @@
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-auth-local</artifactId>
-			<version>1.2.1</version>
+			<version>1.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-auth-openid</artifactId>
-			<version>1.2.1</version>
+			<version>1.3-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>
