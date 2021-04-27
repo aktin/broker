@@ -30,6 +30,13 @@ public class DefaultConfiguration implements Configuration{
 			authProvider = new CascadedAuthProvider(Arrays.asList(provs));
 		}
 	}
+	@Override
+	public long getWebsocketIdleTimeoutMillis() {
+		return 1000 * Integer.valueOf(
+					System.getProperty("broker.websocket.idletimeoutseconds", Integer.toString(60*60*2))
+				);
+	}
+
 	private AuthProvider loadProviderClass(String name) throws IllegalArgumentException {
 		Constructor<?> c;
 		try {
