@@ -35,7 +35,7 @@ function initializeForm(){
 		var d = new Date();
 		d.setDate(1);
 		console.log('Setting reference date',d);
-		$('#new_request input[name="reference"]').val(d.toDateInputValue()+"T00:00:00");
+		$('#new_request input[name="reference"]').val(d.toDateInputValue()+"T00:00");
 	}));
 	// switch between single/repeating executions
 	$('#x_exec legend:first-child').css('cursor','pointer').click(function(){
