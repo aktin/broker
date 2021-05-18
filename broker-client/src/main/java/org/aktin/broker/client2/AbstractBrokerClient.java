@@ -17,7 +17,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 import javax.xml.bind.JAXB;
@@ -26,7 +28,10 @@ import org.aktin.broker.client.ResponseWithMetadata;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 
-public abstract class AbstractBrokerClient {
+import lombok.Getter;
+import lombok.Setter;
+
+public abstract class AbstractBrokerClient<T extends NotificationListener> {
 	protected static final int HTTP_STATUS_204_NO_CONTENT = 204;
 	protected static final int HTTP_STATUS_201_CREATED = 201;
 	protected static final int HTTP_STATUS_404_NOT_FOUND = 404;
@@ -40,28 +45,35 @@ public abstract class AbstractBrokerClient {
 	protected static final String MEDIATYPE_APPLICATION_XML_UTF8 = "application/xml; charset=utf-8";
 
 	private URI brokerEndpoint;
+	@Getter
+	@Setter
 	private URI aggregatorEndpoint;
+	@Setter
+	@Getter
 	private AuthFilter authFilter;
+	
+	@Getter
+	private WebSocket websocket;
+	private WebsocketNotificationService notifier;
+	
+	protected List<T> listeners;
 
 	protected HttpClient client;
 	protected Charset defaultCharset;
 
+
 	protected AbstractBrokerClient() {
 		this.defaultCharset = StandardCharsets.UTF_8;
-		this.client = HttpClient.newHttpClient();
+		this.client = HttpClient.newBuilder().version(Version.HTTP_1_1).build();
+		this.listeners = new CopyOnWriteArrayList<>();
 	}
 
+	public void addListener(T listener) {
+		listeners.add(listener);
+	}
 	abstract protected URI getQueryBaseURI();
 	protected URI resolveBrokerURI(String spec){
 		return brokerEndpoint.resolve(spec);
-	}
-
-	public void setAuthFilter(AuthFilter auth) {
-		this.authFilter = auth;
-	}
-
-	public void setAggregatorEndpoint(URI uri) {
-		this.aggregatorEndpoint = uri;
 	}
 
 	public void setEndpoint(URI endpointURI) {
@@ -126,7 +138,51 @@ public abstract class AbstractBrokerClient {
 	protected HttpRequest.Builder createAggregatorRequest(String urispec) throws IOException{
 		return createRequest(aggregatorEndpoint, urispec);
 	}
-	protected WebSocket openWebsocket(String urlspec, WebSocket.Listener listener) throws IOException {
+	
+	/**
+	 * This method will be called by threads created from {@link #notifier}
+	 * @param statusCode websocket close status code
+	 */
+	protected void onWebsocketClose(int statusCode) {
+		listeners.forEach(l -> l.onWebsocketClosed(statusCode));
+	}
+	protected abstract void onWebsocketText(String text);
+
+	protected void connectWebsocket(String urlspec) throws IOException {
+		if( this.websocket != null ) {
+			throw new IOException("Websocket already connected");
+		}
+		this.notifier = new WebsocketNotificationService(Executors.newSingleThreadExecutor()) {
+			@Override
+			protected void notifyText(String text) {
+				onWebsocketText(text);
+			}
+			
+			@Override
+			protected void notifyClose(int statusCode) {
+				onWebsocketClose(statusCode);
+			}
+		};
+		try {
+			this.websocket = openWebsocket(urlspec, this.notifier);
+		}catch( IOException e ) {
+			this.notifier.shutdown();
+			this.notifier = null;
+			throw e;
+		}
+	}
+	public void closeWebsocket() {
+		if( this.websocket == null ) {
+			// already closed
+			return;
+		}
+		this.notifier.shutdown();
+		this.websocket.abort();
+		this.notifier = null;
+		this.websocket = null;	
+	}
+
+	private WebSocket openWebsocket(String urlspec, WebSocket.Listener listener) throws IOException {
 		WebSocket.Builder wsb = client.newWebSocketBuilder();
 		if( authFilter != null ) {
 			authFilter.addAuthentication(wsb);

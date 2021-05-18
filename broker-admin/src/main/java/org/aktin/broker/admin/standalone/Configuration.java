@@ -10,6 +10,8 @@ public interface Configuration {
 	// configuration to specify external class implementing HeaderAuthentication
 	AuthProvider getAuthProvider() throws IOException;
 
+	long getWebsocketIdleTimeoutMillis();
+
 	Path getBasePath();
 
 	default String getDatabasePath() {return getBasePath().resolve("broker").toString();}

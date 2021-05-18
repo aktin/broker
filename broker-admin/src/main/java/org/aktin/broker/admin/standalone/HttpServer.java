@@ -142,7 +142,7 @@ public class HttpServer {
 	private void setupWebsockets(ServletContextHandler context) throws Exception{
 		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
 		// TODO verify session idle timeout and increase accordingly. e.g. 60 minutes 
-		c.setDefaultMaxSessionIdleTimeout(1000*60*10);
+		c.setDefaultMaxSessionIdleTimeout(config.getWebsocketIdleTimeoutMillis());
 		// use HeaderAuthentication
 		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(this.auth, binder.getAuthCache());
 		for( Class<?> websocketClass : Broker.WEBSOCKETS ) {

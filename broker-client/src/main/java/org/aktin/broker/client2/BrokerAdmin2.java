@@ -6,8 +6,10 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
@@ -19,6 +21,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 
 import javax.xml.bind.JAXB;
 import javax.xml.transform.TransformerException;
@@ -38,7 +41,7 @@ import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Node;
 
 
-public class BrokerAdmin2 extends AbstractBrokerClient implements BrokerAdmin{
+public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener> implements BrokerAdmin{
 	public BrokerAdmin2(URI endpointURI) {
 		super();
 		setEndpoint(endpointURI);
@@ -328,8 +331,43 @@ public class BrokerAdmin2 extends AbstractBrokerClient implements BrokerAdmin{
 				.DELETE().build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
-	public WebSocket openWebsocket(AdminNotificationListener listener) throws IOException {
-		return super.openWebsocket("websocket", new WebsocketAdminListener(listener));
+	public WebSocket connectWebsocket() throws IOException {
+		super.connectWebsocket("websocket");
+		return this.getWebsocket();
+	}
+
+	@Override
+	protected void onWebsocketText(String text) {
+		String[] args = text.split(" ", 4);
+			switch( args[0] ) {
+			case "created": // request created (requestId)
+				for( AdminNotificationListener listener : listeners )
+				listener.onRequestCreated(Integer.valueOf(args[1]));
+				break;
+			case "published": // request published (requestId)
+				for( AdminNotificationListener listener : listeners )
+				listener.onRequestPublished(Integer.valueOf(args[1]));
+				break;
+			case "closed": // request closed (requestId)
+				for( AdminNotificationListener listener : listeners )
+				listener.onRequestClosed(Integer.valueOf(args[1]));
+				break;
+			case "status": // request status reported by node (requestId, nodeId, status)
+				for( AdminNotificationListener listener : listeners )
+				listener.onRequestStatusUpdate(Integer.valueOf(args[1]), Integer.valueOf(args[2]), args[3]);
+				break;
+			case "result": // request result uploaded by node (requestId, nodeId, mediaType)
+				for( AdminNotificationListener listener : listeners )
+				listener.onRequestResultUpdate(Integer.valueOf(args[1]), Integer.valueOf(args[2]), args[3]);
+				break;
+			case "resource": // resource changed by node (nodeId, resourceId)
+				for( AdminNotificationListener listener : listeners )
+				listener.onResourceUpdate(Integer.valueOf(args[1]), args[2]);
+				break;
+			default:
+				// ignoring unsupported websocket command
+				// TODO log warning
+			}
 	}
 
 }

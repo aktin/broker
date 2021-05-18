@@ -15,7 +15,7 @@ public class AuthFilterImpl implements AuthFilter{
 	private String certId;
 	private String clientDn;
 
-	private final void setHeaders(BiConsumer<String, String> setter) {
+	public void setHeaders(BiConsumer<String, String> setter) {
 		setter.accept(AuthFilterSSLHeaders.X_SSL_CLIENT_ID, certId);
 		setter.accept(AuthFilterSSLHeaders.X_SSL_CLIENT_DN, clientDn);
 		setter.accept(AuthFilterSSLHeaders.X_SSL_CLIENT_VERIFY, "SUCCESS");

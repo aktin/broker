@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<link rel="stylesheet" type="text/css" href="default.css"/>
 		<link rel="stylesheet" type="text/css" href="request.css"/>
 		<script src="jquery-3.2.1.min.js"></script>
 		<script src="js.cookie-2.1.4.min.js"></script>
@@ -34,17 +35,37 @@ function annotateStatusMessage(requestId, nodeId){
 	});
 }
 
+function loadResultDef(requestId, index, type){
+	$.ajax({
+		url: rest_base+'/broker/request/'+requestId,
+    headers: { 
+        "Accept" : type,
+        "Content-Type": type
+    },
+    data: "data",
+    success : function(response) {
+ 			$('#requestdef'+index).text(response);
+    }
+});
+}
+
 
 function init(){
 	
 	var id=window.location.hash.substring(1);
-	// load request definition
-	$.get({
+	// load request types / options
+	$.ajax({
 		url: rest_base+'/broker/request/'+id,
-		dataType: 'text',
+		method: 'OPTIONS',
+		dataType: 'xml',
 		success: function(data, status, xhr){
-			// TODO parse response media type and load script for display/formatting
-			$('#request').text(data);
+				var list = $(data).find('type');
+				list.each(function(index){
+					var t = $(this).text();
+					$('#requests').append('<dt>'+t+'</dt>');
+					$('#requests').append('<dd><pre id="requestdef'+index+'">loading...</dd>');
+					loadResultDef(id,index,t);
+				});
 		}
 	});
 	
@@ -165,8 +186,8 @@ function init(){
 			<tbody></tbody>
 		</table>
 
-		<pre id="request">
-		</pre>
-
+		<h2>Request definitions</h2>
+		<dl id="requests">
+		</dl>
 	</body>
 </html>

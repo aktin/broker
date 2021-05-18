@@ -6,18 +6,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.aktin.broker.xml.BrokerStatus;
+import org.aktin.broker.xml.SoftwareModule;
 
 /**
- * Broker service.
+ * Broker status service.
  * 
- * TODO allow JSON media types (via JAXB mapping e.g. with MOXY)
- * TODO add RequestTypeManager
  * @author R.W.Majeed
  *
  */
 @Path("/broker/status")
 public class BrokerStatusEndpoint {
-
+	public static final SoftwareModule BROKER_SERVER = new SoftwareModule("broker-server", BrokerStatusEndpoint.class.getPackage().getImplementationVersion());
 	/**
 	 * Retrieve status information about the broker.
 	 * @return JSON status
@@ -25,6 +24,8 @@ public class BrokerStatusEndpoint {
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
 	public BrokerStatus status(){
-		return BrokerStatus.create();
+		BrokerStatus status = BrokerStatus.create();
+		status.getSoftware().add(BROKER_SERVER);
+		return status;
 	}
 }

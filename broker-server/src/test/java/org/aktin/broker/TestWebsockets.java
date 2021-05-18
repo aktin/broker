@@ -1,7 +1,12 @@
 package org.aktin.broker;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +24,7 @@ import org.aktin.broker.client2.AdminNotificationListener;
 import org.aktin.broker.client2.AuthFilter;
 import org.aktin.broker.client2.BrokerAdmin2;
 import org.aktin.broker.client2.BrokerClient2;
-import org.aktin.broker.client2.NotificationListener;
+import org.aktin.broker.client2.ClientNotificationListener;
 import org.aktin.broker.util.AuthFilterSSLHeaders;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
@@ -30,6 +35,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
 
 public class TestWebsockets extends AbstractTestBroker{
 	private static final String CLIENT_01_SERIAL = "01";
@@ -104,7 +110,7 @@ public class TestWebsockets extends AbstractTestBroker{
 		AtomicInteger closedId = new AtomicInteger(-1);
 		AtomicBoolean thirdPartyNotification = new AtomicBoolean(false);
 		// receive expected notifications
-		c1.openWebsocket(new NotificationListener() {
+		c1.addListener(new ClientNotificationListener() {
 			@Override
 			public void onResourceChanged(String resourceName) {}
 			
@@ -119,11 +125,12 @@ public class TestWebsockets extends AbstractTestBroker{
 			}
 
 			@Override
-			public void onWebsocketClosed(int statusCode, String reason) {
+			public void onWebsocketClosed(int statusCode) {
 			}
 		});
+		c1.connectWebsocket();
 		// fail with unwanted notifications of third party
-		c2.openWebsocket(new NotificationListener() {
+		c2.addListener(new ClientNotificationListener() {
 			@Override
 			public void onResourceChanged(String resourceName) {
 				thirdPartyNotification.set(true);
@@ -139,9 +146,10 @@ public class TestWebsockets extends AbstractTestBroker{
 				thirdPartyNotification.set(true);
 			}
 			@Override
-			public void onWebsocketClosed(int statusCode, String reason) {
+			public void onWebsocketClosed(int statusCode) {
 			}
 		});
+		c2.connectWebsocket();
 		
 		BrokerAdmin a = initializeAdmin();
 		int qid = a.createRequest("text/x-test-1", "test1");
@@ -178,7 +186,7 @@ public class TestWebsockets extends AbstractTestBroker{
 		AtomicReference<List<Object>> args = new AtomicReference<>();
 
 		// open websocket
-		a.openWebsocket(new AdminNotificationListener() {
+		a.addListener(new AdminNotificationListener() {
 			@Override
 			public void onResourceUpdate(int nodeId, String resourceId) {
 				action.set("resource");
@@ -216,9 +224,10 @@ public class TestWebsockets extends AbstractTestBroker{
 			}
 
 			@Override
-			public void onWebsocketClosed(int statusCode, String reason) {
+			public void onWebsocketClosed(int statusCode) {
 			}
 		});
+		a.connectWebsocket();
 
 		BrokerClient2 c1 = initializeClient(CLIENT_01_SERIAL);
 		BrokerClient2 c2 = initializeClient(CLIENT_02_SERIAL);
@@ -346,5 +355,131 @@ public class TestWebsockets extends AbstractTestBroker{
 		// terminate websocket client
 		client.stop();
 	}
+
+
+	private String oldfashionedGetResultString(BrokerAdmin2 admin,int  requestId, int nodeId) throws IOException {
+		HttpURLConnection c = (HttpURLConnection)admin.getAggregatorEndpoint().resolve("request/"+requestId+"/result/"+nodeId).toURL().openConnection();
+		((AuthFilterImpl)admin.getAuthFilter()).setHeaders(c::setRequestProperty);
+		c.setDoOutput(false);
+		c.setDoInput(true);
+		try( InputStream in = c.getInputStream() ){ 
+			 return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+		}
+	}
+	/**
+	 * Make sure the admin client can retrieve the result from within the 
+	 * websocket notification callback.
+	 */
+	@Test
+	public void testAdminRetrieveResultWithinWebsocketCallback() throws Exception{
+		testAdminRetrieveResultWithWebsocketCallback(true, false);
+	}
+	@Test
+	public void testAdminRetrieveResultAfterWebsocketCallback() throws Exception{
+		testAdminRetrieveResultWithWebsocketCallback(false, true);
+	}
+	
+
+	private void testAdminRetrieveResultWithWebsocketCallback(boolean retrieveResultInsideWebsocket, boolean retrieveResultAfterWebsocket) throws Exception{
+		// initialize async variables
+		AtomicReference<String> result = new AtomicReference<>();
+		AtomicReference<IOException> error = new AtomicReference<>();
+		AtomicInteger pos = new AtomicInteger(0);
+		AtomicInteger nodeNotif = new AtomicInteger(-1);
+
+		Object lock1 = new Object();
+		Object lock2 = new Object();
+
+		BrokerAdmin2 a = initializeAdmin();
+		// open websocket
+		a.addListener(new AdminNotificationListener() {
+			@Override
+			public void onResourceUpdate(int nodeId, String resourceId) {
+			}
+			
+			@Override
+			public void onRequestStatusUpdate(int requestId, int nodeId, String status) {
+				if( RequestStatus.valueOf(status) == RequestStatus.completed ) {
+					synchronized( lock1 ) {
+						pos.incrementAndGet();
+						lock1.notifyAll();
+					}
+					nodeNotif.set(nodeId);
+					if( retrieveResultInsideWebsocket ) {
+						try {
+							String s = a.getResultString(requestId, nodeId);
+							result.set(s);
+						} catch (IOException e) {
+							error.set(e);
+						}
+					}
+					synchronized( lock2 ) {
+						pos.incrementAndGet();
+						lock2.notifyAll();
+					}
+				}
+			}
+			
+			@Override
+			public void onRequestResultUpdate(int requestId, int nodeId, String mediaType) {
+			}
+			
+			@Override
+			public void onRequestPublished(int requestId) {
+			}
+			
+			@Override
+			public void onRequestCreated(int requestId) {
+			}
+			
+			@Override
+			public void onRequestClosed(int requestId) {
+			}
+
+			@Override
+			public void onWebsocketClosed(int statusCode) {
+			}
+		});
+		a.connectWebsocket();
+
+	
+		// create request
+		int rid = a.createRequest();
+		// add request definitions
+		a.putRequestDefinition(rid, "application/xml", "<xml/>");
+		a.putRequestDefinition(rid, "application/json", "{}");
+		a.publishRequest(rid);
+		
+		// fetch requests
+		BrokerClient2 c1 = initializeClient(CLIENT_01_SERIAL);
+		List<RequestInfo> l = c1.listMyRequests();
+		RequestInfo ri = l.get(0);
+		c1.postRequestStatus(ri.getId(), RequestStatus.retrieved);
+		// post result
+		c1.putRequestResult(ri.getId(), "text/plain+result", "result-content");
+		synchronized( lock2 ) {
+			c1.postRequestStatus(ri.getId(), RequestStatus.completed);
+			synchronized( lock1 ) {
+				lock1.wait(1000);
+			}
+			Assert.assertEquals("Websocket notification should have been called",1, pos.get());
+			lock2.wait(2000);
+		}
+
+		Assert.assertNull(error.get());
+		Assert.assertEquals("Websocket notification thread call to getResultString blocked too long", 2, pos.get());
+		if( retrieveResultInsideWebsocket ) {
+			// verify result
+			Assert.assertNotNull(result.get());			
+		}
+		if( retrieveResultAfterWebsocket ) {
+			String s = a.getResultString(rid, nodeNotif.get());
+			result.set(s);
+			Assert.assertNotNull(s);
+		}
+
+		
+	}
+	
 
 }

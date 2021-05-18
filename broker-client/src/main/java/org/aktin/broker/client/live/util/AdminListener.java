@@ -30,7 +30,8 @@ public class AdminListener implements AdminNotificationListener, Runnable{
 	public AdminListener(BrokerAdmin2 admin) throws IOException{
 		this.admin = admin;
 		this.abort = new AtomicBoolean();
-		this.websocket = admin.openWebsocket(this);
+		admin.addListener(this);
+		this.websocket = admin.connectWebsocket();
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -109,7 +110,7 @@ public class AdminListener implements AdminNotificationListener, Runnable{
 			if( websocket.isInputClosed() ) {
 				// try to reconnect
 				try {
-					websocket = admin.openWebsocket(this);
+					websocket = admin.connectWebsocket();
 					System.out.println("websocket reconnected");
 				} catch (IOException e) {
 					System.err.println("websocket reconnect failed: "+e.getMessage());
@@ -122,8 +123,8 @@ public class AdminListener implements AdminNotificationListener, Runnable{
 	}
 
 	@Override
-	public void onWebsocketClosed(int statusCode, String reason) {
-		System.out.println("websocket closed with status "+statusCode+":"+reason);
+	public void onWebsocketClosed(int statusCode) {
+		System.out.println("websocket closed with status "+statusCode);
 		this.notifyAll();
 	}
 

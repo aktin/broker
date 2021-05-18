@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import org.aktin.broker.client2.BrokerClient2;
-import org.aktin.broker.client2.NotificationListener;
+import org.aktin.broker.client2.ClientNotificationListener;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 
@@ -36,7 +36,6 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	protected BrokerClient2 client;
 	protected AtomicBoolean abort;
 	private ExecutorService executor;
-	private WebSocket websocket;
 
 	private Map<Integer, PendingExecution> pending;
 
@@ -45,6 +44,29 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		this.client = client;
 		this.pending = Collections.synchronizedMap(new HashMap<>());
 		this.executor = executor;
+		this.client.addListener(new ClientNotificationListener() {
+			
+			@Override
+			public void onResourceChanged(String resourceName) {
+				// nothing happens
+			}
+			
+			@Override
+			public void onRequestPublished(int requestId) {
+				// check if request already pending
+				addRequest(requestId);
+			}
+			
+			@Override
+			public void onRequestClosed(int requestId) {
+				cancelRequest(requestId, true);
+			}
+
+			@Override
+			public void onWebsocketClosed(int statusCode) {
+				AbstractExecutionService.this.onWebsocketClosed(statusCode);
+			}
+		});
 	}
 
 	private class PendingExecution implements Runnable{
@@ -79,7 +101,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	public abstract void loadQueue() throws IOException;
 
 	public boolean isWebsocketClosed() {
-		return websocket == null || websocket.isInputClosed();
+		return client.getWebsocket() == null || client.getWebsocket().isInputClosed();
 	}
 	/**
 	 * Start the websocket listener to retrieve live updates about published or closed requests.
@@ -87,33 +109,11 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 * @throws IOException
 	 */
 	public void startupWebsocketListener() throws IOException {
-		if( this.websocket != null ) {
+		if( client.getWebsocket() != null ) {
 			// close previous websocket
-			this.websocket.abort();
+			client.closeWebsocket();
 		}
-		this.websocket = client.openWebsocket(new NotificationListener() {
-			
-			@Override
-			public void onResourceChanged(String resourceName) {
-				// nothing happens
-			}
-			
-			@Override
-			public void onRequestPublished(int requestId) {
-				// check if request already pending
-				addRequest(requestId);
-			}
-			
-			@Override
-			public void onRequestClosed(int requestId) {
-				cancelRequest(requestId, true);
-			}
-
-			@Override
-			public void onWebsocketClosed(int statusCode, String reason) {
-				AbstractExecutionService.this.onWebsocketClosed(statusCode);
-			}
-		});
+		client.connectWebsocket();
 	}
 	/**
 	 * Abort the executor by shutting down the websocket and aborting all
@@ -124,7 +124,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 */
 	@SuppressWarnings("unchecked")
 	public List<T> shutdown() {
-		websocket.abort();
+		client.closeWebsocket();
 		this.abort.set(true);
 		List<Runnable> aborted = executor.shutdownNow();
 		// extract executions from local wrapper PendingExecution

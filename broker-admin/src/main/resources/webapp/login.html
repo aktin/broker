@@ -1,9 +1,27 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<link rel="stylesheet" type="text/css" href="default.css"/>
 		<script src="jquery-3.2.1.min.js"></script>
 		<script src="js.cookie-2.1.4.min.js"></script>
 		<script>
+function loadSoftwareInfo(){
+	// show info loading
+	$('#software').empty();
+	$('#software').append('<p>Loading ...</p>');
+	// load resources
+	$.when(
+		$.get({url: 'xslt/server-status.xsl', dataType: "xml"}),
+		$.get({url: rest_base+'/broker/status', dataType: "xml"})
+	).done(function(xsl, xml){
+			var xp = new XSLTProcessor();
+			xp.importStylesheet(xsl[0]);
+			var frag = xp.transformToFragment(xml[0], document);
+			$('#software').empty();
+			document.getElementById("software").appendChild(frag);
+	});
+}
+
 var rest_base='../..';
 $(document).ready(function(){
     $('#login').on('submit', function(e){
@@ -26,14 +44,21 @@ $(document).ready(function(){
 			dataType: 'text'
 		});
 	});
+	loadSoftwareInfo();
+
 });
 		</script>
 	</head>
 	<body>
-		<form id="login">
-			<label>Login <input type="text" id="user"/></label><br/>
-			<label>Password <input type="password" id="pass"/></label><br/>
-			<button>Anmelden</button><br/>
-		</form>
+		<h1>Broker Server</h1>
+		<div align="right" style="width:max-content">
+			<form id="login">
+				<label>Login <input type="text" id="user"/></label><br/>
+				<label>Password <input type="password" id="pass"/></label><br/>
+				<button>Anmelden</button><br/>
+			</form>
+		</div>
+
+		<div id="software"/>
 	</body>
 </html>

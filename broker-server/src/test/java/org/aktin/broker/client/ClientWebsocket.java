@@ -24,7 +24,6 @@ public class ClientWebsocket implements WebSocketListener {
 	}
 	@Override
 	public void onWebSocketBinary(byte[] payload, int offset, int len) {
-		System.out.println("Client websocket closed");
 	}
 	@Override
 	public void onWebSocketClose(int statusCode, String reason) {
@@ -33,13 +32,11 @@ public class ClientWebsocket implements WebSocketListener {
 	}
 	@Override
 	public void onWebSocketConnect(org.eclipse.jetty.websocket.api.Session session) {
-		System.out.println("Client websocket open");
 		try {
 			session.getRemote().sendString("Hallo vom Client");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		
 	}
 	@Override
 	public void onWebSocketError(Throwable cause) {
@@ -48,7 +45,6 @@ public class ClientWebsocket implements WebSocketListener {
 	}
 	@Override
 	public void onWebSocketText(String message) {
-		System.out.println("Client received message: "+message);
 		messages.add(message);
 		if( expectedMessages != null ){
 			expectedMessages.countDown();
