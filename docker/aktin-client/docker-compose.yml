@@ -20,4 +20,4 @@ services:
     volumes:
       - ./client-exec-scripts/echo.sh:/opt/codex-aktin/echo.sh
       - ./client-exec-scripts/return-request.sh:/opt/codex-aktin/return-request.sh
-      # - ./sysproc.properties:/opt/codex-aktin/sysproc.properties
+      - ./sysproc.properties:/opt/codex-aktin/sysproc.properties
