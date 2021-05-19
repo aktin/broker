@@ -1,7 +1,5 @@
 # Docker Version of the AKTIN broker and client
 
-
-
 ## Broker Configuration
 
 | EnvVar | Description | Example | Default |
@@ -14,23 +12,23 @@ When deploying your own version of the broker, please make sure to remove the ex
 
 To add an api key for an admin client (a client which is allowed to submit requests to the broker) the api key needs to contain `OU=admin`, see example in this folder
 
+
 ## Client Configuration
 
 The client has to be configured through the sysproc.properties file, which is mounted into the docker container.
 
 | Sysproc var | Description | Example | Default |
 |--------|-------------|---------|---------|
-|broker.request.mediatype| | the mediatype the client expects from the broker (note the broker has stored multiple mediatypes for a request this will chose the mediatype to pick)|text |
-|broker.result.mediatype | | the mediatype the client is sending back to the broker |application/json |
-|broker.endpoint.uri | | |http://aktin-broker:8080/broker/ |
-|client.auth.class | | | |
-|client.auth.param | | | |
-|client.websocket.reconnect.seconds | | | |
-|client.websocket.reconnect.polling | | | |
-|process.timeout.seconds | | | |
-|process.command | |the path to the sh file which is to be executed by the client when the client recieves the request  |/opt/codex-aktin/return-request.sh|
-|process.command.mapenv | | | |
-|process.args | | | |
+|BROKER_REQUEST_MEDIATYPE| | the mediatype the client expects from the broker (note the broker has stored multiple mediatypes for a request this will chose the mediatype to pick)|text |
+|BROKER_RESULT_MEDIATYPE | | the mediatype the client is sending back to the broker |application/json |
+|BROKER_ENDPOINT_URI | | |http://aktin-broker:8080/broker/ |
+|CLIENT_AUTH_CLASS | | | |
+|CLIENT_AUTH_PARAM | | | |
+|CLIENT_WEBSOCKET_RECONNECT_SECONDS | | | |
+|CLIENT_WEBSOCKET_RECONNECT_POLLING | | | |
+|PROCESS_TIMEOUT_SECONDS | | | |
+|PROCESS_COMMAND | |the path to the sh file which is to be executed by the client when the client recieves the request  |/opt/codex-aktin/return-request.sh|
+|PROCESS_ARGS | | | |
 
 Note that the client passes the request to the chosen script file (process.command) on stdin.
 The easiest way therefore to access the request from within your script is to use the following command `REQUEST_INPUT=$(cat)`
