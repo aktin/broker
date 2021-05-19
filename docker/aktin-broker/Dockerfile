@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y zip
 RUN cd /tmp/broker-admin-dist/target && unzip *.zip -d deploy
 
 
-FROM openjdk:15
+FROM adoptopenjdk/openjdk15:alpine-jre
 
 WORKDIR /opt/aktin
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-admin-dist/target/deploy .

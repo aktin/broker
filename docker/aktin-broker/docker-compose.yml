@@ -4,7 +4,6 @@ services:
     container_name: aktin-broker
     environment:
       PASSWORD: ${AKTIN_ADMIN_PW:-changeme}
-    #entrypoint: bash -c "tail -f /dev/null"
     build:
       context: ../..
       dockerfile: docker/aktin-broker/Dockerfile
