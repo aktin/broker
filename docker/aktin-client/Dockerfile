@@ -5,7 +5,7 @@ WORKDIR /tmp/
 RUN mvn clean install
 
 
-FROM openjdk:15.0-slim-buster
+FROM adoptopenjdk/openjdk15:alpine-jre
 
 WORKDIR /opt/aktin
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/*.jar ./lib/
@@ -13,8 +13,7 @@ COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/lib ./lib/
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/src/test/resources/sysproc.properties .
 COPY docker/aktin-client/run_client.sh ./run_client.sh
 RUN chmod 644 run_client.sh
-
-RUN apt-get update && apt-get install -y curl && apt-get install -y jq && apt-get install -y uuid-runtime
+RUN apk add curl && apk add jq && apk add util-linux
 
 ARG VERSION=0.0.0
 ENV APP_VERSION=${VERSION} \
