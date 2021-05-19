@@ -9,7 +9,7 @@ RUN cd /tmp/broker-admin-dist/target && unzip *.zip -d deploy
 
 FROM openjdk:15
 
-WORKDIR /opt/codex-aktin
+WORKDIR /opt/aktin
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-admin-dist/target/deploy .
 COPY docker/aktin-broker/run_broker.sh ./run_broker.sh
 RUN chmod 644 run_broker.sh
@@ -17,6 +17,10 @@ RUN chmod 644 run_broker.sh
 ARG VERSION=0.0.0
 ENV APP_VERSION=${VERSION} \
     SPRING_PROFILES_ACTIVE="prod"
+
+
+RUN chown -R 10001:10001 /opt/aktin
+USER 10001
 
 ENTRYPOINT ["sh", "run_broker.sh"]
 

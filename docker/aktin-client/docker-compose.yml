@@ -5,14 +5,13 @@ services:
     environment: 
       BROKER_REQUEST_MEDIATYPE: ${BROKER_REQUEST_MEDIATYPE:-text}
       BROKER_RESULT_MEDIATYPE: ${BROKER_RESULT_MEDIATYPE:-application/json}
-      BROKER_ENDPOINT_URI: ${BROKER_RESULT_MEDIATYPE:-http://aktin-broker:8080/broker/}
+      BROKER_ENDPOINT_URI: ${BROKER_ENDPOINT_URI:-http://aktin-broker:8080/broker/}
       CLIENT_AUTH_CLASS: ${CLIENT_AUTH_CLASS:-org.aktin.broker.client2.auth.ApiKeyAuthentication}
       CLIENT_AUTH_PARAM: ${CLIENT_AUTH_PARAM:-xxxApiKey123}
       CLIENT_WEBSOCKET_RECONNECT_SECONDS: ${CLIENT_WEBSOCKET_RECONNECT_SECONDS:-10}
       CLIENT_WEBSOCKET_RECONNECT_POLLING: ${CLIENT_WEBSOCKET_RECONNECT_POLLING:-true}
       PROCESS_TIMEOUT_SECONDS: ${PROCESS_TIMEOUT_SECONDS:-60}
       PROCESS_COMMAND: ${PROCESS_COMMAND:-/opt/codex-aktin/echo.sh}
-      PROCESS_COMMAND_MAPENV: ${PROCESS_COMMAND_MAPENV:-true}
       PROCESS_ARGS: ${PROCESS_ARGS:-10}
     build:
       context: ../..
@@ -20,4 +19,4 @@ services:
     volumes:
       - ./client-exec-scripts/echo.sh:/opt/codex-aktin/echo.sh
       - ./client-exec-scripts/return-request.sh:/opt/codex-aktin/return-request.sh
-      - ./sysproc.properties:/opt/codex-aktin/sysproc.properties
+      #- ./sysproc.properties:/opt/codex-aktin/sysproc.properties

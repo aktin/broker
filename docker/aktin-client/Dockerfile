@@ -7,7 +7,7 @@ RUN mvn clean install
 
 FROM openjdk:15.0-slim-buster
 
-WORKDIR /opt/codex-aktin
+WORKDIR /opt/aktin
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/*.jar ./lib/
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/lib ./lib/
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/src/test/resources/sysproc.properties .
@@ -19,6 +19,11 @@ RUN apt-get update && apt-get install -y curl && apt-get install -y jq && apt-ge
 ARG VERSION=0.0.0
 ENV APP_VERSION=${VERSION} \
     SPRING_PROFILES_ACTIVE="prod"
+
+
+COPY docker/aktin-client/sysproc.properties sysproc.properties
+RUN chown -R 10001:10001 /opt/aktin
+USER 10001
 
 ENTRYPOINT ["sh", "run_client.sh"]
 
