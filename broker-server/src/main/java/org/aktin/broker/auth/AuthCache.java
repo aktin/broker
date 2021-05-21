@@ -96,7 +96,7 @@ public class AuthCache implements Flushable, Closeable{
 	 */
 	public void fillCachedAccessTimestamps(Iterable<Node> nodes){
 		Map<Integer,Principal> lookup = new HashMap<>();
-		
+		// retrieve list cached principals which have been authenticated since startup
 		for( Principal p : cache.values() ){
 			//timestamps.put(p.getNodeId(), p.getLastAccessed());
 			if( p.isNode() ) {
@@ -105,9 +105,13 @@ public class AuthCache implements Flushable, Closeable{
 		}
 		for( Node node : nodes ){
 			Principal p = lookup.get(node.id);
-			
+			if( p == null ) {
+				// cached access information not available
+				continue;
+			}
 			Long ts = p.getLastAccessed();
 			if( ts != null ){
+				// timesta mp not available
 				node.lastContact = Instant.ofEpochMilli(ts);
 			}
 			node.websocket = (p.getWebsocketCount() > 0);
