@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  aktin-broker:
+    container_name: aktin-broker
+    environment:
+      PASSWORD: ${AKTIN_ADMIN_PW:-changeme}
+    build:
+      context: ../..
+      dockerfile: docker/aktin-broker/Dockerfile
+    volumes:
+    - ./api-keys.properties:/opt/codex-aktin/api-keys.properties
+    ports:
+    - ${AKTIN_BROKER_PORT:-127.0.0.1:8080}:8080
