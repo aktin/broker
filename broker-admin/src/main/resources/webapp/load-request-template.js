@@ -1,8 +1,16 @@
 
 function isoToLocalDate(iso){
-	// TODO convert to local timezone
-	// remove zone offset from timestamp
-	return iso.substring(0,19);
+	console.log("ISO String",iso);
+	newTime=new Date(iso);
+	//get offset
+	offset = newTime.getTimezoneOffset();
+
+	// apply date specific timezone
+	newDate = new Date(newTime.getTime() - (offset*60*1000));
+	//cut off timezone information after applying offset
+	finalResult=newDate.toISOString().split('Z')[0];
+	console.log("localized String to German timezone",finalResult);
+	return finalResult;
 }
 
 

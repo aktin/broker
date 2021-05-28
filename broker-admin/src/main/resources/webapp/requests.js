@@ -54,9 +54,9 @@ function init(){
 //	init();
 //});
 Date.prototype.toDateInputValue = (function(){
-	var local = new Date(this);
-	local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+	var local = new Date(this);//.toISOString();
 	return local.toJSON().slice(0,10);
+	//return local
 });
 
 function loadTemplateTypes(){
@@ -123,9 +123,9 @@ function localTimeToISO(local_str){
 		local_str += ":00";
 	}
 	
-	// TODO parse local_str and convert and return YYYY-MM-DDT00:00:00Z
-	local_str += "Z"; // XXX 
-	return local_str;
+
+	console.log("Local Time",local_str)
+	return new Date(local_str).toISOString();
 }
 
 
