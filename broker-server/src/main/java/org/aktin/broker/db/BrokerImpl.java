@@ -686,7 +686,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 					ps.setString(2, auth.getClientDN());
 					ps.executeUpdate();					
 				}
-				log.log(Level.INFO, "First encounter with node {}. Added to database.", auth.getUserId());
+				log.log(Level.INFO, "First encounter with node, adding to database: " + auth.getUserId());
 				// retrieve id
 				select_node.clearParameters();
 				p = loadPrincipalByNodeKey(select_node, auth);
