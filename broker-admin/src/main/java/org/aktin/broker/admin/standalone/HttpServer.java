@@ -1,6 +1,8 @@
 package org.aktin.broker.admin.standalone;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -32,6 +34,7 @@ import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainer
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+
 import liquibase.exception.LiquibaseException;
 
 /**
@@ -61,9 +64,8 @@ public class HttpServer {
 		authFactory.setBasePath(config.getBasePath());
 		this.auth = authFactory.getInstance();
 		Objects.requireNonNull(auth);
-		ds = new HSQLDataSource(config.getDatabasePath());
 		// initialize database
-		initialiseDatabase();
+		initialiseDatabase(config);
 		rc = new ResourceConfig();
 		// register broker services
 		rc.registerClasses(Broker.ENDPOINTS);
@@ -75,7 +77,20 @@ public class HttpServer {
 		// websocket endpoints are initialized in method #setupWebsockets
 	}
 
-	private void initialiseDatabase() throws SQLException{
+	private void initialiseDatabase(Configuration config) throws SQLException{
+		Method methodSetURL;
+		Class<? extends DataSource> clazz = null;
+		try {
+			clazz = config.getJdbcDataSourceClass(); 
+			this.ds = clazz.getConstructor().newInstance();
+			// setURL method
+			methodSetURL = clazz.getMethod("setURL", String.class);
+			methodSetURL.invoke(this.ds, config.getJdbcUrl());
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException | ClassNotFoundException e1) {
+			throw new SQLException("Unable to instantiate database DataSource class or missing/failed setURL(String) method: "+clazz.getName());
+		}
+		
 		try( LiquibaseWrapper w = new LiquibaseWrapper(ds.getConnection()) ){
 			w.update();
 		} catch (LiquibaseException e ) {

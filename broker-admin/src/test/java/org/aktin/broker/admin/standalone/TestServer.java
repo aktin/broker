@@ -14,6 +14,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.aktin.broker.auth.CascadedAuthProvider;
 import org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider;
 import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
@@ -58,11 +60,6 @@ public class TestServer implements Configuration{
 	@Override
 	public Path getBasePath() {
 		return Paths.get("target");
-	}
-
-	@Override
-	public String getDatabasePath() {
-		return "target/broker";
 	}
 
 	@Override
@@ -213,5 +210,13 @@ public class TestServer implements Configuration{
 		return 30000;
 	}
 
+	@Override
+	public Class<? extends DataSource> getJdbcDataSourceClass() throws ClassNotFoundException {
+		return DefaultConfiguration.getDefaultHsqlDataSource();
+	}
 
+	@Override
+	public String getJdbcUrl() {
+		return DefaultConfiguration.getDefaultHsqlJdbcUrl(getBasePath());
+	}
 }

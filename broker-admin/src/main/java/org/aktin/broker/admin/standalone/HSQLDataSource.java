@@ -9,12 +9,23 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import org.hsqldb.jdbc.JDBCDataSource;
+
+
 public class HSQLDataSource implements DataSource {
-	public HSQLDataSource(String dbpath){
-		this.dbpath = dbpath;
+	private HSQLDataSource(String jdbcUrl){
+		this.jdbcUrl = jdbcUrl;
 	}
-	private String dbpath;
+	
+	private String jdbcUrl;
 	private PrintWriter logWriter;
+	
+	public static HSQLDataSource forLocalPath(String dbpath) {
+		return new HSQLDataSource(localPathToJdbcUrl(dbpath));
+	}
+	private static final String localPathToJdbcUrl(String dbpath) {
+		return "jdbc:hsqldb:file:"+dbpath+";shutdown=false;user=admin;password=secret";
+	}
 
 	@Override
 	public PrintWriter getLogWriter() throws SQLException {
@@ -54,7 +65,7 @@ public class HSQLDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-		return DriverManager.getConnection("jdbc:hsqldb:file:"+dbpath+";shutdown=false;user=admin;password=secret");
+		return DriverManager.getConnection(jdbcUrl);
 	}
 
 	@Override

@@ -6,9 +6,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import javax.sql.DataSource;
+
 import org.aktin.broker.auth.CascadedAuthProvider;
 import org.aktin.broker.server.auth.AuthProvider;
 
+import lombok.extern.java.Log;
+
+/**
+ * Configuration options can be specified/overridden via system properties:
+ * <p><ul>
+ * <li> {@code broker.auth.provider} use one or more authentication provider implementations. separated by comma.
+ * <li> {@code broker.websocket.idletimeoutseconds} number of seconds to keep websocket connections open without data.
+ * <li> {@code broker.jdbc.datasource.class} 
+ * 
+ * @author Raphael
+ *
+ */
+@Log
 public class DefaultConfiguration implements Configuration{
 	private static final String DEFAULT_AUTH_PROVIDER = "org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider,org.aktin.broker.auth.cred.CredentialTokenAuthProvider";
 	private AuthProvider authProvider;
@@ -78,6 +93,37 @@ public class DefaultConfiguration implements Configuration{
 	@Override
 	public Path getBasePath() {
 		return Paths.get(".");
+	}
+	@Override
+	public Class<? extends DataSource> getJdbcDataSourceClass() throws ClassNotFoundException {
+		// also possible org.postgresql.ds.PGSimpleDataSource or PGPoolingDataSource
+		String name = System.getProperty("broker.jdbc.datasource.class");
+		Class<? extends DataSource> clazz;
+		if( name != null ) {
+			clazz = Class.forName(name).asSubclass(DataSource.class);
+		}else {
+			clazz = getDefaultHsqlDataSource();
+		}
+		return clazz;
+	}
+
+	public static String getDefaultHsqlJdbcUrl(Path basePath) {
+		String path = basePath.resolve("broker").toString();
+		return "jdbc:hsqldb:file:"+path+";shutdown=false;user=admin;password=secret";
+	}
+	public static Class<? extends DataSource> getDefaultHsqlDataSource(){
+		return org.hsqldb.jdbc.JDBCDataSource.class;
+	}
+	@Override
+	public String getJdbcUrl() {
+		String url = System.getProperty("broker.jdbc.url");
+		if( url == null ) {
+			url = getDefaultHsqlJdbcUrl(getBasePath());
+			log.info("Generating JDBC URL for HSQLDB: "+url);
+		}else {
+			log.info("Using JDBC URL from system properties: "+url);
+		}
+		return url;
 	}
 
 }
