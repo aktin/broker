@@ -109,6 +109,7 @@ public class AggregatorImpl implements AggregatorBackend {
 		List<ResultInfo> list = new ArrayList<>();
 		try( Connection dbc = ds.getConnection(); 
 				Statement st = dbc.createStatement() ){
+			dbc.setReadOnly(true);
 			// find is result is already present
 			ResultSet rs = st.executeQuery("SELECT node_id, media_type FROM request_node_results WHERE request_id="+requestId);
 			// compile list
@@ -146,6 +147,7 @@ public class AggregatorImpl implements AggregatorBackend {
 	public void addOrReplaceResult(int requestId, int nodeId, MediaType mediaType, InputStream content) throws SQLException{
 		try( Connection dbc = ds.getConnection();
 				Statement st = dbc.createStatement() ){
+			dbc.setAutoCommit(false);
 			// find is result is already present
 			ResultSet rs = st.executeQuery("SELECT media_type, data_file FROM request_node_results WHERE request_id="+requestId+" AND node_id="+nodeId);
 			String insertOrUpdate;
@@ -189,6 +191,7 @@ public class AggregatorImpl implements AggregatorBackend {
 		List<String> list = new ArrayList<>();
 		try( Connection dbc = ds.getConnection();
 				Statement st = dbc.createStatement() ){
+			dbc.setReadOnly(true);
 			// find is result is already present
 			ResultSet rs = st.executeQuery("SELECT DISTINCT media_type FROM request_node_results WHERE request_id="+requestId);
 			

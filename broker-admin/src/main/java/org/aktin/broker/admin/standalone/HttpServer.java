@@ -83,14 +83,17 @@ public class HttpServer {
 		Method methodSetURL;
 		Class<? extends DataSource> clazz = null;
 		try {
-			clazz = config.getJdbcDataSourceClass(); 
+			clazz = config.getJdbcDataSourceClass();
+			Objects.requireNonNull(clazz, "Unable resolve JDBC DataSource");
 			this.ds = clazz.getConstructor().newInstance();
 			// setURL method
 			methodSetURL = clazz.getMethod("setURL", String.class);
 			methodSetURL.invoke(this.ds, config.getJdbcUrl());
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException | ClassNotFoundException e1) {
-			throw new SQLException("Unable to instantiate database DataSource class or missing/failed setURL(String) method: "+clazz.getName());
+				| NoSuchMethodException | SecurityException e) {
+			throw new SQLException("Unable to instantiate database DataSource class or missing/failed setURL(String) method for DataSource "+clazz.getName(), e);
+		} catch( ClassNotFoundException e ) {
+			throw new SQLException("Specified DataSource class not found in classpath");
 		}
 		
 		try( LiquibaseWrapper w = new LiquibaseWrapper(ds.getConnection()) ){
@@ -176,9 +179,12 @@ public class HttpServer {
 	}
 	public void destroy() throws Exception{
 		System.out.println("Shutting down database..");
+		// TODO move shutdown to db.BrokerImpl
 		try( Connection dbc = ds.getConnection();
 				Statement st = dbc.createStatement() ){
 			st.executeUpdate("SHUTDOWN");
+		}catch( SQLException e ) {
+			// do nothing
 		}
 		System.out.println("Cleanup jetty..");
 		System.out.flush();

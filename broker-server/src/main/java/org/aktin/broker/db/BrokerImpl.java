@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import javax.annotation.Resource;
@@ -44,9 +43,11 @@ import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
 import org.aktin.broker.xml.util.Util;
 
+import lombok.extern.java.Log;
+
 @Singleton
+@Log
 public class BrokerImpl implements BrokerBackend, Broker {
-	private static final Logger log = Logger.getLogger(BrokerImpl.class.getName());
 	private static final String[] RESOURCE_DIGESTS = new String[]{"MD5","SHA-256"};
 
 	private DataSource brokerDB;
@@ -60,6 +61,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	private int inMemoryTreshold = 65536;
 	
 	private static final String SELECT_MEDIATYPE_BY_REQUESTID = "SELECT media_type FROM request_definitions WHERE request_id=?";
+
+	private static enum Dbms{ POSTGRES, HSQL }
+	private Dbms dbms;
 
 	public BrokerImpl(){
 	}
@@ -76,6 +80,15 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Resource(name="brokerDB")
 	public void setBrokerDB(DataSource brokerDB){
 		this.brokerDB = brokerDB;
+		// determine type of DBMS
+		String pkg = brokerDB.getClass().getPackageName();
+		if( pkg.startsWith("org.postgresql") ) {
+			this.dbms = Dbms.POSTGRES;
+		}else {
+			// default to HSQL
+			this.dbms = Dbms.HSQL;
+		}
+		log.info("Using DBMS dialect for "+dbms);
 	}
 
 	public void setDataDirectory(Path dataDir){
@@ -159,8 +172,14 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		// TODO for other DBMS, the SQL will be different. E.g. sqlite
 		// posgresql: SELECT LASTVAL()
 		// hsql: CALL IDENTITY()
+		String sql;
+		if( dbms == Dbms.POSTGRES ) {
+			sql = "SELECT LASTVAL()";
+		}else {
+			sql = "CALL IDENTITY()";
+		}
 		try( Statement st = dbc.createStatement();
-				ResultSet rs = st.executeQuery("CALL IDENTITY()") ){
+				ResultSet rs = st.executeQuery(sql) ){
 			if( rs.next() ){
 				return rs.getInt(1);
 			}
@@ -181,6 +200,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public int createRequest(String mediaType, Reader content) throws SQLException{
 		int id;
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
 			id = createEmptyRequest(dbc);
 			// insert request content
 			setRequestDefinition(dbc, id, mediaType, content);
@@ -196,11 +216,37 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public int createRequest() throws SQLException{
 		int id;
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
 			id = createEmptyRequest(dbc);
 			// commit transaction
 			dbc.commit();
 		}
 		return id;
+	}
+
+	private static String readAllContent(Reader reader) throws IOException {
+		char[] buffer = new char[4096];
+        StringBuilder builder = new StringBuilder();
+        int numChars;
+
+        while ((numChars = reader.read(buffer)) >= 0) {
+            builder.append(buffer, 0, numChars);
+        }
+
+        return builder.toString();
+	}
+	private void setClob(PreparedStatement ps, int index, Reader content) throws SQLException {
+		if( dbms == Dbms.POSTGRES ) {
+			// no support for setClob(Reader) as of 42.2.20 (2021-06)
+			// read reader into string
+			try {
+				ps.setString(index, readAllContent(content));
+			} catch ( IOException e ) {
+				throw new SQLException("Unable to read from content stream", e);
+			}
+		}else {
+			ps.setClob(index, content);
+		}
 	}
 	private void setRequestDefinition(Connection dbc, int requestId, String mediaType, Reader content) throws SQLException{
 		// determine a definition is already there
@@ -217,7 +263,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		if( hasRecord ){
 			// already there, update the definition
 			try( PreparedStatement ps = dbc.prepareStatement("UPDATE request_definitions SET query_def=? WHERE request_id=? AND media_type=?") ){
-				ps.setClob(1, content);
+				setClob(ps, 1, content);
 				ps.setInt(2, requestId);
 				ps.setString(3, mediaType);
 				ps.executeUpdate();		
@@ -228,7 +274,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			try( PreparedStatement ps = dbc.prepareStatement("INSERT INTO request_definitions (request_id, media_type, query_def) VALUES(?,?,?)") ){
 				ps.setInt(1, requestId);
 				ps.setString(2, mediaType);
-				ps.setClob(3, content);
+				setClob(ps, 3, content);
 				ps.executeUpdate();
 			}
 			log.info("New definition for request "+requestId+": "+mediaType);
@@ -240,6 +286,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public void setRequestDefinition(int requestId, String mediaType, Reader content) throws SQLException{
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
 			// TODO should also replace existing definitions
 			setRequestDefinition(dbc, requestId, mediaType, content);	
 			dbc.commit();
@@ -251,6 +298,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public void deleteRequest(int id) throws SQLException{
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
 
 			executeUpdate(dbc, "DELETE FROM request_definitions WHERE request_id="+id);
 
@@ -340,7 +388,15 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		return types;
 	}
 
-	private Reader createTemporaryClobReader(Clob clob) throws SQLException, IOException{
+	private Reader createTemporaryClobReader(ResultSet rs, int index) throws SQLException, IOException{
+		if( dbms == Dbms.POSTGRES ) {
+			// no clob support. return string reader
+			return new StringReader(rs.getString(index));
+		}
+		Clob clob = rs.getClob(index);
+		if( clob == null ) {
+			return null;
+		}
 		if( clob.length() < inMemoryTreshold ){
 			String str = null;
 			try( Reader reader = clob.getCharacterStream() ){
@@ -368,7 +424,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			if( !rs.next() ){
 				return null;
 			}
-			return createTemporaryClobReader(rs.getClob(1));
+			return createTemporaryClobReader(rs,1);
 		}
 	}
 	/* (non-Javadoc)
@@ -477,6 +533,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public void setRequestNodeStatus(int requestId, int nodeId, RequestStatus status, Instant timestamp) throws SQLException{
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
 			Timestamp ts = Timestamp.from(timestamp);
 			int rowCount = 0;
 			// no status message, just update the timestamp
@@ -511,8 +568,9 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		try( Connection dbc = brokerDB.getConnection();
 				PreparedStatement ps = dbc.prepareStatement("UPDATE request_node_status SET message_type=?, message=? WHERE request_id=? AND node_id=?") )
 		{
+			dbc.setAutoCommit(false);
 			ps.setString(1, mediaType);
-			ps.setClob(2, message);
+			setClob(ps, 2, message);
 			ps.setInt(3, requestId);
 			ps.setInt(4, nodeId);
 			ps.executeUpdate();
@@ -526,19 +584,15 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		try( Connection dbc = brokerDB.getConnection();
 				PreparedStatement ps = dbc.prepareStatement("SELECT message_type, message FROM request_node_status WHERE request_id=? AND node_id=?") )
 		{
-			
+			dbc.setReadOnly(true);
 			ps.setInt(1, requestId);
 			ps.setInt(2, nodeId);
 			ResultSet rs = ps.executeQuery();
 			if( !rs.next() ){
 				return null;
 			}
-			Clob clob = rs.getClob(2);
-			if( clob == null ){
-				return null;
-			}
-
-			return createTemporaryClobReader(clob);
+			
+			return createTemporaryClobReader(rs, 2);
 		}
 	}
 	/* (non-Javadoc)
@@ -548,6 +602,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public boolean markRequestDeletedForNode(int nodeId, int requestId) throws SQLException{
 		boolean delete_ok = false;
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
 			RequestStatusInfo si = new RequestStatusInfo();
 			RequestInfo ri = loadRequest(dbc, requestId, false);
 			if( ri == null ){
@@ -586,6 +641,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		try( Connection dbc = brokerDB.getConnection();
 				Statement st = dbc.createStatement() )
 		{
+			dbc.setReadOnly(true);
 			ResultSet rs = st.executeQuery("SELECT node_id, retrieved, deleted, queued, processing, completed, rejected, failed, interaction, message_type  FROM request_node_status WHERE request_id="+requestId);
 			while( rs.next() ){
 				RequestStatusInfo info = new RequestStatusInfo(rs.getInt(1));
@@ -618,6 +674,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public Principal accessPrincipal(AuthInfo auth) throws SQLException{
 		Principal p;
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
 			// try to load from database
 			PreparedStatement select_node = dbc.prepareStatement("SELECT id, subject_dn FROM nodes WHERE client_key=?");
 			p = loadPrincipalByNodeKey(select_node, auth);
@@ -629,6 +686,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 					ps.setString(2, auth.getClientDN());
 					ps.executeUpdate();					
 				}
+				log.log(Level.INFO, "First encounter with node {}. Added to database.", auth.getUserId());
 				// retrieve id
 				select_node.clearParameters();
 				p = loadPrincipalByNodeKey(select_node, auth);
@@ -674,15 +732,15 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public void setRequestPublished(int requestId, Instant timestamp) throws SQLException {
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(true);
 			updateRequestTimestamp(dbc, requestId, "published", timestamp);
-			dbc.commit();
 		}
 	}
 	@Override
 	public void setRequestClosed(int requestId, Instant timestamp) throws SQLException {
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(true);
 			updateRequestTimestamp(dbc, requestId, "closed", timestamp);
-			dbc.commit();
 		}
 	}
 	@Override
@@ -690,6 +748,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		try( Connection dbc = brokerDB.getConnection();
 				PreparedStatement ps = dbc.prepareStatement("UPDATE nodes SET last_contact=? WHERE id=?") )
 		{
+			dbc.setAutoCommit(true);
 			for( int i=0; i<nodeIds.length; i++ ){
 				ps.setInt(1, nodeIds[i]);
 				ps.setTimestamp(2, new Timestamp(timestamps[i]));
@@ -701,6 +760,8 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public void setRequestTargets(int requestId, int[] nodes) throws SQLException {
 		Objects.requireNonNull(nodes);
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
+
 			// set targeted
 			executeUpdate(dbc, "UPDATE requests SET targeted=TRUE WHERE id="+requestId);
 
@@ -726,6 +787,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	public int[] getRequestTargets(int requestId) throws SQLException {
 		int[] nodes = null;
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setReadOnly(true);
 			// first find out, if the query is targeted at all
 			boolean isTargeted = false;
 			try( Statement st = dbc.createStatement() ){
@@ -756,6 +818,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	@Override
 	public void clearRequestTargets(int requestId) throws SQLException {
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(true);
 			executeUpdate(dbc, "UPDATE requests SET targeted=FALSE WHERE id="+requestId);
 		}
 	}
@@ -806,6 +869,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		String oldFile = null;
 		String newFile = nodeResourceName(nodeId, resourceId, mediaType);
 		try( Connection dbc = brokerDB.getConnection() ){
+			dbc.setAutoCommit(false);
 			try( PreparedStatement ps = dbc.prepareStatement("SELECT data_file FROM node_resources WHERE node_id=? AND name=?") ){				
 				ps.setInt(1, nodeId);
 				ps.setString(2, resourceId);
@@ -856,6 +920,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		byte[] sha2;
 		try( Connection dbc = brokerDB.getConnection();
 				PreparedStatement ps = dbc.prepareStatement("SELECT media_type, last_modified, data_file, data_md5, data_sha2 FROM node_resources WHERE node_id=? AND name=?")	){
+			dbc.setReadOnly(true);
 			ps.setInt(1, nodeId);
 			ps.setString(2, resourceId);
 			ResultSet rs = ps.executeQuery();
@@ -889,6 +954,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		try( Connection dbc = ds.getConnection();
 				PreparedStatement update_dn = dbc.prepareStatement("UPDATE nodes SET subject_dn=? WHERE client_key=?") )
 		{
+			dbc.setAutoCommit(true);
 			for( Entry<String, String> entry : mapNodeDN.entrySet() ){
 				// try to update database
 				update_dn.setString(1, entry.getValue());
