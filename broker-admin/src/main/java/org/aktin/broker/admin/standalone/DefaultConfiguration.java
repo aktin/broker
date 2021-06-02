@@ -16,9 +16,10 @@ import lombok.extern.java.Log;
 /**
  * Configuration options can be specified/overridden via system properties:
  * <p><ul>
- * <li> {@code broker.auth.provider} use one or more authentication provider implementations. separated by comma.
- * <li> {@code broker.websocket.idletimeoutseconds} number of seconds to keep websocket connections open without data.
- * <li> {@code broker.jdbc.datasource.class} 
+ * <li> {@code aktin.broker.auth.provider} use one or more authentication provider implementations. separated by comma.
+ * <li> {@code aktin.broker.websocket.idletimeoutseconds} number of seconds to keep websocket connections open without data.
+ * <li> {@code aktin.broker.jdbc.datasource.class} datasource implementation class for database driver defaults to local embedded HSQL database
+ * <li> {@code aktin.broker.jdbc.url} JDBC URL to use with the datasource class. defaults to local embedded HSQL database
  * 
  * @author Raphael
  *
@@ -30,7 +31,7 @@ public class DefaultConfiguration implements Configuration{
 
 	
 	public DefaultConfiguration() {
-		String ap = System.getProperty("broker.auth.provider", DEFAULT_AUTH_PROVIDER);
+		String ap = System.getProperty("aktin.broker.auth.provider", DEFAULT_AUTH_PROVIDER);
 
 		String[] aps = ap.split(",");
 		if( aps.length == 1 ) {
@@ -48,7 +49,7 @@ public class DefaultConfiguration implements Configuration{
 	@Override
 	public long getWebsocketIdleTimeoutMillis() {
 		return 1000 * Integer.valueOf(
-					System.getProperty("broker.websocket.idletimeoutseconds", Integer.toString(60*60*2))
+					System.getProperty("aktin.broker.websocket.idletimeoutseconds", Integer.toString(60*60*2))
 				);
 	}
 
@@ -97,7 +98,7 @@ public class DefaultConfiguration implements Configuration{
 	@Override
 	public Class<? extends DataSource> getJdbcDataSourceClass() throws ClassNotFoundException {
 		// also possible org.postgresql.ds.PGSimpleDataSource or PGPoolingDataSource
-		String name = System.getProperty("broker.jdbc.datasource.class");
+		String name = System.getProperty("aktin.broker.jdbc.datasource.class");
 		Class<? extends DataSource> clazz;
 		if( name != null ) {
 			clazz = Class.forName(name).asSubclass(DataSource.class);
@@ -116,7 +117,7 @@ public class DefaultConfiguration implements Configuration{
 	}
 	@Override
 	public String getJdbcUrl() {
-		String url = System.getProperty("broker.jdbc.url");
+		String url = System.getProperty("aktin.broker.jdbc.url");
 		if( url == null ) {
 			url = getDefaultHsqlJdbcUrl(getBasePath());
 			log.info("Generating JDBC URL for HSQLDB: "+url);
