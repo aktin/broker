@@ -15,6 +15,9 @@
 		<artifactId>broker</artifactId>
 		<version>1.3-SNAPSHOT</version>
 	</parent>
+	<properties>
+		<java.util.logging.config.file>src/test/resources/logging.properties</java.util.logging.config.file>
+	</properties>
 	<build>
 	 	<plugins>
 	 		<!--  add implementation entries to jar to access version information  -->
@@ -90,6 +93,12 @@
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
 			<version>3.10.3</version>
+			<exclusions>
+			    <exclusion>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+			    </exclusion>
+			</exclusions>
 		</dependency>
 		<!-- broker API -->
 		<dependency>
@@ -180,9 +189,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<version>1.7.28</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
+
 
 	</dependencies>
 </project>
