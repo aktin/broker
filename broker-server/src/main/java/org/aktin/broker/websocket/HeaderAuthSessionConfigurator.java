@@ -73,7 +73,10 @@ public class HeaderAuthSessionConfigurator extends javax.websocket.server.Server
 		Principal user = null;
 		try{
 			AuthInfo info = auth.authenticateByHeaders(mapSingleHeader(request.getHeaders()));
-			user = cache.getPrincipal(info);
+			// a null result means authentication failure
+			if( info != null ) {
+				user = cache.getPrincipal(info);
+			}
 		}catch( IOException e ) {
 			log.log(Level.WARNING, "Unexpected authentication failure", e);
 		}
