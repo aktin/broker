@@ -147,10 +147,7 @@ public class HttpServer {
 
 		// setup websockets
 		setupWebsockets(context);
-		
-		for( Object c : rc.getInstances() ) {
-			System.out.println("Instance:"+c.getClass()+":"+c.toString());
-		}
+
 		jetty.start();
 	}
 
