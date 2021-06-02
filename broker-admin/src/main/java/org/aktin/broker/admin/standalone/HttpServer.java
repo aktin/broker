@@ -58,6 +58,8 @@ public class HttpServer {
 	private HeaderAuthentication auth;
 
 	public HttpServer(Configuration config) throws SQLException, IOException{
+		// switch jetty to JDK/JUL logging
+		System.setProperty("org.eclipse.jetty.util.log.class","org.eclipse.jetty.util.log.JavaUtilLog");
 		this.config = config;
 		this.authFactory = config.getAuthProvider();
 		Objects.requireNonNull(authFactory,"No AuthProvider available!");

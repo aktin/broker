@@ -113,6 +113,8 @@ public class DefaultConfiguration implements Configuration{
 		return "jdbc:hsqldb:file:"+path+";shutdown=false;user=admin;password=secret";
 	}
 	public static Class<? extends DataSource> getDefaultHsqlDataSource(){
+		// disable hsql reconfiguration of logging
+		System.setProperty("hsqldb.reconfig_logging", "false");
 		return org.hsqldb.jdbc.JDBCDataSource.class;
 	}
 	@Override
