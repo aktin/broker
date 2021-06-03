@@ -73,7 +73,11 @@ function init(){
 	$.when(
 		// load node names
 		getNodes(function(data){
-			window.nodes = data;
+			window.nodes = {};
+			for( var i=0; i<data.length; i++ ){
+				var node = data[i];
+				window.nodes[node.id] = node;
+			}
 		}, function(){
 		console.log('Unable to retrieve nodes');
 		}),

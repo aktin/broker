@@ -31,7 +31,7 @@ function getNodes(success, error){
 					// use CN if found
 					cn = cna[1];
 				}
-				a[id] = {
+				a.push({
 					id: id,
 					dn: dn,
 					cn: cn,
@@ -40,7 +40,7 @@ function getNodes(success, error){
 					},
 					seen: nodes[i].childNodes[2].innerHTML,
 					websocket: nodes[i].childNodes[3].innerHTML
-				};
+				});
 			}
 			success(a);
 		},

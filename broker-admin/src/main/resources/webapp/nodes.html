@@ -24,7 +24,7 @@ function init(){
 		alert('DWH-Knoten konnten nicht geladen werden.');
 	});
 	// load XSLT to display stats
-	window.xslt = [];
+	window.xslt = {};
 	// TODO use generic configuration for available xslt and resource names
 	$.get({
 		url: 'xslt/stats-fragment.xsl',
