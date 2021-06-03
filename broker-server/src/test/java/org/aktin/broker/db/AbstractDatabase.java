@@ -16,7 +16,7 @@ public abstract class AbstractDatabase {
 //		}
 	}
 
-	private static final void resetDatabase(Connection dbc)throws SQLException{
+	protected static final void resetDatabase(Connection dbc)throws SQLException{
 		try( LiquibaseWrapper w = new LiquibaseWrapper(dbc) ){
 			w.reset();
 		} catch (LiquibaseException e) {
