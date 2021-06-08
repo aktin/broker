@@ -1,7 +1,7 @@
 urlid broker
-url jdbc:hsqldb:file:broker;shutdown=true
-username sa
-password
+url jdbc:hsqldb:file:./broker;shutdown=true
+username admin
+password secret
 transiso TRANSACTION_READ_COMMITTED
 # When connecting directly to a file database like this, you should 
 # use the shutdown connection property like this to shut down the DB
