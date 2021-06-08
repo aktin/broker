@@ -17,7 +17,7 @@
 <xsl:template match="a:module">
 	<tr>
 		<td><xsl:value-of select="@id"/></td>
-		<td align="right"><xsl:value-of select="version/text()"/></td>
+		<td align="right"><xsl:value-of select="a:version/text()"/></td>
 	</tr>
 </xsl:template>
 
