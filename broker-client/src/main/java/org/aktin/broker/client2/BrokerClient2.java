@@ -13,7 +13,6 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.net.http.WebSocket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -275,9 +274,9 @@ public class BrokerClient2 extends AbstractBrokerClient<ClientNotificationListen
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 
-	public WebSocket connectWebsocket() throws IOException {
-		super.connectWebsocket("my/websocket");
-		return this.getWebsocket();
+	@Override
+	public String getWebsocketPath() {
+		return "my/websocket";
 	}
 //	public WebSocket openWebsocket(ClientNotificationListener listener) throws IOException {
 //		return super.openWebsocket("my/websocket", new WebsocketClientListener(listener));

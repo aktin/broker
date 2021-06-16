@@ -68,10 +68,22 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 		this.listeners = new CopyOnWriteArrayList<>();
 	}
 
+	/**
+	 * Add a notification listener.
+	 * @param listener
+	 */
 	public void addListener(T listener) {
 		listeners.add(listener);
 	}
 	abstract protected URI getQueryBaseURI();
+	abstract protected String getWebsocketPath();
+
+	public WebSocket connectWebsocket() throws IOException{
+		connectWebsocket(getWebsocketPath());
+		return this.getWebsocket();
+	}
+
+	
 	protected URI resolveBrokerURI(String spec){
 		return brokerEndpoint.resolve(spec);
 	}
@@ -108,7 +120,7 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 		};
 	}
 
-	protected <T> HttpResponse<T> sendRequest(HttpRequest request, BodyHandler<T> handler) throws IOException{
+	protected <U> HttpResponse<U> sendRequest(HttpRequest request, BodyHandler<U> handler) throws IOException{
 		try {
 			return client.send(request, handler);
 		} catch (InterruptedException e) {
@@ -152,22 +164,25 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 		if( this.websocket != null ) {
 			throw new IOException("Websocket already connected");
 		}
-		this.notifier = new WebsocketNotificationService(Executors.newSingleThreadExecutor()) {
-			@Override
-			protected void notifyText(String text) {
-				onWebsocketText(text);
-			}
-			
-			@Override
-			protected void notifyClose(int statusCode) {
-				onWebsocketClose(statusCode);
-			}
-		};
+		if( this.notifier == null ) {
+			this.notifier = new WebsocketNotificationService(Executors.newSingleThreadExecutor()) {
+				@Override
+				protected void notifyText(String text) {
+					onWebsocketText(text);
+				}
+				
+				@Override
+				protected void notifyClose(int statusCode) {
+					// before notification, make sure websocket and notifiers are fully closed 
+					closeWebsocket();
+					onWebsocketClose(statusCode);
+				}
+			};
+		}
 		try {
 			this.websocket = openWebsocket(urlspec, this.notifier);
 		}catch( IOException e ) {
-			this.notifier.shutdown();
-			this.notifier = null;
+			// keep notifier, even if the connection failed
 			throw e;
 		}
 	}
@@ -176,10 +191,9 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 			// already closed
 			return;
 		}
-		this.notifier.shutdown();
 		this.websocket.abort();
-		this.notifier = null;
 		this.websocket = null;	
+		// keep notifier, even if websocket is closed. notifier might be needed for reconnect
 	}
 
 	private WebSocket openWebsocket(String urlspec, WebSocket.Listener listener) throws IOException {
@@ -224,8 +238,8 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 		}		
 	}
 
-	protected <T> T sendAndExpectJaxb(HttpRequest req, Class<T> type) throws IOException {
-		HttpResponse<Supplier<T>> resp;
+	protected <U> U sendAndExpectJaxb(HttpRequest req, Class<U> type) throws IOException {
+		HttpResponse<Supplier<U>> resp;
 		try {
 			resp = client.send(req, JaxbBodyHandler.forType(type));
 		} catch (InterruptedException e) {

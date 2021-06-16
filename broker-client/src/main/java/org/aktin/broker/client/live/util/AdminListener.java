@@ -2,12 +2,12 @@ package org.aktin.broker.client.live.util;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.WebSocket;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aktin.broker.client.live.BrokerConfiguration;
 import org.aktin.broker.client2.AdminNotificationListener;
 import org.aktin.broker.client2.BrokerAdmin2;
+import org.aktin.broker.client2.ReconnectingListener;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,24 +23,23 @@ import lombok.Getter;
  *
  */
 public class AdminListener implements AdminNotificationListener, Runnable{
-	private BrokerAdmin2 admin;
-	private AtomicBoolean abort;
-	private WebSocket websocket;
-
 	public AdminListener(BrokerAdmin2 admin) throws IOException{
 		this.admin = admin;
 		this.abort = new AtomicBoolean();
 		admin.addListener(this);
-		this.websocket = admin.connectWebsocket();
+		admin.addListener(ReconnectingListener.forAdmin(admin, 10000, -1));
+		admin.connectWebsocket();
 		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				AdminListener.this.abort.set(true);
-				AdminListener.this.notifyAll();
+				AdminListener.this.abort();
 			}
 		});
 	}
+
+	private BrokerAdmin2 admin;
+	private AtomicBoolean abort;
 
 	@Getter
 	@AllArgsConstructor
@@ -107,25 +106,20 @@ public class AdminListener implements AdminNotificationListener, Runnable{
 					;// abort or other interrupt
 				}
 			}
-			if( websocket.isInputClosed() ) {
-				// try to reconnect
-				try {
-					websocket = admin.connectWebsocket();
-					System.out.println("websocket reconnected");
-				} catch (IOException e) {
-					System.err.println("websocket reconnect failed: "+e.getMessage());
-					// abort
-					abort.set(true);
-				} 
-			}
 		}
-		websocket.abort();
+		admin.closeWebsocket();
+	}
+
+	public void abort() {
+		abort.set(true);
+		synchronized( this ){
+			this.notifyAll();
+		}		
 	}
 
 	@Override
 	public void onWebsocketClosed(int statusCode) {
-		System.out.println("websocket closed with status "+statusCode);
-		this.notifyAll();
+		// NOP
 	}
 
 }

@@ -13,7 +13,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
-import java.net.http.WebSocket;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Collections;
@@ -328,9 +327,9 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 				.DELETE().build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
-	public WebSocket connectWebsocket() throws IOException {
-		super.connectWebsocket("websocket");
-		return this.getWebsocket();
+	@Override
+	public String getWebsocketPath() {
+		return "websocket";
 	}
 
 	@Override
