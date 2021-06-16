@@ -6,10 +6,8 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
@@ -21,7 +19,6 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 
 import javax.xml.bind.JAXB;
 import javax.xml.transform.TransformerException;

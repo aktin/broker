@@ -2,7 +2,6 @@ package org.aktin.broker.client.live;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.http.WebSocket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
