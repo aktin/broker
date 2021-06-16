@@ -141,4 +141,9 @@ public class Principal implements java.security.Principal, SecurityContext{
 	public int getWebsocketCount() {
 		return this.websocketConnections;
 	}
+
+	@Override
+	public String toString() {
+		return "Principal(nodeId="+nodeId+", dn="+this.clientDn+")";
+	}
 }
