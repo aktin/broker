@@ -8,4 +8,7 @@
 # e.g. -Daktin.broker.jdbc.datasource.class=org.postgresql.ds.PGSimpleDataSource   -Daktin.broker.jdbc.url=jdbc:postgresql://localhost/postgres?user=postgres\&password=mysecretpassword 
 # To start a postgres environment for testing, you can use docker: `start postgres via docker: docker run --name broker-postgres -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -d postgres`
 
+# additional options: -Daktin.broker.websocket.idletimeoutseconds=3600
+
+
 
