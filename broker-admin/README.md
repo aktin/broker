@@ -4,7 +4,7 @@
 
 Via system properties, you can set the websocket idle timout. This timeout
 will cause idle websocket connections from clients to be closed after the 
-specified amount of seconds. Use the system variable `broker.websocket.idletimeoutseconds`
+specified amount of seconds. Use the system variable `aktin.broker.websocket.idletimeoutseconds`
 
 ## Authentication providers
 
