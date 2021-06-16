@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.websocket.OnClose;
+import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
@@ -25,7 +26,7 @@ public abstract class AbstractBroadcastWebsocket {
 	@OnOpen
 	public void open(Session session){
 		Principal user = getSessionPrincipal(session);
-		log.log(Level.INFO, "Session id {} created for user {}", new Object[] {session.getId(), Objects.toString(user)});
+		log.log(Level.INFO, "Websocket session {0} created for user {1}", new Object[] {session.getId(), user});
 
 		// check privileges and close session if needed
 		if( isAuthorized(user) ) {
@@ -50,13 +51,17 @@ public abstract class AbstractBroadcastWebsocket {
 	@OnClose
 	public void close(Session session){
 		removeSession(session, getSessionPrincipal(session));
-		log.info("Session closed: "+session.getId());
+		log.info("Websocket session closed: "+session.getId());
 	}
 
 	@OnMessage
 	public void message(Session session, String message){
 		Principal user = getSessionPrincipal(session);
-		log.log(Level.INFO, "Ignoring message from client {}",user.getName());
+		log.log(Level.INFO, "Ignoring message from client {0}",user.getName());
+	}
+	@OnError
+	public void error(Session session, Throwable t) {
+	    log.log(Level.INFO, "Websocket error reported for session {0}: {1}", new Object[] {session.getId(), t});
 	}
 
 	static int broadcast(Set<Session> clients, String message){
@@ -74,7 +79,7 @@ public abstract class AbstractBroadcastWebsocket {
 		for( Session session : clients ){
 			Principal user = getSessionPrincipal(session);
 			if( user == null ) {
-				log.warning("Skipping websocket session without authentication "+session);
+				log.log(Level.WARNING,"Skipping websocket session {0} without authentication",session.getId());
 				continue;
 			}
 			if( principalFilter.test(user) == false ) {

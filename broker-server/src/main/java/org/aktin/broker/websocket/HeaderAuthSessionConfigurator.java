@@ -82,7 +82,7 @@ public class HeaderAuthSessionConfigurator extends javax.websocket.server.Server
 		}
 		super.modifyHandshake(sec, request, response);
 		if( user != null ) {
-			log.info("Websocket handshake auth user: "+user.getName());
+			log.log(Level.INFO,"Websocket handshake successful for {0}",user);
 			sec.getUserProperties().put(AUTH_USER,user);
 		}else {
 			log.info("Websocket handshake auth unauthorized. Aborting handshake.");
