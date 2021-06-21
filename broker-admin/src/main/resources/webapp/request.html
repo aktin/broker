@@ -42,7 +42,7 @@ function loadResultDef(requestId, index, type){
         "Accept" : type,
         "Content-Type": type
     },
-    data: "data",
+    dataType: "text",
     success : function(response) {
  			$('#requestdef'+index).text(response);
     }
