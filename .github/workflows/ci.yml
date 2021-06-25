@@ -91,6 +91,6 @@ jobs:
         context: .
         file: docker/aktin-client/Dockerfile
         tags: |
-          ghcr.io/${{ steps.prep.outputs.repository }}/aktin-client-temp:latest
-          ghcr.io/${{ steps.prep.outputs.repository }}/aktin-client-temp:${{ steps.prep.outputs.version }}
+          ghcr.io/${{ steps.prep.outputs.repository }}/aktin-client:latest
+          ghcr.io/${{ steps.prep.outputs.repository }}/aktin-client:${{ steps.prep.outputs.version }}
         push: true
