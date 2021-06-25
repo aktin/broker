@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.client2.ClientNotificationListener;
@@ -18,6 +19,7 @@ import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 
 import lombok.Getter;
+import lombok.extern.java.Log;
 
 /**
  * Abstract execution service running request executions with the provided executor.
@@ -29,6 +31,7 @@ import lombok.Getter;
  *
  * @param <T> request execution implementation
  */
+@Log
 public abstract class AbstractExecutionService<T extends AbortableRequestExecution> implements Function<Integer, Future<T>>, Closeable {
 
 	@Getter
@@ -221,6 +224,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	 */
 	public void pollRequests() throws IOException {
 		List<RequestInfo> list = client.listMyRequests();
+		log.log(Level.INFO,"Retrieved {0} requests",list.size());
 		for( RequestInfo request : list ) {
 			if( request.closed != null ) {
 				// closed request. see if it is in the queue

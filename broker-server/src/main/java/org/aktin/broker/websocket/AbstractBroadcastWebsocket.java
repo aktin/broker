@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -15,8 +14,10 @@ import javax.websocket.Session;
 
 import org.aktin.broker.auth.Principal;
 
+import lombok.extern.java.Log;
+
+@Log
 public abstract class AbstractBroadcastWebsocket {
-	private static final Logger log = Logger.getLogger(AbstractBroadcastWebsocket.class.getName());
 
 	protected abstract boolean isAuthorized(Principal principal);
 	protected abstract void addSession(Session session, Principal user);
