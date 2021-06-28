@@ -13,6 +13,7 @@ services:
       PROCESS_TIMEOUT_SECONDS: ${PROCESS_TIMEOUT_SECONDS:-60}
       PROCESS_COMMAND: ${PROCESS_COMMAND:-/opt/codex-aktin/echo.sh}
       PROCESS_ARGS: ${PROCESS_ARGS:-10}
+      JAVA_OPTS: $JAVA_OPTS
     build:
       context: ../..
       dockerfile: docker/aktin-client/Dockerfile
