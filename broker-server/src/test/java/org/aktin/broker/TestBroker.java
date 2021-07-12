@@ -79,7 +79,7 @@ public class TestBroker extends AbstractTestBroker {
 //	}
 
 	@Override
-	public BrokerAdmin initializeAdmin() {
+	public BrokerAdmin2 initializeAdmin() {
 //		return new TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
 		BrokerAdmin2 admin = new BrokerAdmin2(server.getBrokerServiceURI());
 		admin.setAuthFilter(new AuthFilterImpl(ADMIN_00_SERIAL, ADMIN_00_DN));
@@ -422,6 +422,18 @@ public class TestBroker extends AbstractTestBroker {
 		ResponseWithMetadata r = a.getNodeResource(0, "stats");
 		assertEquals("202cb962ac59075b964b07152d234b70", r.getMD5String());
 		assertNotEquals(0,r.getLastModified());
-		
+	}
+	@Test
+	public void filterRequestByXPath() throws IOException{
+		BrokerAdmin2 a = initializeAdmin();
+		int qid = a.createRequest("text/xml", "<a><b id='1'/></a>");
+		a.publishRequest(qid);
+		qid = a.createRequest("text/xml", "<a><b id='2'/></a>");
+		a.publishRequest(qid);
+
+		List<RequestInfo> list = a.listRequestsFiltered("text/xml","/a/b/@id='2'");
+		assertEquals(1, list.size());
+		assertEquals(qid, list.get(0).getId());
+	
 	}
 }

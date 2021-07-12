@@ -247,6 +247,8 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 		}
 		if( resp.statusCode() == HTTP_STATUS_404_NOT_FOUND ) {
 			return null;
+		}else if( resp.statusCode() == 400 ) {
+			throw new IOException("HTTP response status bad request");
 		}
 		return resp.body().get();
 	}

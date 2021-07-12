@@ -30,6 +30,8 @@ public interface Broker {
 
 	List<RequestInfo> listAllRequests() throws SQLException;
 
+	List<RequestInfo> searchAllRequests(String mediaType, String searchLanguage, String predicate) throws IOException;
+	
 	List<String> getRequestTypes(int requestId) throws SQLException;
 
 	/**

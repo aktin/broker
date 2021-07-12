@@ -15,6 +15,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -245,6 +246,15 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 	@Override
 	public List<RequestInfo> listAllRequests() throws IOException {
 		HttpRequest req = createBrokerRequest("request").GET().build();
+		RequestList resp = sendAndExpectJaxb(req, RequestList.class);
+		return postprocessRequestList(resp);
+	}
+
+	public List<RequestInfo> listRequestsFiltered(String mediaType, String predicate) throws IOException {
+		String urispec = "request/filtered?type="+URLEncoder.encode(mediaType, StandardCharsets.UTF_8)+"&predicate="+URLEncoder.encode(predicate,StandardCharsets.UTF_8);
+		
+		HttpRequest req = createBrokerRequest(urispec).GET().build();
+		
 		RequestList resp = sendAndExpectJaxb(req, RequestList.class);
 		return postprocessRequestList(resp);
 	}

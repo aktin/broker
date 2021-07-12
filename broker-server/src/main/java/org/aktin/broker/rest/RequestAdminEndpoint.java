@@ -23,6 +23,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -155,6 +156,31 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 		try {
 			return new RequestList(db.listAllRequests());
 		} catch (SQLException e) {
+			log.log(Level.SEVERE, "Unable to read requests", e);
+			throw new InternalServerErrorException();			
+		}
+	}
+
+	/**
+	 * List filter requests available at this broker via predicate e.g. XPath
+	 * 
+	 * @return HTTP 200 with XML representation of all requests
+	 */
+	@GET
+	@Path("filtered")
+	@Produces(MediaType.APPLICATION_XML)
+	public RequestList listAllRequests(@QueryParam("type") String type, @QueryParam("predicate") String predicate) {
+		if( type == null || !(type.endsWith("+xml") || type.endsWith("/xml")) ) {
+			log.log(Level.WARNING,"Ignoring bad request for filtered type {1}",type);
+			throw new BadRequestException("type param required ending with +xml or /xml");
+		}
+		try {
+			return new RequestList(db.searchAllRequests(type,"XPath",predicate));
+			
+		}catch( IllegalArgumentException e ) {
+			log.log(Level.WARNING,"Filter request failed for predicate "+predicate, e.getCause());
+			throw new BadRequestException("type param required ending with +xml or /xml");
+		} catch (IOException e) {
 			log.log(Level.SEVERE, "Unable to read requests", e);
 			throw new InternalServerErrorException();			
 		}

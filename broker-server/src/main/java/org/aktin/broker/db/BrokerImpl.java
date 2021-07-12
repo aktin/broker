@@ -32,6 +32,14 @@ import javax.annotation.Resource;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.server.Broker;
@@ -42,6 +50,9 @@ import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.RequestStatusInfo;
 import org.aktin.broker.xml.util.Util;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import lombok.extern.java.Log;
 
@@ -58,7 +69,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 	 * might be written to a temporary file which will
 	 * be deleted automatically.
 	 */
-	private int inMemoryTreshold = 65536;
+	private int inMemoryTreshold = 1024*1024;
 	
 	private static final String SELECT_MEDIATYPE_BY_REQUESTID = "SELECT media_type FROM request_definitions WHERE request_id=?";
 
@@ -963,5 +974,62 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			}
 		}
 		return updated;
+	}
+	@Override
+	public List<RequestInfo> searchAllRequests(String mediaType, String searchLanguage, String predicate) throws IOException {
+		List<RequestInfo> list;
+		String sql = "SELECT r.id, r.published, r.closed, r.targeted, d.query_def FROM requests r JOIN request_definitions d ON r.id=d.request_id WHERE d.media_type=? ORDER BY r.id";
+		if( !searchLanguage.equals("XPath" ) ) {
+			throw new IllegalArgumentException("Only XPath permitted. Unsupported search language: "+searchLanguage);
+		}
+		
+		XPathExpression xpath;
+		DocumentBuilder domBuilder;
+		try {
+			XPathFactory xf = XPathFactory.newDefaultInstance();
+			xpath = xf.newXPath().compile(predicate);
+			// initialize DOM builder
+			DocumentBuilderFactory df = DocumentBuilderFactory.newDefaultInstance();
+			df.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			df.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+			df.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+			domBuilder = df.newDocumentBuilder();
+		} catch (XPathExpressionException e) {
+			throw new IllegalArgumentException("Unable to compile XPath expression: "+predicate, e);
+		} catch (ParserConfigurationException e) {
+			throw new IOException("Failed to initialize DOM builder", e);
+		}
+
+		
+		try( Connection dbc = brokerDB.getConnection();
+				PreparedStatement st = dbc.prepareStatement(sql) )
+		{
+			st.setString(1, mediaType);
+			ResultSet rs = st.executeQuery();
+			list = new ArrayList<>();
+			while( rs.next() ) {
+				Document xml;
+				String result;
+				try( Reader r = createTemporaryClobReader(rs, 5) ){
+					try {
+						xml = domBuilder.parse(new InputSource(r));
+						result = xpath.evaluate(xml, XPathConstants.STRING).toString();
+					} catch (IOException | SAXException e) {
+						log.log(Level.INFO, "Failed to parse XML for query {1} definition {2}",new Object[] {rs.getInt(1),mediaType});
+						continue;
+					} catch (XPathExpressionException e) {
+						log.log(Level.INFO, "Failed to evaluate XPath against query definition {1}", rs.getInt(1));
+						continue;
+					}
+				}
+				if( result != null && result.equals("true") ) {
+					list.add(new RequestInfo(rs.getInt(1), optionalTimestamp(rs, 2), optionalTimestamp(rs,3), rs.getBoolean(4)));
+				}
+			}
+			rs.close();
+		} catch (SQLException e) {
+			throw new IOException("SQL error", e);
+		}
+		return list;
 	}
 }
