@@ -50,6 +50,9 @@ function fillNodeRestrictionFromTemplate(id){
 }
 
 function isContentTypeCompatible(contentType, typeSpec){
+	if( typeSpec == '*/*' ){
+		return true;
+	}
 	var p = contentType.split(';');
 	if( p.length > 0 ){
 		contentType = p[0];

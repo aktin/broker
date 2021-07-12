@@ -1,2 +1,3 @@
 aktin.query.request
 test.request
+generic.request
