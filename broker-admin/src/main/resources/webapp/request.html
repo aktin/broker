@@ -35,6 +35,30 @@ function annotateStatusMessage(requestId, nodeId){
 	});
 }
 
+var prettifyXml = function(sourceXml)
+{
+    var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');
+    var xsltDoc = new DOMParser().parseFromString([
+        // describes how we want to modify the XML - indent everything
+        '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
+        '  <xsl:strip-space elements="*"/>',
+        '  <xsl:template match="para[content-style][not(text())]">', // change to just text() to strip space in text nodes
+        '    <xsl:value-of select="normalize-space(.)"/>',
+        '  </xsl:template>',
+        '  <xsl:template match="node()|@*">',
+        '    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
+        '  </xsl:template>',
+        '  <xsl:output indent="yes"/>',
+        '</xsl:stylesheet>',
+    ].join('\n'), 'application/xml');
+
+    var xsltProcessor = new XSLTProcessor();    
+    xsltProcessor.importStylesheet(xsltDoc);
+    var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
+    var resultXml = new XMLSerializer().serializeToString(resultDoc);
+    return resultXml;
+};
+
 function loadResultDef(requestId, index, type){
 	$.ajax({
 		url: rest_base+'/broker/request/'+requestId,
@@ -44,7 +68,14 @@ function loadResultDef(requestId, index, type){
     },
     dataType: "text",
     success : function(response) {
- 			$('#requestdef'+index).text(response);
+    	if( type.endsWith('+json') || type.endsWith('/json') ){
+    		// pretty print json
+    		response = JSON.stringify(JSON.parse(response),null,2);
+    	}else if( type.endsWith('+xml') || type.endsWith('/xml') ){
+    		// pretty print xml
+    		response = prettifyXml(response);
+    	}
+ 		$('#requestdef'+index).text(response);
     }
 });
 }
@@ -129,7 +160,7 @@ function init(){
 			success: function(data){
 				var list = $(data).find('result');
 				if( list.length == 0 ){
-					$('#results').after('<p>No response content reveived so far</p>');
+					$('#results').after('<p>No response content received so far</p>');
 					$('#results').remove();
 				}else list.each(function(){
 					var node_id = $(this).find('node').text();
