@@ -1,7 +1,8 @@
 				<legend>Referenzzeitpunkt <input type="datetime-local" name="reference" required="yes" /></legend>
-				<legend>Planned execution <input type="date" name="scheduled" required="yes" /></legend>
-				<legend>Title <input type="text" name="title" data-jpath="title" required="yes" /></legend>
-				<legend>Description <br/><textarea name="description" data-jpath="description"></textarea></legend>
+				<legend>Geplante Ausführung <input type="date" name="scheduled" required="yes" /></legend>
+				<legend>Titel <input type="text" name="title" data-jpath="title" required="yes" /></legend>
+				<legend>Beschreibung <br/><textarea name="description" data-jpath="description"></textarea></legend>
+				<legend>Tags (komma-separiert) <input type="text" name="tags" data-jpath="tags" required="yes" /></legend>
 				<fieldset>
 					<legend>Sponsor/Customer</legend>
 					<legend>Name <input type="text" name="p_name" data-jpath="principal name" required="true" /></legend>
@@ -23,7 +24,7 @@
 				</fieldset>
 				<fieldset id="hidden_fields" style="display:none">
 						<legend id="x_intvl">Intervall (ca.)<input type="text" name="x_intvl" data-jpath="schedule interval" pattern="P[0-9]+[DM]" /></legend>
+						<legend id="x_intvl_hours">IntervalHours<input type="number" name="x_intvl_hours" data-jpath="schedule intervalHours" /></legend>
 						<legend id="x_qid">Query ID<input type="number" id="x_qid" name="x_qid" data-jpath="schedule id" /></legend>
 				</fieldset>
-				
 				<legend>Query XML<br/><textarea name="xml" required="yes"></textarea></legend>
