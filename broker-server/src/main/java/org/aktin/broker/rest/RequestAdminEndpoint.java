@@ -171,7 +171,7 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	@Produces(MediaType.APPLICATION_XML)
 	public RequestList listAllRequests(@QueryParam("type") String type, @QueryParam("predicate") String predicate) {
 		if( type == null || !(type.endsWith("+xml") || type.endsWith("/xml")) ) {
-			log.log(Level.WARNING,"Ignoring bad request for filtered type {1}",type);
+			log.log(Level.WARNING,"Ignoring bad request for filtered type {0}",type);
 			throw new BadRequestException("type param required ending with +xml or /xml");
 		}
 		try {
