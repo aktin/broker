@@ -14,10 +14,10 @@ function switchExecutionForm(repeating){
 			target = $('#hidden_fields');
 			$(this).text('Single execution (click to change)');
 		}
-		
 		$('#x_intvl').prop('required',repeating);
 		$('#x_qid').prop('required',repeating);
 		$('#x_intvl').detach().appendTo(target);
+		$('#x_intvl_hours').detach().appendTo(target);
 		$('#x_qid').detach().appendTo(target);
 
 }
@@ -28,6 +28,7 @@ function initializeForm(){
 	$('#new_request input[name="p_name"]').val('')
 	$('#new_request input[name="p_email"]').val('');
 	$('#new_request input[name="title"]').val('')
+	$('#new_request input[name="tags"]').val('')
 	$('#new_request input[name="x_ts"]').val(new Date().toDateInputValue()+"T00:00");
 
 	// add button to set date
@@ -45,15 +46,15 @@ function initializeForm(){
 	});
 
 	// XML validation
-	
+
 }
 function buildRequestDefinitionXml(requestId, fragment){
 	// check for single or multiple execution
 	var xml;
 	if( isRepeatingExecution() ){
-		xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="repeatedExecution"><duration/><interval/><id/></schedule></query></queryRequest>');	
+		xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>' + requestId +'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/><tags><tag/></tags></principal><schedule xsi:type="repeatedExecution"><duration/><interval/><intervalHours/><id/></schedule></query></queryRequest>');
 	}else{
-		xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>'+requestId+'</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
+		xml = $.parseXML('<queryRequest xmlns="http://aktin.org/ns/exchange" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><id>' + requestId + '</id><reference/><scheduled/><query><title/><description/><principal><name/><organisation/><email/><phone/><tags><tag/></tags></principal><schedule xsi:type="singleExecution"><duration/></schedule></query></queryRequest>');
 	}
 	$(xml).find('scheduled').text(localTimeToISO($('#new_request input[name="scheduled"]').val()));
 	$(xml).find('reference').text(localTimeToISO($('#new_request input[name="reference"]').val()));
@@ -61,8 +62,21 @@ function buildRequestDefinitionXml(requestId, fragment){
 	// use form elements
 	$('#new_request *').filter(':input').each(function(){
 		var jpath = $(this).data('jpath');
-		if( jpath == '' )return;
-		$(xml).find(jpath).text($(this).val());
+		if( jpath == '' ) {
+			return;
+		} else if( jpath == 'tags'){
+			// case differentiation as <tags> has only child elements
+			tags = $(this).val()
+			tags = tags.split(",");
+			tags.forEach(tag => {
+				var cln = $(xml).find('tags').children().first().clone()
+				$(cln).text(tag.trim())
+				$(cln).appendTo($(xml).find('tags'))
+			})
+			$(xml).find('tags').children().first().remove()
+		} else {
+			$(xml).find(jpath).text($(this).val());
+		}
 	});
 	// append XML fragment to query
 	$(query).append($(fragment).find('*').eq(0));
@@ -111,12 +125,22 @@ function validateForm(){
 
 function fillForm(data, contentType, id){
 	var xml = $.parseXML(data);
-	
+
 	// fill form elements with xml info
 	$('#new_request *').filter(':input').each(function(){
 		var jpath = $(this).data('jpath');
-		if( jpath == '' )return;
-		$(this).val( $(xml).find(jpath).text() );
+		if (jpath == '') {
+			return;
+		} else if (jpath == 'tags') {
+			// case differentiation as <tags> has only child elements
+			var arr = [];
+			$(xml).find(jpath).children().each(function () {
+				arr.push($(this).text());
+			});
+			$(this).val(arr.join(', '));
+		} else {
+			$(this).val($(xml).find(jpath).text());
+		}
 	});
 
 	// compile query contents
@@ -136,5 +160,3 @@ function fillForm(data, contentType, id){
 	// check if xml was repeating
 	switchExecutionForm($(xml).find('schedule id').text() != '');
 }
-
-
