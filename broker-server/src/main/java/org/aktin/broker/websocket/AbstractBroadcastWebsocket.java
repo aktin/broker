@@ -51,18 +51,24 @@ public abstract class AbstractBroadcastWebsocket {
 	}
 	@OnClose
 	public void close(Session session){
-		removeSession(session, getSessionPrincipal(session));
-		log.info("Websocket session closed: "+session.getId());
+		Principal user = getSessionPrincipal(session);
+		removeSession(session);
+		log.info("Websocket session {0} closed for user {1} ",new Object[] {session.getId(), user});
 	}
 
 	@OnMessage
 	public void message(Session session, String message){
 		Principal user = getSessionPrincipal(session);
-		log.log(Level.INFO, "Ignoring message from client {0}",user.getName());
+		if( message.startsWith("ping ") ) {
+			// TODO send pong and handle in client
+		}else {
+			log.log(Level.INFO, "Ignoring message from client {0}",user.getName());
+		}
 	}
 	@OnError
 	public void error(Session session, Throwable t) {
-	    log.log(Level.INFO, "Websocket error reported for session {0}: {1}", new Object[] {session.getId(), t});
+		Principal user = getSessionPrincipal(session);
+	    log.log(Level.INFO, "Websocket session {0} error for user {1}: {2}", new Object[] {session.getId(), user, t});
 	}
 
 	static int broadcast(Set<Session> clients, String message){
