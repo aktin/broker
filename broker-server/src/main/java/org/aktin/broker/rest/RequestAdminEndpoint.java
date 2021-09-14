@@ -123,12 +123,11 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	 * @param requestId request id
 	 * @param content request definition
 	 * @param headers Content-type header
-	 * @return HTTP 200 on success
-	 * @throws URISyntaxException URI syntax error
+	 * @throws BadRequestException Unable to parse numeric request id
 	 */
 	@PUT
 	@Path("{id}")
-	public void addRequestDefinition(@PathParam("id") String requestId, Reader content, @Context HttpHeaders headers) throws URISyntaxException{
+	public void addRequestDefinition(@PathParam("id") String requestId, Reader content, @Context HttpHeaders headers) throws BadRequestException{
 		MediaType type = headers.getMediaType();
 		try {
 			// remove charset information, since we already have the string representation
@@ -187,10 +186,9 @@ public class RequestAdminEndpoint extends AbstractRequestEndpoint{
 	}
 
 	/**
-	 * Delete a single existing request
+	 * Delete a single existing request. HTTP 200 on success
 	 * 
 	 * @param id request id to delete
-	 * @return HTTP 200 on success
 	 */
 	@DELETE
 	@Path("{id}")

@@ -14,6 +14,7 @@ public class Principal implements java.security.Principal, SecurityContext{
 	 */
 	private Integer nodeId;
 	private String commonName;
+	/** distinguished name. Client information a la X.509/LDAP/etc. Should contain at least CN=display name **/
 	private String clientDn;
 	private Set<AuthRole> roles;
 	private long lastAccessed;
@@ -22,7 +23,7 @@ public class Principal implements java.security.Principal, SecurityContext{
 	/**
 	 * Constructor for node principal.
 	 * @param nodeId unique node client id
-	 * @param clientDn distinguished name. Client information a la X.509/LDAP/etc. Should contain at least CN=display name
+	 * @param info authentication information
 	 */
 	public Principal(int nodeId, AuthInfo info){
 		this(info);
