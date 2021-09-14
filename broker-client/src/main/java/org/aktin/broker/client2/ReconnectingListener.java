@@ -45,6 +45,8 @@ public class ReconnectingListener implements NotificationListener{
 		public void onRequestClosed(int requestId) {}
 		@Override
 		public void onResourceChanged(String resourceName) {}
+		@Override
+		public void onPong(String msg) {}
 	}
 
 	public static final AdminNotificationListener forAdmin(BrokerAdmin2 admin, int reconnectMillis, int maxRetries) {

@@ -3,8 +3,8 @@ package org.aktin.broker.client.live.sysproc;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.aktin.broker.client.live.AbstractExecutionService;
 import org.aktin.broker.client2.BrokerClient2;
@@ -23,11 +23,11 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 	private ProcessExecutionConfig config;
 
 	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config) {
-		super(client, Executors.newSingleThreadExecutor());
+		super(client, Executors.newSingleThreadScheduledExecutor());
 		this.config = config;
 	}
 
-	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config, ExecutorService executor) {
+	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config, ScheduledExecutorService executor) {
 		super(client, executor);
 		this.config = config;
 	}
@@ -91,6 +91,11 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 			log.severe("websocket connection failed: "+e.getMessage());
 			// exit if the initial websocket connection fails?
 			// for now, just continue trying to establish the connection
+		}
+		
+		if( config.getWebsocketPingpongSeconds() != 0 ) {
+			setWebsocketPingPongTimer(config.getWebsocketPingpongSeconds() * 1000);
+			log.info("websocket ping-pong delay set to "+config.getWebsocketPingpongSeconds()+"s");
 		}
 		
 		long previousConnection = System.currentTimeMillis();

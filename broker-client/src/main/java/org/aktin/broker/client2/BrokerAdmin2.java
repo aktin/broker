@@ -370,6 +370,10 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 				for( AdminNotificationListener listener : listeners )
 				listener.onResourceUpdate(Integer.valueOf(args[1]), args[2]);
 				break;
+			case "pong": // ping response
+				for( AdminNotificationListener listener : listeners )
+				listener.onPong(args[1]);
+				break;
 			default:
 				// ignoring unsupported websocket command
 				// TODO log warning

@@ -300,6 +300,10 @@ public class BrokerClient2 extends AbstractBrokerClient<ClientNotificationListen
 			for( ClientNotificationListener listener : listeners )
 			listener.onRequestClosed(Integer.valueOf(arg));
 			break;
+		case "pong":
+			for( ClientNotificationListener listener : listeners )
+			listener.onPong(arg);
+			break;
 		default:
 			// ignoring unsupported websocket command
 			// TODO log warning

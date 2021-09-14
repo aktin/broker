@@ -10,6 +10,7 @@ import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
+import javax.websocket.PongMessage;
 import javax.websocket.Session;
 
 import org.aktin.broker.auth.Principal;
@@ -52,18 +53,31 @@ public abstract class AbstractBroadcastWebsocket {
 	@OnClose
 	public void close(Session session){
 		Principal user = getSessionPrincipal(session);
-		removeSession(session);
-		log.info("Websocket session {0} closed for user {1} ",new Object[] {session.getId(), user});
+		removeSession(session, user);
+		log.log(Level.INFO,"Websocket session {0} closed for user {1} ",new Object[] {session.getId(), user});
 	}
 
 	@OnMessage
 	public void message(Session session, String message){
 		Principal user = getSessionPrincipal(session);
 		if( message.startsWith("ping ") ) {
-			// TODO send pong and handle in client
+			// send pong
+			try {
+				session.getBasicRemote().sendText("pong "+message.substring(5));
+				log.log(Level.INFO, "Websocket ping reply sent for session {0} user {1}", new Object[] {session.getId(), user});
+			} catch (IOException e) {
+				log.log(Level.WARNING, "Websocket ping pong reply failed for user "+user, e);
+			}
 		}else {
-			log.log(Level.INFO, "Ignoring message from client {0}",user.getName());
+			log.log(Level.INFO, "Ignoring message from user {0}", user);
 		}
+	}
+
+
+	@OnMessage
+	public void message(Session session, PongMessage message){
+		Principal user = getSessionPrincipal(session);
+	    log.log(Level.INFO, "Websocket pong message for session {0} user {1} length {2}", new Object[] {session.getId(), user, message.getApplicationData().remaining()});
 	}
 	@OnError
 	public void error(Session session, Throwable t) {

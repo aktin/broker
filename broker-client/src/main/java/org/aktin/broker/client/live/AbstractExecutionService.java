@@ -7,8 +7,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -37,11 +40,13 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	@Getter
 	protected BrokerClient2 client;
 	protected AtomicBoolean abort;
-	private ExecutorService executor;
+	private ScheduledExecutorService executor;
 
 	private Map<Integer, PendingExecution> pending;
 
-	public AbstractExecutionService(BrokerClient2 client, ExecutorService executor){
+	private ScheduledFuture<?> pingpongTimer;
+
+	public AbstractExecutionService(BrokerClient2 client, ScheduledExecutorService executor){
 		this.abort = new AtomicBoolean();
 		this.client = client;
 		this.pending = Collections.synchronizedMap(new HashMap<>());
@@ -68,6 +73,12 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			public void onWebsocketClosed(int statusCode) {
 				AbstractExecutionService.this.onWebsocketClosed(statusCode);
 			}
+
+			@Override
+			public void onPong(String msg) {
+				long millis = System.currentTimeMillis()- Long.parseLong(msg);
+				log.info("Websocket received pong, roundtrip="+millis);
+			}
 		});
 	}
 
@@ -91,6 +102,40 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		}
 	}
 
+	public void setWebsocketPingPongTimer(long timerMillis) {
+		if( this.pingpongTimer != null ) {
+			this.pingpongTimer.cancel(false);
+			this.pingpongTimer = null;
+		}
+		if( timerMillis != 0 ) {
+			this.pingpongTimer = executor.scheduleWithFixedDelay(this::sendWebsocketPing, timerMillis, timerMillis,TimeUnit.MILLISECONDS);
+
+		}
+	}
+
+	/**
+	 * Method will be called by scheduled executor thread to send a websocket ping.
+	 */
+	private void sendWebsocketPing() {
+		if( client.getWebsocket() == null || client.getWebsocket().isOutputClosed() ) {
+			// client websocket disconnected. try to reconnect
+			log.info("Websocket ping skipped because websocket is closed. Trying reconnect.");
+			try {
+				client.connectWebsocket();
+			} catch (IOException e) {
+				log.warning("Websocket ping reconnect failed: "+e.getMessage());
+			}
+		}else {
+			try {
+				client.getWebsocket().sendText("ping "+System.currentTimeMillis(), true).get();
+			} catch (InterruptedException e) {
+				log.info("Websocket ping interrupted");
+			} catch (ExecutionException e) {
+				log.log(Level.WARNING, "Websocket ping failed", e.getCause());
+			}
+		}
+	}
+	
 	public boolean isAborted() {
 		return abort.get();
 	}
@@ -131,7 +176,11 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		List<Runnable> aborted = executor.shutdownNow();
 		// extract executions from local wrapper PendingExecution
 		List<T> list = new ArrayList<>(aborted.size());
-		aborted.forEach( (r) -> list.add(((PendingExecution)r).execution) );
+		aborted.forEach( (r) -> {
+			if( r instanceof AbstractExecutionService.PendingExecution){
+				list.add(((PendingExecution)r).execution);
+			}
+		} );
 		onShutdown(list);
 
 		// notify threads waiting on this object

@@ -1,9 +1,7 @@
 package org.aktin.broker;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -127,6 +125,7 @@ public class TestWebsockets extends AbstractTestBroker{
 			@Override
 			public void onWebsocketClosed(int statusCode) {
 			}
+
 		});
 		c1.connectWebsocket();
 		// fail with unwanted notifications of third party

@@ -27,6 +27,7 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 
 	int websocketReconnectSeconds;
 	boolean websocketReconnectPolling;
+	int websocketPingpongSeconds;
 
 	// specific config
 	private long processTimeoutMillis;
@@ -71,6 +72,7 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 		
 		this.websocketReconnectSeconds = Integer.valueOf(props.getProperty("client.websocket.reconnect.seconds"));
 		this.websocketReconnectPolling = Boolean.valueOf(props.getProperty("client.websocket.reconnect.polling"));
+		this.websocketPingpongSeconds = Integer.valueOf(props.getProperty("client.websocket.ping.seconds","0"));
 		this.processTimeoutMillis = 1000*Long.valueOf(props.getProperty("process.timeout.seconds"));
 		
 		String cmd = props.getProperty("process.command");

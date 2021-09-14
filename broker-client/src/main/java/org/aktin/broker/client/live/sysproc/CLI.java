@@ -18,7 +18,7 @@ public class CLI implements Runnable {
 	private ProcessExecutionService exec;
 
 	public CLI(ProcessExecutionConfig config, BrokerClient2 client)  {
-		this.exec = new ProcessExecutionService(client, config, Executors.newSingleThreadExecutor());
+		this.exec = new ProcessExecutionService(client, config, Executors.newSingleThreadScheduledExecutor());
 	}
 
 
