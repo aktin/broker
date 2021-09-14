@@ -1015,10 +1015,10 @@ public class BrokerImpl implements BrokerBackend, Broker {
 						xml = domBuilder.parse(new InputSource(r));
 						result = xpath.evaluate(xml, XPathConstants.STRING).toString();
 					} catch (IOException | SAXException e) {
-						log.log(Level.INFO, "Failed to parse XML for query {1} definition {2}",new Object[] {rs.getInt(1),mediaType});
+						log.log(Level.INFO, "Failed to parse XML for query {0} definition {1}",new Object[]{rs.getInt(1), mediaType});
 						continue;
 					} catch (XPathExpressionException e) {
-						log.log(Level.INFO, "Failed to evaluate XPath against query definition {1}", rs.getInt(1));
+						log.log(Level.INFO, "Failed to evaluate XPath against query definition {0}", rs.getInt(1));
 						continue;
 					}
 				}
