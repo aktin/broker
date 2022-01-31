@@ -190,6 +190,32 @@ the following implementations:
 - https://github.com/li2b2/li2b2-shrine/tree/master/node/dktk/dktk-node
 
 
+Publishing node resources to the broker (eg. statistics, health status, etc.)
+-----------------------------------------------------------------------------
+A node can publish and update arbitrary resources to the broker. This functionality
+is commonly used to upload daily statistics, ETL errors or health information.
+```bash
+
+# Create a file containing some health info
+date > health.txt
+free >> health.txt
+df -lh / >> health.txt
+
+curl -i -H "Authorization: Bearer xxxApiKey123" -H "Content-Type: text/plain" -X PUT \
+     -d @health.txt http://localhost:8080/broker/my/node/health
+
+```
+The last part of the URL `/broker/my/node/health` can be changed to any other name eg., `/broker/my/node/stats`.
+
+If someone with admin-privilege is connected to the broker via websocket, they will receive a realtime notification `resource update 0 health`.
+
+On the admin side, the node resource can be downloaded via 
+```
+curl -s -H "Authorization: Bearer xxxAdmin1234" --output health-0.txt \
+     http://localhost:8080/broker/node/0/health
+```
+
+
 Using other authentication methods and authentication providers
 ===============================================================
 
