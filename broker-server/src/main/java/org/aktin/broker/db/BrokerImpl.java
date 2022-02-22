@@ -710,7 +710,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 					ps.setString(2, auth.getClientDN());
 					ps.executeUpdate();					
 				}
-				log.log(Level.INFO, "First encounter with node, adding to database: " + auth.getUserId());
+				log.log(Level.INFO, "First encounter with node, adding to database: {0}",auth.getUserId());
 				// retrieve id
 				select_node.clearParameters();
 				p = loadPrincipalByNodeKey(select_node, auth);
@@ -719,7 +719,7 @@ public class BrokerImpl implements BrokerBackend, Broker {
 				executeUpdate(dbc, "UPDATE nodes SET last_contact=NOW() WHERE id="+p.getNodeId());
 				// check if subject_dn changed
 				if( Objects.equals(auth.getClientDN(), p.getDbSubjectDn()) == false ){
-					log.log(Level.INFO, "Updating different DN for node {0}: '{1}' -> '{2}'", new Object[] {p.getNodeId(), p.getDbSubjectDn(), auth.getClientDN()});
+					log.log(Level.INFO, "Updating changed DN for node {0}: {1} -> {2}", new Object[] {p.getNodeId(), p.getDbSubjectDn(), auth.getClientDN()});
 					// DN from auth info does not match cached database. update database
 					try( PreparedStatement ps = dbc.prepareStatement("UPDATE nodes SET subject_dn=? WHERE id=?") ){
 						ps.setString(1, auth.getClientDN());
