@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +68,14 @@ public class ProcessExecution extends AbortableRequestExecution{
 		stdout = Files.createTempFile("stdout", null);
 		pb.redirectOutput(Redirect.to(stdout.toFile()));
 		pb.redirectError(Redirect.DISCARD); // TODO later write to file or read nonblocking for progress
+		
+		// log request contents
+		if( config.getProcessLogDir() != null ) {
+			// time stamp and request-id are derivable from filename and last-changed date
+			// log request contents
+			Files.copy(stdin, config.getProcessLogDir().resolve(getRequestId()+"-request"));
+			// TODO also log metadata e.g. process command, metadata, etc. environment etc.
+		}
 	}
 	
 	@Override
@@ -139,6 +148,7 @@ public class ProcessExecution extends AbortableRequestExecution{
 		}
 	}
 
+
 	@Override
 	protected void finishExecution() {
 		if( this.cause != null ) {
@@ -190,5 +200,17 @@ public class ProcessExecution extends AbortableRequestExecution{
 	}
 	protected Path getResultPath() {
 		return stdout;
+	}
+
+	@Override
+	protected void reportFailure(String message) {
+		super.reportFailure(message);
+		// TODO log failure
+	}
+
+	@Override
+	protected void reportCompleted() {
+		super.reportCompleted();
+		// TODO log result
 	}
 }

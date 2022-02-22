@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -32,7 +34,7 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 	// specific config
 	private long processTimeoutMillis;
 	private List<String> command;
-	
+	private Path processLogDir;
 
 	
 	public ProcessExecutionConfig(InputStream in) throws IOException {
@@ -79,6 +81,14 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 		command = new ArrayList<>();
 		command.add(cmd);
 		command.addAll(Arrays.asList(props.getProperty("process.args").split("\\s+")));
+		
+		String logDir = props.getProperty("process.log.directory");
+		if( logDir == null ) {
+			this.processLogDir = null;
+		}else {
+			this.processLogDir = Paths.get(logDir);
+		}
+		// TODO allow configuration to force logging (via JUL) of request and response content types. e.g. property process.log.literal.mediatypes
 	}
 
 	public static String lookupPlaceholders(String command, Function<String, String> lookup) {
