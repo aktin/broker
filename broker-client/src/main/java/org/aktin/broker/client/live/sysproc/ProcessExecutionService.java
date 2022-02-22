@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
 
 import org.aktin.broker.client.live.AbstractExecutionService;
 import org.aktin.broker.client2.BrokerClient2;
@@ -30,17 +31,13 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 		if( config.getProcessExecutorThreads() < 1 ) {
 			throw new IllegalArgumentException("Need at least one process executor thread.");
 		}
-		
 		if( config.getProcessExecutorThreads() == 1 ) {
+			log.info("Executor uses singleThreadScheduledExecutor");
 			return Executors.newSingleThreadScheduledExecutor();
 		}else {
+			log.log(Level.INFO, "Executor uses scheduledThreadPool({0})", Integer.valueOf(config.getProcessExecutorThreads()));
 			return Executors.newScheduledThreadPool(config.getProcessExecutorThreads());
 		}
-	}
-
-	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config, ScheduledExecutorService executor) {
-		super(client, executor);
-		this.config = config;
 	}
 
 	@Override
