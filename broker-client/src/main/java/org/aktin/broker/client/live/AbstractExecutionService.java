@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -102,14 +103,20 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		}
 	}
 
+	/**
+	 * Set a timer for client initiated ping-pong messages. Per default, the ping-pong timer is disabled.
+	 * @param timerMillis Delay between pings in milliseconds. Set to {@code 0} to disable. Any positive value enables the timer.
+	 */
 	public void setWebsocketPingPongTimer(long timerMillis) {
+		if( timerMillis < 0 ) {
+			throw new IllegalArgumentException("Negative timer delay not allowed");
+		}
 		if( this.pingpongTimer != null ) {
 			this.pingpongTimer.cancel(false);
 			this.pingpongTimer = null;
 		}
-		if( timerMillis != 0 ) {
+		if( timerMillis > 0 ) {
 			this.pingpongTimer = executor.scheduleWithFixedDelay(this::sendWebsocketPing, timerMillis, timerMillis,TimeUnit.MILLISECONDS);
-
 		}
 	}
 
@@ -128,10 +135,15 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		}else {
 			try {
 				client.getWebsocket().sendText("ping "+System.currentTimeMillis(), true).get();
+				log.info("Websocket ping sent");
 			} catch (InterruptedException e) {
 				log.info("Websocket ping interrupted");
 			} catch (ExecutionException e) {
 				log.log(Level.WARNING, "Websocket ping failed", e.getCause());
+			} catch( CancellationException e ) {
+				log.log(Level.WARNING, "Websocket ping canceled");
+			} catch( Throwable e ) {
+				log.log(Level.SEVERE, "Unexpected websocket failure", e);
 			}
 		}
 	}
