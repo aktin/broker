@@ -23,8 +23,19 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 	private ProcessExecutionConfig config;
 
 	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config) {
-		super(client, Executors.newSingleThreadScheduledExecutor());
+		super(client, configureExecutor(config));
 		this.config = config;
+	}
+	public static ScheduledExecutorService configureExecutor(ProcessExecutionConfig config) {
+		if( config.getProcessExecutorThreads() < 1 ) {
+			throw new IllegalArgumentException("Need at least one process executor thread.");
+		}
+		
+		if( config.getProcessExecutorThreads() == 1 ) {
+			return Executors.newSingleThreadScheduledExecutor();
+		}else {
+			return Executors.newScheduledThreadPool(config.getProcessExecutorThreads());
+		}
 	}
 
 	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config, ScheduledExecutorService executor) {

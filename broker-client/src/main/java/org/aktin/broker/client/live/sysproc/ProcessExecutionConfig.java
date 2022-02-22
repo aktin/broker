@@ -33,6 +33,8 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 
 	// specific config
 	private long processTimeoutMillis;
+	private int processExecutorThreads;
+
 	private List<String> command;
 	private Path processLogDir;
 
@@ -76,6 +78,7 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 		this.websocketReconnectPolling = Boolean.valueOf(props.getProperty("client.websocket.reconnect.polling"));
 		this.websocketPingpongSeconds = Integer.valueOf(props.getProperty("client.websocket.ping.seconds","0"));
 		this.processTimeoutMillis = 1000*Long.valueOf(props.getProperty("process.timeout.seconds"));
+		this.processExecutorThreads = Integer.valueOf(props.getProperty("process.executor.threads","1"));
 		
 		String cmd = props.getProperty("process.command");
 		command = new ArrayList<>();
