@@ -54,6 +54,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.java.Log;
 
 @Singleton
@@ -672,18 +674,29 @@ public class BrokerImpl implements BrokerBackend, Broker {
 		return list;
 	}
 
-	private Principal loadPrincipalByNodeKey(PreparedStatement ps, AuthInfo auth) throws SQLException{
+	private static class DatabasePrincipal extends Principal{
+		@Getter
+		@Setter
+		private String dbSubjectDn;
+		
+		public DatabasePrincipal(int nodeId, AuthInfo info, String dbSubjectDn) {
+			super(nodeId, info);
+			this.dbSubjectDn = dbSubjectDn;
+		}
+	}
+
+	private DatabasePrincipal loadPrincipalByNodeKey(PreparedStatement ps, AuthInfo auth) throws SQLException{
 		ps.setString(1, auth.getUserId());
 		try( ResultSet rs = ps.executeQuery() ){
 			if( rs.next() ){
-				return new Principal(rs.getInt(1), auth);
+				return new DatabasePrincipal(rs.getInt(1), auth, rs.getString(2));
 			}
 		}
 		return null;
 	}
 
 	public Principal accessPrincipal(AuthInfo auth) throws SQLException{
-		Principal p;
+		DatabasePrincipal p;
 		try( Connection dbc = brokerDB.getConnection() ){
 			dbc.setAutoCommit(false);
 			// try to load from database
@@ -704,6 +717,19 @@ public class BrokerImpl implements BrokerBackend, Broker {
 			}else{
 				// update last contact
 				executeUpdate(dbc, "UPDATE nodes SET last_contact=NOW() WHERE id="+p.getNodeId());
+				// check if subject_dn changed
+				if( Objects.equals(auth.getClientDN(), p.getDbSubjectDn()) == false ){
+					log.log(Level.INFO, "Updating different DN for node {0}: '{1}' -> '{2}'", new Object[] {p.getNodeId(), p.getDbSubjectDn(), auth.getClientDN()});
+					// DN from auth info does not match cached database. update database
+					try( PreparedStatement ps = dbc.prepareStatement("UPDATE nodes SET subject_dn=? WHERE id=?") ){
+						ps.setString(1, auth.getClientDN());
+						ps.setInt(2, p.getNodeId());
+						ps.executeUpdate();
+						p.setDbSubjectDn(auth.getClientDN());
+					}catch( SQLException e ) {
+						log.log(Level.WARNING, "Update of node DN failed", e);
+					}
+				}
 			}
 			select_node.close();
 			dbc.commit();
