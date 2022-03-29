@@ -3,6 +3,7 @@ services:
   aktin-broker:
     container_name: aktin-broker
     environment:
+      LOG_LEVEL: ${AKTIN_BROKER_LOG_LEVEL:-INFO}
       PASSWORD: ${AKTIN_ADMIN_PW:-changeme}
     build:
       context: ../..
