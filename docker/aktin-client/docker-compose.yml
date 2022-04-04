@@ -15,6 +15,7 @@ services:
       PROCESS_COMMAND: ${PROCESS_COMMAND:-/opt/codex-aktin/echo.sh}
       PROCESS_ARGS: ${PROCESS_ARGS:-10}
       JAVA_OPTS: $JAVA_OPTS
+      LOG_LEVEL: ${AKTIN_CLIENT_LOG_LEVEL:-INFO}
     build:
       context: ../..
       dockerfile: docker/aktin-client/Dockerfile

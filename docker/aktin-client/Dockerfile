@@ -12,6 +12,7 @@ COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/*.jar ./lib/
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/lib ./lib/
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/src/test/resources/sysproc.properties .
 COPY docker/aktin-client/run_client.sh ./run_client.sh
+COPY docker/aktin-client/logging.properties ./logging.properties
 RUN chmod 644 run_client.sh
 RUN apk add curl && apk add jq && apk add util-linux
 
