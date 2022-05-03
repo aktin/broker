@@ -1,18 +1,73 @@
 
-HL7 FHIR-API
+HL7 FHIR-API for federated request executions
 ============
 
 Specification for a HL7 FHIR API for basic request broker and federated query execution operations.
 
 This specification is currently a draft and not fully implemented.
 
+API description for request administration from requestor (central) point of view.
+-------------
+
+
+Retrieve all registered organizations
+```
+GET /Organization
+
+```
+Will return a search result collection with all registered organizations
+
+
+Retrieve a specific organization
+```
+GET /Organization/123
+
+```
+Will return a single organization resource
+
+
+
+
+Retrieve all main tasks
+```
+GET /Task?part-of:missing=true
+or
+GET /Task?code=feasibility-search
+
+```
+
+
+
+
+Retrieve execution status for each node which retrieved the task 1.
+
+```
+GET /Task?part-of=1&_summary=true
+
+```
+Will return a search collection of all subtasks belonging to the specified main task.
+
+
+
+Create a request
+```
+POST /Task
+```
+
 A request always represented as a `Task` resource. E.g.
 ```xml
 <Task>
 	<status value="draft"/><!-- see supported status values below -->
-	<intent value="proposal"/><!-- fixed -->
+	<intent value="proposal"/><!-- constant -->
+	<code>
+		<coding>
+			<system value="http://aktin.org/ns/fhir"/>
+			<code value="feasibility-search">
+		</coding>
+	</code>
 	<!-- recipient restriction is optional. if present, only the
-	listed organizations are able to access the request -->
+	listed organizations are able to access the request.
+	if missing, applies to any organization. -->
 	<restriction>
 		<recipient>
 			<reference value="/Organization/1"/>
@@ -27,7 +82,7 @@ A request always represented as a `Task` resource. E.g.
 	<input>
 		<type>
 			<coding>
-				<system value="http://aktin.org/ns/fhir/taskinputtypes">
+				<system value="http://aktin.org/ns/fhir">
 				<code value="request-definition">
 			</coding>
 		</type>
@@ -50,31 +105,49 @@ A request always represented as a `Task` resource. E.g.
 			<url value="/my/request/123"/>
 		</valueAttachment>
 	</input>
+</Task>
+
+```
+The on creation, the task status must be set to `draft`. In this state,
+the task is not available to nodes. When the status is set by the admin to `requested`, 
+it will be published and can be retrieved by clients.
+When a task is closed by the admin, its status is set to 'cancelled' (or completed?).
+
+
+For each submitted response, a result is added to the task. Each result corresponds to a subtask automatically created and assigned to the main task.
+```
 	<!-- in the admin FHIR-endpoint, there will be one output per query response. 
 	typically one reply per participating organization. -->
 	<output>
 		<type>
 			<coding>
-				<system value="http://aktin.org/ns/fhir/organization">
-				<code value="12"><!-- organization id/code submitting the result -->
-			</coding>
-			<coding>
-				<system value="http://hl7.org/fhir/task-status">
-				<code value="failed"><!-- individual status of query at specified organization --> 
+				<system value="http://aktin.org/ns/fhir">
+				<code value="node-subtask">
 			</coding>
 		</type>
-		<!-- in case of failed status, attachent can contain an error message or might be empty -->
-		<valueAttachment/>
+		<valueReference>
+			<reference value="Task/1-1"/>
+			<type value="Task"/>
+		</valueReference>
 	</output>
 	<output>
 		<type>
 			<coding>
-				<system value="http://aktin.org/ns/fhir/organization">
-				<code value="13">
+				<system value="http://aktin.org/ns/fhir">
+				<code value="node-subtask">
 			</coding>
+		</type>
+		<valueReference>
+			<reference value="Task/1-2"/>
+			<type value="Task"/>
+		</valueReference>
+	</output>
+	<!-- a summary type may be added with aggregated results. alternatively a virtual subtask containing the summary result? -->
+	<output>
+		<type>
 			<coding>
-				<system value="http://hl7.org/fhir/task-status">
-				<code value="completed">
+				<system value="http://aktin.org/ns/fhir">
+				<code value="result-summary">
 			</coding>
 		</type>
 		<valueAttachment>
@@ -83,13 +156,38 @@ A request always represented as a `Task` resource. E.g.
 			<url value="/aggregator/result/123"/>
 		</valueAttachment>
 	</output>
-</Task>
-
 ```
-The on creation, the task status must be set to `draft`. In this state,
-the task is not available to nodes. When the status is set by the admin to `requested`, 
-it will be published and can be retrieved by clients.
-When a task is closed by the admin, its status is set to 'cancelled'.
+
+
+Publish a request
+```
+PATCH /Task/123
+```
+Request body
+```xml
+<diff>
+ <replace sel="Task/status/@value">requested</replace>
+</diff>
+```
+
+Cancel a request. Alternatively the request could be deleted.
+```
+PATCH /Task/123
+```
+Request body
+```xml
+<diff>
+ <replace sel="Task/status/@value">cancelled</replace>
+</diff>
+```
+
+Delete a request.
+```
+DELETE /Task/123
+```
+
+
+
 
 
 Node/Client FHIR endpoint
@@ -101,7 +199,11 @@ Listed below are the possible operations for a broker client.
 # List all/pending requests
 Request
 ```
-GET /my/fhir/Task?_summary=true
+GET /my/fhir/Task
+or
+GET /my/fhir/Task?authored-on=ge2013-01-14T10:00
+or
+GET /my/fhir/Task?code=feasibility-execution&status=requested
 ```
 Response
 ```xml
@@ -122,7 +224,7 @@ Response
 # Retrieve a particular request
 Request
 ```
-GET /my/fhir/Task/123
+GET /my/fhir/Task/1-123
 ```
 Response is a task resource similar to the example above, but without `output` elements.
 
@@ -141,12 +243,24 @@ Response is a task resource similar to the example above, but without `output` e
 # Report updated status for a particular request
 Request
 ```
-PATCH /my/fhir/Task/123
+PATCH /my/fhir/Task/1-123
 ```
 Request body
 ```xml
 <diff>
  <replace sel="Task/status/@value">failed</replace>
+ <!-- add error message as output attachment -->
+ <add sel="Task">
+   <output>
+     <type>
+       <coding>
+         <system value="http://aktin.org/ns/fhir"/>
+         <code value="error-message"/>
+       </coding>
+     </type>
+     <valueString value="Concept not found: xyz"/>
+   </output>
+ </add>
 </diff>
 ```
 Allowed status updates are `received`, `accepted` (queued), `rejected`, `on-hold` (interaction), `in-progress`, `failed`, `completed`.
@@ -156,7 +270,7 @@ Allowed status updates are `received`, `accepted` (queued), `rejected`, `on-hold
 # Uppload result data for a specific query
 Request
 ```
-PATCH /my/fhir/Task/123
+PATCH /my/fhir/Task/1-123
 ```
 Request body
 ```xml
@@ -165,7 +279,7 @@ Request body
   <output>
 		<type>
 			<coding>
-				<system value="http://aktin.org/ns/fhir/taskoutputtypes">
+				<system value="http://aktin.org/ns/fhir">
 				<code value="query-result">
 			</coding>
 		</type>
