@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Properties;
-import java.util.concurrent.Executors;
 
 import org.aktin.broker.client2.AuthFilter;
 import org.aktin.broker.client2.BrokerClient2;
