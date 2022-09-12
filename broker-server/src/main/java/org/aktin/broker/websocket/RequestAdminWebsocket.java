@@ -11,7 +11,13 @@ import javax.websocket.server.ServerEndpoint;
 
 import org.aktin.broker.auth.Principal;
 
-
+/**
+ * Websocket endpoint for admin connections to notify about status updates for requests and resources
+ * changed by clients.
+ *
+ * @author R.W.Majeed
+ *
+ */
 @ServerEndpoint(value=RequestAdminWebsocket.REST_PATH, configurator = HeaderAuthSessionConfigurator.class)
 public class RequestAdminWebsocket extends AbstractBroadcastWebsocket{
 	public static final String REST_PATH = "/broker/websocket";

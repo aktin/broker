@@ -17,6 +17,12 @@ import org.aktin.broker.auth.Principal;
 
 import lombok.extern.java.Log;
 
+/**
+ * Abstract websocket implementation used for client and admin connections.
+ * 
+ * @author R.W.Majeed
+ *
+ */
 @Log
 public abstract class AbstractBroadcastWebsocket {
 
@@ -57,6 +63,12 @@ public abstract class AbstractBroadcastWebsocket {
 		log.log(Level.INFO,"Websocket session {0} closed for user {1} ",new Object[] {session.getId(), user});
 	}
 
+	/**
+	 * Process messages retrieved by client.
+	 * Only {@code ping} is supported, and will be responded with {@code pong}.
+	 * @param session client session
+	 * @param message message content
+	 */
 	@OnMessage
 	public void message(Session session, String message){
 		Principal user = getSessionPrincipal(session);

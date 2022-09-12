@@ -215,6 +215,27 @@ curl -s -H "Authorization: Bearer xxxAdmin1234" --output health-0.txt \
      http://localhost:8080/broker/node/0/health
 ```
 
+Real-time communication via websocket connection
+================================================
+
+For non-real-time applications, the node/client is typically configured 
+to ask (poll) for new requests in pre-defined intervals. In this case, 
+only short-lived HTTPS connections are used from client to server.
+
+For real-time applications, each node needs to be notified immediately 
+about new requests. For this purpose, websocket connections can be used:
+
+A websocket connection is established from node to broker and kept open. 
+Over this connection, the broker will send a notification once a new 
+request is published or an existing request is closed. 
+See [MyBrokerWebsocket.java](broker-server/src/main/java/org/aktin/broker/websocket/MyBrokerWebsocket.java)
+
+When such a notification is retrieved by the client, it will react immediately by retrieving and processing the request.
+
+The websocket is only used for notifications and optional ping-pong messages.
+All content and status updates are transferred via traditional HTTPS connections initiated by the client as explained above.
+
+
 
 Using other authentication methods and authentication providers
 ===============================================================
