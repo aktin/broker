@@ -104,6 +104,8 @@ public class ProcessExecutionService extends AbstractExecutionService<ProcessExe
 		if( config.getWebsocketPingpongSeconds() != 0 ) {
 			setWebsocketPingPongTimer(config.getWebsocketPingpongSeconds() * 1000);
 			log.info("websocket ping-pong delay set to "+config.getWebsocketPingpongSeconds()+"s");
+		}else{
+			log.info("websocket ping-pong disabled");
 		}
 		
 		long previousConnection = System.currentTimeMillis();
