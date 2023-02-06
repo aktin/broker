@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +12,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
 
 import org.aktin.broker.client.live.AbortableRequestExecution;
+import org.aktin.broker.client2.validator.RequestValidator;
+import org.aktin.broker.client2.validator.ValidationError;
 import org.aktin.broker.xml.RequestStatus;
 
 import lombok.Setter;
@@ -48,6 +49,18 @@ public class ProcessExecution extends AbortableRequestExecution{
 		this.config = config;
 	}
 
+	private void validateRequest(int requestId) throws IOException, ValidationError {
+		RequestValidator validator;
+		try{
+			validator = config.getRequestValidator().getValidator(config.getRequestMediatype());
+		}catch( IllegalArgumentException e ) {
+			throw new IOException("Validator not available for media type: "+config.getRequestMediatype(), e);
+		}
+		try( InputStream in = Files.newInputStream(stdin) ){
+			validator.validate(in);
+		}
+	}
+
 	@Override
 	protected void prepareExecution() throws IOException {
 
@@ -60,9 +73,19 @@ public class ProcessExecution extends AbortableRequestExecution{
 		}
 		client.postRequestStatus(requestId, RequestStatus.retrieved);
 		
+		// allow custom validation if configured
+		if( config.getRequestValidator() != null ) {
+			try {
+				validateRequest(requestId);
+			} catch (ValidationError e) {
+				throw new IOException("Request validation failed", e);
+				// alternatively, we could reject the request via explicit rejected status.. in the end no big difference
+			}
+		}
+		
 		this.pb = new ProcessBuilder(config.getCommand());
-		// add env pb.environment().put(key, value)
-		// add env from .env properties file
+		// add env? pb.environment().put(key, value)
+		// add env? from .env properties file
 		
 		pb.redirectInput(Redirect.from(stdin.toFile()));
 		stdout = Files.createTempFile("stdout", null);

@@ -2,6 +2,7 @@ package org.aktin.broker.client.live.sysproc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -16,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.aktin.broker.client.live.ClientConfiguration;
+import org.aktin.broker.client2.validator.RequestValidatorFactory;
 
 import lombok.Data;
 
@@ -26,6 +28,8 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 	URI brokerEndpointURI;
 	String authClass;
 	String authParam;
+
+	RequestValidatorFactory requestValidator;
 
 	int websocketReconnectSeconds;
 	boolean websocketReconnectPolling;
@@ -66,6 +70,13 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 
 		this.requestMediatype = props.getProperty("broker.request.mediatype");
 		this.resultMediatype = props.getProperty("broker.result.mediatype");
+		
+		// request validator
+		String validatorClass = props.getProperty("broker.request.validation.class");
+		if( validatorClass != null ) {
+			this.requestValidator = loadValidatorClass(validatorClass);
+		}
+		
 		try {
 			this.brokerEndpointURI = new URI(props.getProperty("broker.endpoint.uri"));
 		} catch (URISyntaxException e) {
@@ -92,6 +103,18 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 			this.processLogDir = Paths.get(logDir);
 		}
 		// TODO allow configuration to force logging (via JUL) of request and response content types. e.g. property process.log.literal.mediatypes
+	}
+	@SuppressWarnings("unchecked")
+	private static RequestValidatorFactory loadValidatorClass(String className) throws IOException{
+		Class<RequestValidatorFactory> clazz;
+		try{
+			clazz = (Class<RequestValidatorFactory>) Class.forName(className);
+			return clazz.getConstructor().newInstance();
+		}catch( ClassNotFoundException e ) {
+			throw new RuntimeException("Validator class not found "+className, e);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
+			throw new RuntimeException("Unable to instatiate validator factory "+className+" via no-args constructor", e);
+		} 
 	}
 
 	public static String lookupPlaceholders(String command, Function<String, String> lookup) {
