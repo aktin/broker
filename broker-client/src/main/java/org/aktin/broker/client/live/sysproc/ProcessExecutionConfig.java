@@ -72,7 +72,7 @@ public class ProcessExecutionConfig implements ClientConfiguration{
 		this.resultMediatype = props.getProperty("broker.result.mediatype");
 		
 		// request validator
-		String validatorClass = props.getProperty("broker.request.validation.class");
+		String validatorClass = props.getProperty("broker.request.validator.class");
 		if( validatorClass != null ) {
 			this.requestValidator = loadValidatorClass(validatorClass);
 		}

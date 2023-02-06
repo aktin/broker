@@ -16,4 +16,6 @@ public class TestProcessExecutionConfig {
 		String output = ProcessExecutionConfig.lookupPlaceholders(input, map::get);
 		Assertions.assertEquals("fooxorbar", output);
 	}
+	
+	
 }
