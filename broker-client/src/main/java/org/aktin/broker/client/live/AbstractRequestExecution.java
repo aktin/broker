@@ -100,7 +100,7 @@ public abstract class AbstractRequestExecution implements Runnable {
 	
 	protected void reportFailure(String message) {
 		try {
-			client.postRequestFailed(requestId, message, cause);
+			client.postRequestFailed(requestId, message, this.cause);
 			client.deleteMyRequest(requestId);
 		} catch (IOException e) {
 			if( this.cause != null ) {
