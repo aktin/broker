@@ -161,13 +161,15 @@ public class ProcessExecution extends AbortableRequestExecution{
 			}
 			// TODO log warning
 		}
-		try {
-			Files.delete(stdout);
-		} catch (IOException e) {
-			if( cause != null ) {
-				cause.addSuppressed(e);
+		if( stdout != null ) {
+			try {
+				Files.delete(stdout);
+			} catch (IOException e) {
+				if( cause != null ) {
+					cause.addSuppressed(e);
+				}
+				// TODO log warning
 			}
-			// TODO log warning
 		}
 	}
 

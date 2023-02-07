@@ -1,5 +1,8 @@
 package org.aktin.broker.client.live.sysproc;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -16,11 +19,13 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeoutException;
 
 import org.aktin.broker.client2.BrokerClient2;
+import org.aktin.broker.client2.MediaTypeNotAcceptableException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -93,21 +98,28 @@ public class TestProcessExecution {
 	}
 
 	@Test
-	public void expectProcessTimeout() throws URISyntaxException {
+	public void expectProcessTimeout() throws URISyntaxException, MediaTypeNotAcceptableException, IOException {
 		Mockito.when(config.getCommand()).thenReturn(Arrays.asList(bashExecutable,scriptPaths.get("sleep.sh").toString(), "10"));
 		Mockito.when(config.getProcessTimeoutMillis()).thenReturn(500L);
+		Mockito.when(config.getRequestMediatype()).thenReturn("bla/bla");
+		when(client.getMyRequestDefinition(eq(1), any(String.class), any(Path.class), ArgumentMatchers.<OpenOption>any())).thenReturn(Path.of("bla"));
 		
 		ProcessExecution exec = new ProcessExecution(1, config);
 		exec.setClient(client);
+
+		
 		exec.run();
+		System.out.println("Exception: "+exec.getCause());
 		Assertions.assertEquals(TimeoutException.class, exec.getCause().getClass());
 	}
 
 	
 	@Test
-	public void expectProcessInteruptable() throws URISyntaxException, InterruptedException {
+	public void expectProcessInteruptable() throws URISyntaxException, InterruptedException, MediaTypeNotAcceptableException, IOException {
 		Mockito.when(config.getCommand()).thenReturn(Arrays.asList(bashExecutable,scriptPaths.get("sleep.sh").toString(), "10"));
 		Mockito.when(config.getProcessTimeoutMillis()).thenReturn(10000L);
+		Mockito.when(config.getRequestMediatype()).thenReturn("bla/bla");
+		when(client.getMyRequestDefinition(eq(1), any(String.class), any(Path.class), ArgumentMatchers.<OpenOption>any())).thenReturn(Path.of("bla"));
 		
 		ProcessExecution exec = new ProcessExecution(1, config);
 		exec.setClient(client);
