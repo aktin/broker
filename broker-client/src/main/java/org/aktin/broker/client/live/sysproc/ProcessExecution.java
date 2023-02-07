@@ -78,7 +78,7 @@ public class ProcessExecution extends AbortableRequestExecution{
 			try {
 				validateRequest(requestId);
 			} catch (ValidationError e) {
-				throw new IOException("Request validation failed", e);
+				throw new IOException("Request rejected by validator", e);
 				// alternatively, we could reject the request via explicit rejected status.. in the end no big difference
 			}
 		}
