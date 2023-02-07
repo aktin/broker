@@ -32,6 +32,10 @@ public class XmlValidatorFactory implements RequestValidatorFactory, RequestVali
 	public XmlValidatorFactory() {
 		schema = null;
 		mediaType = null;
+		fac = DocumentBuilderFactory.newInstance();
+		//fac.setAttribute(xml.XMLConstants.ACCESS_EXTERNAL_DTD, false);
+		//fac.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA, false);
+		//fac.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_STYLESHEET, false);
 		// TODO later version could support loading specific XSD to check against
 	}
 	
@@ -71,7 +75,7 @@ public class XmlValidatorFactory implements RequestValidatorFactory, RequestVali
 			throw new IOException(e);
 		} catch (SAXException e) {
 			// parsing failed
-			throw new IOException(e);
+			throw new ValidationError(e);
 		}
 		// TODO check that document is not empty/ validate by schema
 		if( schema == null ) {
