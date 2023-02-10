@@ -81,7 +81,7 @@ public abstract class CLIClientPluginConfiguration<T extends CLIExecutionService
 	/**
 	 * Load custom configuration from the provided properties.
 	 * If the built in validation framework is needed, call {@link #loadValidatorFactory(Properties)} here.
-	 * @param configuration properties
+	 * @param properties configuration properties
 	 */
 	protected abstract void loadConfig(Properties properties) throws IOException;
 	
