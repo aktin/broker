@@ -3,12 +3,14 @@ package org.aktin.broker.client.live;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
 
 import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.xml.RequestStatus;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.java.Log;
 
 /**
  * Abstract request execution.
@@ -18,6 +20,7 @@ import lombok.Setter;
  * @author R.W.Majeed
  *
  */
+@Log
 public abstract class AbstractRequestExecution implements Runnable {
 	@Getter
 	protected int requestId;
@@ -149,25 +152,29 @@ public abstract class AbstractRequestExecution implements Runnable {
 
 	@Override
 	public void run() {
-		statusListener.accept(this, RequestStatus.processing);
 		try {
-			prepareExecution();
-			startTimestamp = System.currentTimeMillis();
-		} catch (IOException e) {
-			this.cause = e;
+			statusListener.accept(this, RequestStatus.processing);
+			try {
+				prepareExecution();
+				startTimestamp = System.currentTimeMillis();
+			} catch (IOException e) {
+				this.cause = e;
+				this.exitTimestamp = System.currentTimeMillis();
+				finishExecution();
+				return; // dont't start the process if the preparation failed
+			}
+	
+			
+			try{
+				doExecution();
+			}catch( IOException e ) {
+				this.cause = e;
+			}
 			this.exitTimestamp = System.currentTimeMillis();
 			finishExecution();
-			return; // dont't start the process if the preparation failed
+		}catch( Exception e ) {
+			log.log(Level.SEVERE, "Uncaught exception during request execution", e);
 		}
-
-		
-		try{
-			doExecution();
-		}catch( IOException e ) {
-			this.cause = e;
-		}
-		this.exitTimestamp = System.currentTimeMillis();
-		finishExecution();
 	}
 
 }
