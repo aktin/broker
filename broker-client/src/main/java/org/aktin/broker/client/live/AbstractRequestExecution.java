@@ -9,6 +9,7 @@ import org.aktin.broker.xml.RequestStatus;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.java.Log;
 
 /**
  * Abstract request execution.
@@ -18,6 +19,7 @@ import lombok.Setter;
  * @author R.W.Majeed
  *
  */
+@Log
 public abstract class AbstractRequestExecution implements Runnable {
 	@Getter
 	protected int requestId;

@@ -45,7 +45,7 @@ public class TestProcessExecutionService {
 		ProcessExecutionConfig config = loadConfig();
 		Assertions.assertNotNull(config.getAuthClass());
 		Assertions.assertNotNull(config.getAuthParam());
-		Assertions.assertNull(config.getRequestValidator());
+		Assertions.assertNotNull(config.getRequestValidator());
 	}
 
 	//@Test
@@ -56,7 +56,7 @@ public class TestProcessExecutionService {
 		when(client.connectWebsocket()).thenReturn(websocket);
 		when(client.getWebsocket()).thenReturn(websocket);
 		when(client.getMyRequestDefinition(eq(100), any(String.class), any(Path.class), ArgumentMatchers.<OpenOption>any())).thenReturn(Path.of("bla"));
-		ProcessExecutionService service = new ProcessExecutionService(client, loadConfig());
+		ProcessExecutionPlugin service = new ProcessExecutionPlugin(client, loadConfig());
 		service.startupWebsocketListener();
 		
 		// make sure websocket was opened and we captured the notification listener
@@ -75,6 +75,7 @@ public class TestProcessExecutionService {
 		verify(websocket, Mockito.times(1)).abort();
 		Assertions.assertEquals(0, unprocessed.size());
 		//Assertions.assertEquals(100, unprocessed.get(0).getRequestId());
+		service.close();
 		
 	}
 }

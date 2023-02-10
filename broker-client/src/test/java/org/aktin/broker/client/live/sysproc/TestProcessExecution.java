@@ -100,7 +100,7 @@ public class TestProcessExecution {
 	@Test
 	public void expectProcessTimeout() throws URISyntaxException, MediaTypeNotAcceptableException, IOException {
 		Mockito.when(config.getCommand()).thenReturn(Arrays.asList(bashExecutable,scriptPaths.get("sleep.sh").toString(), "10"));
-		Mockito.when(config.getProcessTimeoutMillis()).thenReturn(500L);
+		Mockito.when(config.getExecutorTimeoutMillis()).thenReturn(500L);
 		Mockito.when(config.getRequestMediatype()).thenReturn("bla/bla");
 		when(client.getMyRequestDefinition(eq(1), any(String.class), any(Path.class), ArgumentMatchers.<OpenOption>any())).thenReturn(Path.of("bla"));
 		
@@ -117,7 +117,7 @@ public class TestProcessExecution {
 	@Test
 	public void expectProcessInteruptable() throws URISyntaxException, InterruptedException, MediaTypeNotAcceptableException, IOException {
 		Mockito.when(config.getCommand()).thenReturn(Arrays.asList(bashExecutable,scriptPaths.get("sleep.sh").toString(), "10"));
-		Mockito.when(config.getProcessTimeoutMillis()).thenReturn(10000L);
+		Mockito.when(config.getExecutorTimeoutMillis()).thenReturn(10000L);
 		Mockito.when(config.getRequestMediatype()).thenReturn("bla/bla");
 		when(client.getMyRequestDefinition(eq(1), any(String.class), any(Path.class), ArgumentMatchers.<OpenOption>any())).thenReturn(Path.of("bla"));
 		
@@ -153,7 +153,7 @@ public class TestProcessExecution {
 		Mockito.when(config.getCommand()).thenReturn(Arrays.asList(bashExecutable,scriptPaths.get("cat.sh").toString()));
 		Mockito.when(config.getRequestMediatype()).thenReturn(reqType);
 		Mockito.when(config.getResultMediatype()).thenReturn(resultType);
-		Mockito.when(config.getProcessTimeoutMillis()).thenReturn(10000L);
+		Mockito.when(config.getExecutorTimeoutMillis()).thenReturn(10000L);
 
 		Mockito.when(client.getMyRequestDefinition(Mockito.eq(requestId), Mockito.eq(reqType), Mockito.any(Path.class), Mockito.any())).thenAnswer( (a) -> {
 			Path dest = a.getArgument(2,Path.class);

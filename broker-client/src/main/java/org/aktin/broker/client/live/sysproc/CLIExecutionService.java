@@ -7,6 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 
+import org.aktin.broker.client.live.AbortableRequestExecution;
 import org.aktin.broker.client.live.AbstractExecutionService;
 import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.xml.RequestStatus;
@@ -20,38 +21,33 @@ import lombok.extern.java.Log;
  *
  */
 @Log
-public class ProcessExecutionService extends AbstractExecutionService<ProcessExecution> implements Runnable{
-	private ProcessExecutionConfig config;
+public abstract class CLIExecutionService<T extends AbortableRequestExecution> extends AbstractExecutionService<T> implements Runnable{
+	private AbstractClientConfiguration config;
 
-	public ProcessExecutionService(BrokerClient2 client, ProcessExecutionConfig config) {
+	public CLIExecutionService(BrokerClient2 client, AbstractClientConfiguration config) {
 		super(client, configureExecutor(config));
 		this.config = config;
 	}
-	public static ScheduledExecutorService configureExecutor(ProcessExecutionConfig config) {
-		if( config.getProcessExecutorThreads() < 1 ) {
+	public static ScheduledExecutorService configureExecutor(AbstractClientConfiguration config) {
+		if( config.getExecutorThreads() < 1 ) {
 			throw new IllegalArgumentException("Need at least one process executor thread.");
 		}
-		if( config.getProcessExecutorThreads() == 1 ) {
+		if( config.getExecutorThreads() == 1 ) {
 			log.info("Executor uses singleThreadScheduledExecutor");
 			return Executors.newSingleThreadScheduledExecutor();
 		}else {
-			log.log(Level.INFO, "Executor uses scheduledThreadPool({0})", Integer.valueOf(config.getProcessExecutorThreads()));
-			return Executors.newScheduledThreadPool(config.getProcessExecutorThreads());
+			log.log(Level.INFO, "Executor uses scheduledThreadPool({0})", Integer.valueOf(config.getExecutorThreads()));
+			return Executors.newScheduledThreadPool(config.getExecutorThreads());
 		}
 	}
 
 	@Override
-	protected ProcessExecution initializeExecution(Integer requestId) {
-		return new ProcessExecution(requestId, config);
-	}
-
-	@Override
-	protected void onShutdown(List<ProcessExecution> unprocessedExecutions) {
+	protected void onShutdown(List<T> unprocessedExecutions) {
 		// ignore unprocessed executions
 	}
 
 	@Override
-	protected void onStatusUpdate(ProcessExecution execution, RequestStatus status) {
+	protected void onStatusUpdate(T execution, RequestStatus status) {
 		if( status == RequestStatus.failed && execution.getCause() != null ) {
 			if( execution.isAborted() ) {
 				log.warning("aborted "+execution.getRequestId());

@@ -106,10 +106,10 @@ public class ProcessExecution extends AbortableRequestExecution{
 		this.proc = pb.start();
 		// notify broker that we are now processing the query
 		long readProgressIntervalMillis = 10*1000;
-		long maxWait = Math.min(readProgressIntervalMillis, config.getProcessTimeoutMillis());
+		long maxWait = Math.min(readProgressIntervalMillis, config.getExecutorTimeoutMillis());
 		client.postRequestStatus(requestId, RequestStatus.processing);
 		try( InputStream stderr = proc.getErrorStream() ){
-			while( !isAborted() && proc.isAlive() && (System.currentTimeMillis()-getStartTimestamp()) < config.getProcessTimeoutMillis() ) {
+			while( !isAborted() && proc.isAlive() && (System.currentTimeMillis()-getStartTimestamp()) < config.getExecutorTimeoutMillis() ) {
 				// later, check here for progress in stderr. 
 				// waitFor(10s) will continuously allow the progress to be read
 				try {

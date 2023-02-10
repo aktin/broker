@@ -14,10 +14,10 @@ import org.aktin.broker.client2.BrokerClient2;
 
 //@Log
 public class CLI implements Runnable {
-	private ProcessExecutionService exec;
+	private ProcessExecutionPlugin exec;
 
 	public CLI(ProcessExecutionConfig config, BrokerClient2 client)  {
-		this.exec = new ProcessExecutionService(client, config);
+		this.exec = new ProcessExecutionPlugin(client, config);
 	}
 
 
