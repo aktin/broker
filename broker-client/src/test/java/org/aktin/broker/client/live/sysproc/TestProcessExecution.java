@@ -34,7 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class TestProcessExecution {
 
 	@Mock
-	ProcessExecutionConfig config;
+	ProcessExecutionPlugin config;
 
 	@Mock
 	BrokerClient2 client;

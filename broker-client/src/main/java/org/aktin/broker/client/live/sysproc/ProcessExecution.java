@@ -29,7 +29,7 @@ import lombok.Setter;
  *
  */
 public class ProcessExecution extends AbortableRequestExecution{
-	private ProcessExecutionConfig config;
+	private ProcessExecutionPlugin config;
 	
 	/**
 	 * Whether or not to keep temporary files. If set to {@code false} the stdin and stdou
@@ -44,7 +44,7 @@ public class ProcessExecution extends AbortableRequestExecution{
 	private Path stdin;
 	private Path stdout;
 
-	public ProcessExecution(int requestId, ProcessExecutionConfig config) {
+	public ProcessExecution(int requestId, ProcessExecutionPlugin config) {
 		super(requestId);
 		this.config = config;
 	}

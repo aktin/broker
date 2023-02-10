@@ -34,15 +34,15 @@ public class TestProcessExecutionService {
 	WebSocket websocket;
 
 
-	private ProcessExecutionConfig loadConfig() throws IOException {
+	private ProcessExecutionPlugin loadConfig() throws IOException {
 		try( InputStream in = getClass().getResourceAsStream("/sysproc.properties") ){
-			return new ProcessExecutionConfig(in);
+			return new ProcessExecutionPlugin(in);
 		}		
 	}
 
 	@Test
 	public void verifyConfig() throws IOException {
-		ProcessExecutionConfig config = loadConfig();
+		ProcessExecutionPlugin config = loadConfig();
 		Assertions.assertNotNull(config.getAuthClass());
 		Assertions.assertNotNull(config.getAuthParam());
 		Assertions.assertNotNull(config.getRequestValidation());

@@ -16,7 +16,7 @@ import org.aktin.broker.client2.validator.RequestValidatorFactory;
 import lombok.Getter;
 
 @Getter
-public class ProcessExecutionConfig extends CLIClientPluginConfiguration<ProcessExecutionService>{
+public class ProcessExecutionPlugin extends CLIClientPluginConfiguration<ProcessExecutionService>{
 
 	private RequestValidatorFactory requestValidation;
 
@@ -25,7 +25,7 @@ public class ProcessExecutionConfig extends CLIClientPluginConfiguration<Process
 	private Path processLogDir;
 
 	
-	public ProcessExecutionConfig(InputStream in) throws IOException {
+	public ProcessExecutionPlugin(InputStream in) throws IOException {
 		super(in);
 	}
 	

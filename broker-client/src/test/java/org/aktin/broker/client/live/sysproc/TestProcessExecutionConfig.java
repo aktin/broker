@@ -13,7 +13,7 @@ public class TestProcessExecutionConfig {
 		Map<String, String> map = new HashMap<>();
 		map.put("bla", "xor");
 		String input = "foo${bla}bar${blub}";
-		String output = ProcessExecutionConfig.lookupPlaceholders(input, map::get);
+		String output = ProcessExecutionPlugin.lookupPlaceholders(input, map::get);
 		Assertions.assertEquals("fooxorbar", output);
 	}
 	
