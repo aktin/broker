@@ -11,11 +11,14 @@ import java.util.Properties;
 
 import org.aktin.broker.client.live.CLIClientPluginConfiguration;
 import org.aktin.broker.client2.BrokerClient2;
+import org.aktin.broker.client2.validator.RequestValidatorFactory;
 
 import lombok.Getter;
 
 @Getter
 public class ProcessExecutionConfig extends CLIClientPluginConfiguration<ProcessExecutionService>{
+
+	private RequestValidatorFactory requestValidation;
 
 	// specific config
 	private List<String> command;
@@ -27,8 +30,9 @@ public class ProcessExecutionConfig extends CLIClientPluginConfiguration<Process
 	}
 	
 	@Override
-	protected void loadConfig(Properties props) {
-		
+	protected void loadConfig(Properties props) throws IOException{
+		this.requestValidation = loadValidatorFactory(props);
+
 		String cmd = props.getProperty("process.command");
 		command = new ArrayList<>();
 		command.add(cmd);

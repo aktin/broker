@@ -52,7 +52,7 @@ public class ProcessExecution extends AbortableRequestExecution{
 	private void validateRequest(int requestId) throws IOException, ValidationError {
 		RequestValidator validator;
 		try{
-			validator = config.getRequestValidator().getValidator(config.getRequestMediatype());
+			validator = config.getRequestValidation().getValidator(config.getRequestMediatype());
 		}catch( IllegalArgumentException e ) {
 			throw new IOException("Validator not available for media type: "+config.getRequestMediatype(), e);
 		}
@@ -74,7 +74,7 @@ public class ProcessExecution extends AbortableRequestExecution{
 		client.postRequestStatus(requestId, RequestStatus.retrieved);
 		
 		// allow custom validation if configured
-		if( config.getRequestValidator() != null ) {
+		if( config.getRequestValidation() != null ) {
 			try {
 				validateRequest(requestId);
 			} catch (ValidationError e) {

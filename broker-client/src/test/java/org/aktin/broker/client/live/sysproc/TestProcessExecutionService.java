@@ -45,7 +45,7 @@ public class TestProcessExecutionService {
 		ProcessExecutionConfig config = loadConfig();
 		Assertions.assertNotNull(config.getAuthClass());
 		Assertions.assertNotNull(config.getAuthParam());
-		Assertions.assertNotNull(config.getRequestValidator());
+		Assertions.assertNotNull(config.getRequestValidation());
 	}
 
 	//@Test

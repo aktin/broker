@@ -24,8 +24,6 @@ public abstract class CLIClientPluginConfiguration<T extends CLIExecutionService
 	String authClass;
 	String authParam;
 
-	RequestValidatorFactory requestValidator;
-
 	int websocketReconnectSeconds;
 	boolean websocketReconnectPolling;
 	int websocketPingpongSeconds;
@@ -60,13 +58,7 @@ public abstract class CLIClientPluginConfiguration<T extends CLIExecutionService
 
 		this.requestMediatype = props.getProperty("broker.request.mediatype");
 		this.resultMediatype = props.getProperty("broker.result.mediatype");
-		
-		// request validator. TODO move to separate method to allow custom/fixed validators for specific implementations
-		String validatorClass = props.getProperty("broker.request.validator.class");
-		if( validatorClass != null ) {
-			this.requestValidator = loadValidatorClass(validatorClass);
-		}
-		
+				
 		try {
 			this.brokerEndpointURI = new URI(props.getProperty("broker.endpoint.uri"));
 		} catch (URISyntaxException e) {
@@ -86,10 +78,31 @@ public abstract class CLIClientPluginConfiguration<T extends CLIExecutionService
 		
 	}
 	
-	protected abstract void loadConfig(Properties properties);
+	/**
+	 * Load custom configuration from the provided properties.
+	 * If the built in validation framework is needed, call {@link #loadValidatorFactory(Properties)} here.
+	 * @param configuration properties
+	 */
+	protected abstract void loadConfig(Properties properties) throws IOException;
 	
 	protected abstract T createService(BrokerClient2 client);
-	
+
+	/**
+	 * Load built-in validation framework from properties. Will use the property {@code broker.request.validator.class}.
+	 * @param props properties
+	 * @return validator factory
+	 * @throws IOException IO error
+	 */
+	protected RequestValidatorFactory loadValidatorFactory(Properties props) throws IOException {
+		// request validator. TODO move to separate method to allow custom/fixed validators for specific implementations
+		String validatorClass = props.getProperty("broker.request.validator.class");
+		if( validatorClass != null ) {
+			return loadValidatorClass(validatorClass);
+		}else {
+			return null;
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	private static RequestValidatorFactory loadValidatorClass(String className) throws IOException{
 		Class<RequestValidatorFactory> clazz;

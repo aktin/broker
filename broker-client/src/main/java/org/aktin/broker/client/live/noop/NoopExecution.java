@@ -30,7 +30,7 @@ public class NoopExecution extends AbortableRequestExecution {
 		String body = def.body();
 
 		// validate if necessary.
-		RequestValidatorFactory validator = config.getRequestValidator();
+		RequestValidatorFactory validator = config.getRequestValidation();
 		if( validator != null ) {
 			try {
 				validator.getValidator(config.getRequestMediatype()).validate(new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
