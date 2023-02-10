@@ -8,11 +8,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import lombok.Data;
+
+import org.aktin.broker.client.live.CLIClientPluginConfiguration;
+import org.aktin.broker.client2.BrokerClient2;
+
 import lombok.Getter;
 
 @Getter
-public class ProcessExecutionConfig extends AbstractClientConfiguration{
+public class ProcessExecutionConfig extends CLIClientPluginConfiguration<ProcessExecutionService>{
 
 	// specific config
 	private List<String> command;
@@ -38,5 +41,10 @@ public class ProcessExecutionConfig extends AbstractClientConfiguration{
 			this.processLogDir = Paths.get(logDir);
 		}
 		// TODO allow configuration to force logging (via JUL) of request and response content types. e.g. property process.log.literal.mediatypes
+	}
+
+	@Override
+	protected ProcessExecutionService createService(BrokerClient2 client) {
+		return new ProcessExecutionService(client, this);
 	}
 }

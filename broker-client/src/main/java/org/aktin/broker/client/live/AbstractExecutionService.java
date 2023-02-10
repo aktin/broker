@@ -47,11 +47,10 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 
 	private ScheduledFuture<?> pingpongTimer;
 
-	public AbstractExecutionService(BrokerClient2 client, ScheduledExecutorService executor){
+	public AbstractExecutionService(BrokerClient2 client){
 		this.abort = new AtomicBoolean();
 		this.client = client;
 		this.pending = Collections.synchronizedMap(new HashMap<>());
-		this.executor = executor;
 		this.client.addListener(new ClientNotificationListener() {
 			
 			@Override
@@ -81,6 +80,10 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 				log.info("Websocket received pong, roundtrip="+millis);
 			}
 		});
+	}
+
+	protected void setExecutor(ScheduledExecutorService executor) {
+		this.executor = executor;
 	}
 
 	private class PendingExecution implements Runnable{

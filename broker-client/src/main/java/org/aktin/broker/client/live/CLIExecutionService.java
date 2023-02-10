@@ -1,4 +1,4 @@
-package org.aktin.broker.client.live.sysproc;
+package org.aktin.broker.client.live;
 
 
 import java.io.IOException;
@@ -7,8 +7,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 
-import org.aktin.broker.client.live.AbortableRequestExecution;
-import org.aktin.broker.client.live.AbstractExecutionService;
 import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.xml.RequestStatus;
 
@@ -22,13 +20,20 @@ import lombok.extern.java.Log;
  */
 @Log
 public abstract class CLIExecutionService<T extends AbortableRequestExecution> extends AbstractExecutionService<T> implements Runnable{
-	private AbstractClientConfiguration config;
+	private CLIClientPluginConfiguration<?> config;
 
-	public CLIExecutionService(BrokerClient2 client, AbstractClientConfiguration config) {
-		super(client, configureExecutor(config));
+	public CLIExecutionService(BrokerClient2 client, CLIClientPluginConfiguration<?> config ) {
+		super(client);
 		this.config = config;
+		setExecutor(configureExecutor(config));
 	}
-	public static ScheduledExecutorService configureExecutor(AbstractClientConfiguration config) {
+
+	public void setConfiguration(CLIClientPluginConfiguration<?> config) {
+		this.config = config;
+		this.setExecutor(configureExecutor(config));
+	}
+
+	public static ScheduledExecutorService configureExecutor(CLIClientPluginConfiguration<?> config) {
 		if( config.getExecutorThreads() < 1 ) {
 			throw new IllegalArgumentException("Need at least one process executor thread.");
 		}

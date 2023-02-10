@@ -9,7 +9,6 @@ import org.aktin.broker.xml.RequestStatus;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.java.Log;
 
 /**
  * Abstract request execution.
@@ -19,7 +18,6 @@ import lombok.extern.java.Log;
  * @author R.W.Majeed
  *
  */
-@Log
 public abstract class AbstractRequestExecution implements Runnable {
 	@Getter
 	protected int requestId;
@@ -62,9 +60,9 @@ public abstract class AbstractRequestExecution implements Runnable {
 
 	/**
 	 * Prepare the execution of the request.
-	 * Typically downloads request definition, validates
+	 * Typically downloads request definition, validates request content and
 	 * preconditions, creates temporary files, etc.
-	 * @throws IOException IO error. When thrown, {@link #doExecution()} is never called.
+	 * @throws IOException IO error or validation error. When thrown, {@link #doExecution()} is never called.
 	 */
 	protected abstract void prepareExecution() throws IOException;
 	/**
@@ -97,8 +95,9 @@ public abstract class AbstractRequestExecution implements Runnable {
 	 * after successful execution.
 	 * @return opened input stream. must be closed.
 	 * @throws IOException io error
+	 * @throws IllegalStateException when the method was called before both {@link #doExecution()} and  {@link #finishExecution()} terminated successfully
 	 */
-	protected abstract InputStream getResultData() throws IOException;
+	protected abstract InputStream getResultData() throws IOException, IllegalStateException;
 	
 	protected void reportFailure(String message) {
 		try {
@@ -121,6 +120,10 @@ public abstract class AbstractRequestExecution implements Runnable {
 			// error during reading the result or reporting the outcome will count as failure
 			this.cause = e;
 			// logging will be done by reportFailure called below
+		} catch ( IllegalStateException e ) {
+			// this should not happen normally (as report completed should only be called when the result is available)
+			// but we will catch this anyway to account for broken execution implementations
+			this.cause = e;
 		}
 		if( cause == null ) {
 			// post successful completion

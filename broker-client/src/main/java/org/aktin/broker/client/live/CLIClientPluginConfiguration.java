@@ -1,28 +1,23 @@
-package org.aktin.broker.client.live.sysproc;
+package org.aktin.broker.client.live;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.aktin.broker.client.live.ClientConfiguration;
+import org.aktin.broker.client2.BrokerClient2;
 import org.aktin.broker.client2.validator.RequestValidatorFactory;
 
 import lombok.Data;
 
 @Data
-public abstract class AbstractClientConfiguration implements ClientConfiguration{
+public abstract class CLIClientPluginConfiguration<T extends CLIExecutionService<?>> implements ClientConfiguration{
 	String requestMediatype;
 	String resultMediatype;
 	URI brokerEndpointURI;
@@ -38,10 +33,7 @@ public abstract class AbstractClientConfiguration implements ClientConfiguration
 	int executorThreads;
 	private long executorTimeoutMillis;
 
-
-
-	
-	public AbstractClientConfiguration(InputStream in) throws IOException {
+	public CLIClientPluginConfiguration(InputStream in) throws IOException {
 		Properties props = new Properties();
 		props.load(in);
 		
@@ -69,7 +61,7 @@ public abstract class AbstractClientConfiguration implements ClientConfiguration
 		this.requestMediatype = props.getProperty("broker.request.mediatype");
 		this.resultMediatype = props.getProperty("broker.result.mediatype");
 		
-		// request validator
+		// request validator. TODO move to separate method to allow custom/fixed validators for specific implementations
 		String validatorClass = props.getProperty("broker.request.validator.class");
 		if( validatorClass != null ) {
 			this.requestValidator = loadValidatorClass(validatorClass);
@@ -95,6 +87,8 @@ public abstract class AbstractClientConfiguration implements ClientConfiguration
 	}
 	
 	protected abstract void loadConfig(Properties properties);
+	
+	protected abstract T createService(BrokerClient2 client);
 	
 	@SuppressWarnings("unchecked")
 	private static RequestValidatorFactory loadValidatorClass(String className) throws IOException{

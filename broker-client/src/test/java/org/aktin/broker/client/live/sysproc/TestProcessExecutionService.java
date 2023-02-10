@@ -56,7 +56,7 @@ public class TestProcessExecutionService {
 		when(client.connectWebsocket()).thenReturn(websocket);
 		when(client.getWebsocket()).thenReturn(websocket);
 		when(client.getMyRequestDefinition(eq(100), any(String.class), any(Path.class), ArgumentMatchers.<OpenOption>any())).thenReturn(Path.of("bla"));
-		ProcessExecutionPlugin service = new ProcessExecutionPlugin(client, loadConfig());
+		ProcessExecutionService service = new ProcessExecutionService(client, loadConfig());
 		service.startupWebsocketListener();
 		
 		// make sure websocket was opened and we captured the notification listener
