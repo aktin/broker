@@ -24,9 +24,16 @@ Run system process runner CLI client
 # copy example configuration
 cp ../src/test/resources/sysproc.properties ./
 # before starting, edit sysproc.properties as needed
-java -cp lib/\* org.aktin.broker.client.live.sysproc.CLI sysproc.properties
+java -cp lib/\* org.aktin.broker.client.live.CLI org.aktin.broker.client.live.sysproc.ProcessExecutionPlugin sysproc.properties
 
 ```
+
+For a simple example, we can also use the NoOp (no operation) execution plugin. The code of the Noop-Plugin can also serve as a template for custom execution plugins.
+```
+java -cp lib/\* org.aktin.broker.client.live.CLI org.aktin.broker.client.live.noop.NoopExecutionPlugin sysproc.properties
+```
+
+
 
 Run admin listener CLI client
 ```
