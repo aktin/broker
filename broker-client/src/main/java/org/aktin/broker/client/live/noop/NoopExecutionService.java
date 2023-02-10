@@ -8,6 +8,7 @@ public class NoopExecutionService extends CLIExecutionService<NoopExecution>{
 
 	public NoopExecutionService(BrokerClient2 client, NoopExecutionPlugin config) {
 		super(client, config);
+		this.config = config;
 	}
 
 	@Override
