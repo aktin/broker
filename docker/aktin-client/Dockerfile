@@ -1,11 +1,11 @@
-FROM maven:3.6.3-adoptopenjdk-15 AS MAVEN_TOOL_CHAIN
+FROM maven:3.8.3-openjdk-17 AS MAVEN_TOOL_CHAIN
 COPY pom.xml /tmp/
 COPY . /tmp/
 WORKDIR /tmp/
 RUN mvn clean install
 
 
-FROM adoptopenjdk/openjdk15:alpine-jre
+FROM eclipse-temurin:17-jre-focal
 
 WORKDIR /opt/aktin
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/target/*.jar ./lib/
@@ -14,7 +14,6 @@ COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-client/src/test/resources/sysproc.prope
 COPY docker/aktin-client/run_client.sh ./run_client.sh
 COPY docker/aktin-client/logging.properties ./logging.properties
 RUN chmod 644 run_client.sh
-RUN apk add curl && apk add jq && apk add util-linux
 
 ARG VERSION=0.0.0
 ENV APP_VERSION=${VERSION} \
@@ -25,7 +24,7 @@ COPY docker/aktin-client/sysproc.properties sysproc.properties
 RUN chown -R 10001:10001 /opt/aktin
 USER 10001
 
-ENTRYPOINT ["sh", "run_client.sh"]
+ENTRYPOINT ["bash", "run_client.sh"]
 
 ARG GIT_REF=""
 ARG BUILD_TIME=""

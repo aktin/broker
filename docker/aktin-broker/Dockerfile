@@ -1,13 +1,13 @@
-FROM maven:3.6.3-adoptopenjdk-15 AS MAVEN_TOOL_CHAIN
+FROM maven:3.9.0-eclipse-temurin-17-focal AS MAVEN_TOOL_CHAIN
 COPY pom.xml /tmp/
 COPY . /tmp/
 WORKDIR /tmp/
 RUN mvn package
-RUN apt-get update && apt-get install -y zip
+RUN apt update && apt install -y zip
 RUN cd /tmp/broker-admin-dist/target && unzip *.zip -d deploy
 
 
-FROM adoptopenjdk/openjdk15:alpine-jre
+FROM eclipse-temurin:17-jre-focal
 
 WORKDIR /opt/aktin
 COPY --from=MAVEN_TOOL_CHAIN /tmp/broker-admin-dist/target/deploy .
@@ -18,11 +18,10 @@ ARG VERSION=0.0.0
 ENV APP_VERSION=${VERSION} \
     SPRING_PROFILES_ACTIVE="prod"
 
-
 RUN chown -R 10001:10001 /opt/aktin
 USER 10001
 
-ENTRYPOINT ["sh", "run_broker.sh"]
+ENTRYPOINT ["bash", "run_broker.sh"]
 
 ARG GIT_REF=""
 ARG BUILD_TIME=""

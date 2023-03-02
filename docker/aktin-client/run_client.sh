@@ -6,4 +6,4 @@ sed -i 's/.level=.*/.level='$LOG_LEVEL'/g' logging.properties
 
 echo "Running aktin client from console..."
 
-java $JAVA_OPTS -cp lib/\* -Djava.util.logging.config.file=logging.properties org.aktin.broker.client.live.sysproc.CLI sysproc.properties
+java $JAVA_OPTS -cp lib/\* -Djava.util.logging.config.file=logging.properties org.aktin.broker.client.live.CLI org.aktin.broker.client.live.noop.NoopExecutionPlugin sysproc.properties
