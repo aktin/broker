@@ -65,6 +65,11 @@ public interface BrokerAdmin {
 
 	int createRequest(String contentType, String content) throws IOException;
 
+	/**
+	 * Delete a single request from database and remove all associated result data.
+	 * @param requestId request id to delete
+	 * @throws IOException IO error
+	 */
 	void deleteRequest(int requestId) throws IOException;
 
 	void publishRequest(int requestId) throws IOException;

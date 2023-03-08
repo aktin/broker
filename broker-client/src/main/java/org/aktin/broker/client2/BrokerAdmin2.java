@@ -193,7 +193,13 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 
 	@Override
 	public void deleteRequest(int requestId) throws IOException {
+		// delete request from broker
 		HttpRequest req = createBrokerRequest("request/"+requestId).DELETE().build();
+		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
+		// delete results from aggregator
+		req = createAggregatorRequest("request/"+requestId+"/result")
+				.DELETE()
+				.build();
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 

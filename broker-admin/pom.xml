@@ -95,13 +95,14 @@
 			<version>1.4.1-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-auth-openid</artifactId>
 			<version>1.4.1-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
-
+ 		
 		<!-- https://mvnrepository.com/artifact/org.hsqldb/hsqldb -->
 		<dependency>
 			<groupId>org.hsqldb</groupId>

@@ -105,6 +105,26 @@ public class AggregatorImpl implements AggregatorBackend {
 	 * @see org.aktin.broker.db.AggregatorBackend#listResults(int)
 	 */
 	@Override
+	public void deleteResults(int requestId) throws SQLException, IOException{
+		try( Connection dbc = ds.getConnection(); 
+				Statement st = dbc.createStatement() ){
+			dbc.setAutoCommit(false);
+			// find is result is already present
+			ResultSet rs = st.executeQuery("SELECT node_id, media_type, data_file FROM request_node_results WHERE request_id="+requestId);
+			// compile list
+			while( rs.next() ){
+				removeData(rs.getString(3));
+			}
+			rs.close();
+			st.execute("DELETE FROM request_node_results WHERE request_id="+requestId);
+			dbc.commit();
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.aktin.broker.db.AggregatorBackend#listResults(int)
+	 */
+	@Override
 	public List<ResultInfo> listResults(int requestId) throws SQLException{
 		List<ResultInfo> list = new ArrayList<>();
 		try( Connection dbc = ds.getConnection(); 

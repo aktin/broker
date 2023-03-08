@@ -1,5 +1,6 @@
 package org.aktin.broker.rest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
@@ -10,6 +11,7 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -95,6 +97,20 @@ public class AggregatorEndpoint {
 		}
 		log.info("Found "+results.size()+" results");
 		return new ResultList(results);
+	}
+
+	@Authenticated
+	@RequireAdmin
+	@DELETE
+	@Path("request/{id}/result")
+	public void deleteResultsForRequest(@PathParam("id") String requestId){
+		int request = Integer.parseInt(requestId);
+		try {
+			db.deleteResults(request);
+		} catch (SQLException | IOException e) {
+			log.log(Level.SEVERE, "Failed to delete results from database", e);
+			throw new InternalServerErrorException();
+		}
 	}
 
 
