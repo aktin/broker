@@ -96,7 +96,7 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 			try {
 				int newRequests = super.pollRequests();
 				if( newRequests > 0 ) {
-					log.info("Polling returned "+newRequests+" requests");
+					log.info("Polling returned "+newRequests+" new requests");
 				}else {
 					log.fine("Polling returned no new requests");
 				}
