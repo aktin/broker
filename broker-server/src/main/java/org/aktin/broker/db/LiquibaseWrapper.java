@@ -10,6 +10,7 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
 import liquibase.resource.ResourceAccessor;
 
 /**
@@ -32,7 +33,8 @@ public class LiquibaseWrapper implements AutoCloseable {
 	 */
 	public LiquibaseWrapper(Connection connection) throws LiquibaseException{
 		database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-		ResourceAccessor ra = new ClassResourceAccessor(LiquibaseWrapper.class);
+		
+		ResourceAccessor ra = new ClassLoaderResourceAccessor(this.getClass().getClassLoader());
 		liquibase = new Liquibase(CHANGELOG_RESOURCE, ra, database);
 	}
 
