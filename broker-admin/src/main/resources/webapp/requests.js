@@ -77,13 +77,22 @@ function deleteRequest(id){
 			type: 'POST',
 			url: rest_base+'/broker/request/'+id+'/close',
 			success: function(){
+				// delete results first
 				$.ajax({
 					type: 'DELETE',
-					url: rest_base+'/broker/request/'+id,
+					url: rest_base+'/aggregator/request/'+id+'/result',
 					success: function(){
-						$('.req[data-id="'+id+'"]').remove();
+						// last, remove request
+						$.ajax({
+							type: 'DELETE',
+							url: rest_base+'/broker/request/'+id,
+							success: function(){
+								$('.req[data-id="'+id+'"]').remove();
+							}
+						});						
 					}
 				});
+				
 			}
 		});
 	}
