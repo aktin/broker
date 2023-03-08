@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -27,6 +28,8 @@ public abstract class CLIClientPluginConfiguration<T extends CLIExecutionService
 	int websocketReconnectSeconds;
 	boolean websocketReconnectPolling;
 	int websocketPingpongSeconds;
+	
+	boolean websocketDisabled;
 	
 	int executorThreads;
 	private long executorTimeoutMillis;
@@ -68,6 +71,8 @@ public abstract class CLIClientPluginConfiguration<T extends CLIExecutionService
 		this.authParam = props.getProperty("client.auth.param");
 		
 		this.websocketReconnectSeconds = Integer.valueOf(props.getProperty("client.websocket.reconnect.seconds"));
+		
+		this.websocketDisabled = Boolean.valueOf(props.getProperty("client.websocket.disabled"));
 		this.websocketReconnectPolling = Boolean.valueOf(props.getProperty("client.websocket.reconnect.polling"));
 		this.websocketPingpongSeconds = Integer.valueOf(props.getProperty("client.websocket.ping.seconds","0"));
 		

@@ -71,10 +71,12 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 	}
 
 	@Override
-	public void pollRequests() throws IOException {
+	public int pollRequests() throws IOException {
 		if( config.websocketReconnectPolling ) {
 			log.info("polling for open requests");
-			super.pollRequests();			
+			return super.pollRequests();			
+		}else {
+			return -1;
 		}
 	}
 
@@ -89,8 +91,38 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 		}
 	}
 
+	private void runWebsocketDisabledMode() {
+		while( !isAborted() ) {
+			try {
+				int newRequests = super.pollRequests();
+				if( newRequests > 0 ) {
+					log.info("Polling returned "+newRequests+" requests");
+				}else {
+					log.fine("Polling returned no new requests");
+				}
+			} catch (IOException e) {
+				log.log(Level.WARNING,"Failed to poll for requests",e);
+			}
+			
+			synchronized( this ) {
+				try {
+					this.wait(1000*config.getWebsocketReconnectSeconds());
+				} catch (InterruptedException e) {
+					log.info("Interrupted during wait between polling");
+					;// we expected this interruption, e.g. during shutdown
+				}
+			}
+		}
+	}
+
 	@Override
 	public void run() {
+		if( config.websocketDisabled == true ) {
+			log.info("Websocket disabled. Using polling only with interval "+config.getWebsocketReconnectSeconds());
+			runWebsocketDisabledMode();
+			return;
+		}
+		// regular mode using websocket connection
 		try {
 			startupWebsocketListener();
 			log.info("websocket connection established");

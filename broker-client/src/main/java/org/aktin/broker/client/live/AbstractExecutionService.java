@@ -284,9 +284,11 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 
 	/**
 	 * Poll the server for new requests.
+	 * @return number of new requests or -1 if polling was not completed/disabled by business logic.
 	 * @throws IOException IO error during polling
 	 */
-	public void pollRequests() throws IOException {
+	public int pollRequests() throws IOException {
+		int newRequestCount = 0;
 		List<RequestInfo> list = client.listMyRequests();
 		log.log(Level.INFO,"Retrieved {0} requests",list.size());
 		for( RequestInfo request : list ) {
@@ -306,6 +308,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 				if( p == null ) {
 					// add request to queue
 					addRequest(request.getId());
+					newRequestCount ++;
 				}else {
 					// request already queued
 					;// nothing to do
@@ -314,5 +317,6 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			}
 		}
 		// TODO there might be requests queued, which are no longer on the server. these should be canceled too
+		return newRequestCount;
 	}
 }
