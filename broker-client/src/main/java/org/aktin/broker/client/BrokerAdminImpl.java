@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
-import javax.activation.DataSource;
-import javax.xml.bind.JAXB;
+import jakarta.activation.DataSource;
+import jakarta.xml.bind.JAXB;
 
 import org.aktin.broker.client.BrokerClientImpl.OutputWriter;
 import org.aktin.broker.xml.NodeList;

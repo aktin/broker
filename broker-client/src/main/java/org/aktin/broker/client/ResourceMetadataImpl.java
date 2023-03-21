@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.Base64;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 
 public class ResourceMetadataImpl implements DataSource, ResponseWithMetadata{
 	protected HttpURLConnection c;

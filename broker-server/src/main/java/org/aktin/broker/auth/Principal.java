@@ -2,7 +2,7 @@ package org.aktin.broker.auth;
 
 import java.util.Set;
 
-import javax.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.SecurityContext;
 
 import org.aktin.broker.server.auth.AuthInfo;
 import org.aktin.broker.server.auth.AuthRole;

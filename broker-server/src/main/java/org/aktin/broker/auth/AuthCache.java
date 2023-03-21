@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.aktin.broker.db.BrokerBackend;
 import org.aktin.broker.server.auth.AuthInfo;

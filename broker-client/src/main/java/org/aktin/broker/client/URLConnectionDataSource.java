@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.net.URLConnection;
 import java.time.Instant;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 
 public class URLConnectionDataSource implements DataSource{
 	private URLConnection connection;

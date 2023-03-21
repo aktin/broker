@@ -7,7 +7,7 @@ import java.net.http.HttpResponse.BodySubscribers;
 import java.net.http.HttpResponse.ResponseInfo;
 import java.util.function.Supplier;
 
-import javax.xml.bind.JAXB;
+import jakarta.xml.bind.JAXB;
 
 /**
  * Body handler transforming the response body via JAXB to the desired class

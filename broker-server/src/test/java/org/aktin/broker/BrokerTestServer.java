@@ -6,12 +6,12 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.sql.SQLException;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import javax.sql.DataSource;
-import javax.websocket.DeploymentException;
-import javax.websocket.server.ServerContainer;
-import javax.websocket.server.ServerEndpoint;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.DeploymentException;
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpoint;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.aktin.broker.auth.AuthenticationRequestFilter;
 import org.aktin.broker.auth.AuthorizationRequestFilter;
@@ -24,7 +24,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+//import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
@@ -81,10 +82,13 @@ public class BrokerTestServer {
 	public int getLocalPort(){
 		return ((ServerConnector)jetty.getConnectors()[0]).getLocalPort();
 	}
+	// TODO fix websocket setup later 
+/*
 	private void setupWebSockets(ServletContextHandler context, HeaderAuthentication auth) throws DeploymentException, ServletException{
 		//WebSocketServerContainerInitializer.configureContext(context);
+//		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
 		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
-		//ServerContainer c = (ServerContainer)context.getAttribute( javax.websocket.server.ServerContainer.class.getName() );
+		//ServerContainer c = (ServerContainer)context.getAttribute( jakarta.websocket.server.ServerContainer.class.getName() );
 		HeaderAuthSessionConfigurator sc = new HeaderAuthSessionConfigurator(auth, binder.getAuthCache());
 		for( Class<?> websocketClass : Broker.WEBSOCKETS ) {
 			// retrieve path
@@ -97,24 +101,27 @@ public class BrokerTestServer {
 			);
 		}
 	}
+*/
 	public void start(InetSocketAddress addr) throws Exception{
-		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-		context.setContextPath("/");
+		//System.out.println(URI.create(Broker.SERVICE_URL).toString());
+//		jetty = JettyHttpContainerFactory.createServer(URI.create(Broker.SERVICE_URL), rc, false);
+		jetty = JettyHttpContainerFactory.createServer(URI.create("http://localhost:0/broker/"), rc, false);
 
-		jetty = new Server(addr);
-		jetty.setHandler(context);
 
-		ServletHolder jersey = new ServletHolder(new ServletContainer(rc));
-//		jersey.setInitOrder(0);
-		context.addServlet(jersey, "/*");
-//		WebSocketServlet wss = new WebSocketServlet() {
-//			@Override
-//			public void configure(WebSocketServletFactory factory) {
-//				factory.register(BrokerWebsocket.class);
-//			}
-//		};
-//		context.addServlet(new ServletHolder(wss), "/*");
-		setupWebSockets(context, headerAuth);
+		// TODO fix websocket setup later
+//		setupWebSockets(jetty.getChildHandlerByClass(ServletContextHandler.class), headerAuth);
+
+		// code for Jersey 2.x does not work with Jersey 3
+//		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+//		 
+//		context.setContextPath("/");
+//
+//		jetty = new Server(addr);
+//		jetty.setHandler(context);
+//
+//		ServletHolder jersey = new ServletHolder(new ServletContainer(rc));
+//		context.addServlet(jersey, "/*");
+//		setupWebSockets(context, headerAuth);
 		jetty.start();
 	}
 	public void join() throws InterruptedException{

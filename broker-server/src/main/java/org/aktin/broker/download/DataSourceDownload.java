@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 
 import org.aktin.broker.server.DateDataSource;
 import org.aktin.broker.util.PathDataSource;

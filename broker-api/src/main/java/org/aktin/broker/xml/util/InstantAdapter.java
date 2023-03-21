@@ -2,7 +2,7 @@ package org.aktin.broker.xml.util;
 
 import java.time.Instant;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * JAXB adapter for processing java.time.Instant.

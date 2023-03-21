@@ -9,11 +9,11 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
-import javax.websocket.HandshakeResponse;
-import javax.websocket.Session;
-import javax.websocket.server.HandshakeRequest;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.inject.Inject;
+import jakarta.websocket.HandshakeResponse;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.HandshakeRequest;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.aktin.broker.auth.AuthCache;
 import org.aktin.broker.auth.Principal;
@@ -29,7 +29,7 @@ import org.aktin.broker.server.auth.HeaderAuthentication;
  * @author R.W.Majeed
  *
  */
-public class HeaderAuthSessionConfigurator extends javax.websocket.server.ServerEndpointConfig.Configurator {
+public class HeaderAuthSessionConfigurator extends ServerEndpointConfig.Configurator {
 	private static final Logger log = Logger.getLogger(HeaderAuthSessionConfigurator.class.getName());
 	/**
 	 * Websocket session user properties key where the authenticated user {@link Principal} is stored.

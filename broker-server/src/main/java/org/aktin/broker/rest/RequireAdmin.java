@@ -7,8 +7,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import javax.ws.rs.NameBinding;
-import javax.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.NameBinding;
+import jakarta.ws.rs.container.ContainerRequestFilter;
 
 /**
  * Qualifier indicating that a REST method requires admin privileges.

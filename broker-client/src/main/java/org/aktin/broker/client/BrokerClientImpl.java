@@ -20,7 +20,7 @@ import java.util.Properties;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.xml.bind.JAXB;
+import jakarta.xml.bind.JAXB;
 
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;

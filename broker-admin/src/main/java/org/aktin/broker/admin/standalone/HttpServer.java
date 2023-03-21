@@ -12,9 +12,9 @@ import java.sql.Statement;
 import java.util.Objects;
 
 import javax.sql.DataSource;
-import javax.websocket.server.ServerContainer;
-import javax.websocket.server.ServerEndpoint;
-import javax.websocket.server.ServerEndpointConfig;
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpoint;
+import jakarta.websocket.server.ServerEndpointConfig;
 
 import org.aktin.broker.Broker;
 import org.aktin.broker.admin.rest.FormTemplateEndpoint;
@@ -30,7 +30,7 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+//import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
@@ -75,7 +75,7 @@ public class HttpServer {
 		// register auth entdpoints
 		rc.registerClasses(authFactory.getEndpoints());
 		// register admin endpoints
-		rc.register(FormTemplateEndpoint.class);
+		rc.registerClasses(FormTemplateEndpoint.class);
 		// websocket endpoints are initialized in method #setupWebsockets
 	}
 
@@ -151,13 +151,15 @@ public class HttpServer {
 		rc.register(this.binder);
 
 		// setup websockets
-		setupWebsockets(context);
+		// TODO fix websocket setup later
+//		setupWebsockets(context);
 
 		jetty.start();
 	}
-
+/*
 	private void setupWebsockets(ServletContextHandler context) throws Exception{
 		ServerContainer c = WebSocketServerContainerInitializer.initialize(context);
+
 		// TODO verify session idle timeout and increase accordingly. e.g. 60 minutes 
 		c.setDefaultMaxSessionIdleTimeout(config.getWebsocketIdleTimeoutMillis());
 		// use HeaderAuthentication
@@ -174,6 +176,7 @@ public class HttpServer {
 		}
 
 	}
+*/
 	public void join() throws InterruptedException{
 		jetty.join();
 	}

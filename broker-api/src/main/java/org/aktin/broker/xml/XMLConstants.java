@@ -1,6 +1,6 @@
 package org.aktin.broker.xml;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 @XmlTransient
 public class XMLConstants {

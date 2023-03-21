@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.sql.DataSource;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.aktin.broker.auth.Principal;
 import org.aktin.broker.server.Broker;

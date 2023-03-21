@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import javax.activation.DataSource;
-import javax.ws.rs.core.MediaType;
+import jakarta.activation.DataSource;
+import jakarta.ws.rs.core.MediaType;
 
 import org.aktin.broker.db.AbstractDatabase;
 import org.aktin.broker.db.AggregatorBackend;

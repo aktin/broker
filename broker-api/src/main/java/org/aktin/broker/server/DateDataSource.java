@@ -2,7 +2,8 @@ package org.aktin.broker.server;
 
 import java.time.Instant;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
+
 
 public interface DateDataSource extends DataSource{
 

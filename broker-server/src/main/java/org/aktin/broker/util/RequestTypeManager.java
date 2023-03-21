@@ -3,7 +3,7 @@ package org.aktin.broker.util;
 import java.io.Reader;
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * A request type manager allows verification of request

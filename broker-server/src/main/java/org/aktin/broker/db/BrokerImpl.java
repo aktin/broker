@@ -28,10 +28,10 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
-import javax.annotation.Resource;
-import javax.inject.Singleton;
+import jakarta.annotation.Resource;
+import jakarta.inject.Singleton;
 import javax.sql.DataSource;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

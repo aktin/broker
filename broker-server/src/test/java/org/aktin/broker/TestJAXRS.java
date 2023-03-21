@@ -1,7 +1,7 @@
 package org.aktin.broker;
 
-import javax.ws.rs.core.MediaType;
-import javax.xml.bind.JAXB;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.xml.bind.JAXB;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.logging.Logger;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Simple password based token manager. Currently, only a single (admin) user

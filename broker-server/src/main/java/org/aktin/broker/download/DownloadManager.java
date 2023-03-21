@@ -10,8 +10,8 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import javax.activation.DataSource;
-import javax.inject.Singleton;
+import jakarta.activation.DataSource;
+import jakarta.inject.Singleton;
 
 import org.aktin.broker.util.PathDataSource;
 

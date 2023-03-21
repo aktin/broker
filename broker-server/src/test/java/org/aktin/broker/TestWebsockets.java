@@ -26,9 +26,16 @@ import org.aktin.broker.client2.ClientNotificationListener;
 import org.aktin.broker.util.AuthFilterSSLHeaders;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatus;
+import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.eclipse.jetty.websocket.core.CloseStatus;
+import org.eclipse.jetty.websocket.core.CoreSession;
+import org.eclipse.jetty.websocket.core.Frame;
+import org.eclipse.jetty.websocket.core.FrameHandler;
+import org.eclipse.jetty.websocket.core.client.CoreClientUpgradeRequest;
+import org.eclipse.jetty.websocket.core.client.WebSocketCoreClient;
+//import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+//import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -312,16 +319,44 @@ public class TestWebsockets extends AbstractTestBroker{
 	 */
 	@Test
 	public void testWebsocket() throws Exception{
-		WebSocketClient client = new WebSocketClient();
+		WebSocketCoreClient client = new WebSocketCoreClient();
 		ClientWebsocket websocket = new ClientWebsocket();
-		ClientUpgradeRequest req = new ClientUpgradeRequest();
+
+		CoreClientUpgradeRequest req = CoreClientUpgradeRequest.from(client, new URI("ws://localhost:"+server.getLocalPort()+"/broker/my/websocket"),new FrameHandler() {
+			
+			@Override
+			public void onOpen(CoreSession coreSession, Callback callback) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onFrame(Frame frame, Callback callback) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onError(Throwable cause, Callback callback) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onClosed(CloseStatus closeStatus, Callback callback) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		//CoreClientUpgradeRequest req = new CoreClientUpgradeRequest(client, new URI("ws://localhost:"+server.getLocalPort()+"/broker/my/websocket"));
 		// set authentication headers for socket handshake
-		TestClient.setAuthenticatedHeaders(req::setHeader, CLIENT_01_SERIAL, CLIENT_01_DN);
+		TestClient.setAuthenticatedHeaders(req::header, CLIENT_01_SERIAL, CLIENT_01_DN);
 		websocket.prepareForMessages(1);
 		client.start();
-		Future<Session> f = client.connect(websocket, new URI("ws://localhost:"+server.getLocalPort()+"/broker/my/websocket"), req);
+		
+		Future<CoreSession> f = client.connect(req);
 		System.out.println("Connecting..");
-		Session s = f.get(5, TimeUnit.SECONDS);
+		CoreSession s = f.get(5, TimeUnit.SECONDS);
 		s.getClass(); // don't need the session
 		// connected, wait for messages
 		websocket.waitForMessages(5, TimeUnit.SECONDS);
