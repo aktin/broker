@@ -18,7 +18,6 @@ import org.aktin.broker.auth.AuthorizationRequestFilter;
 import org.aktin.broker.db.TestDataSource;
 import org.aktin.broker.db.TestDatabaseHSQL;
 import org.aktin.broker.server.auth.HeaderAuthentication;
-import org.aktin.broker.websocket.MyBrokerWebsocket;
 import org.aktin.broker.websocket.HeaderAuthSessionConfigurator;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;

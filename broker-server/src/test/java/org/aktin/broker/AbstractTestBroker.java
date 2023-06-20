@@ -2,7 +2,6 @@ package org.aktin.broker;
 
 import org.aktin.broker.client.BrokerAdmin;
 import org.aktin.broker.client.BrokerClient;
-import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.util.AuthFilterSSLHeaders;
 import org.junit.After;
 import org.junit.Before;

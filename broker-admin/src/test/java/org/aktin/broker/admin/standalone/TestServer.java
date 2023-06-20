@@ -20,9 +20,9 @@ import org.aktin.broker.auth.CascadedAuthProvider;
 import org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider;
 import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
 import org.aktin.broker.auth.openid.OpenIdAuthProvider;
-import org.aktin.broker.client.BrokerAdminImpl;
-import org.aktin.broker.client.BrokerClientImpl;
-import org.aktin.broker.client.auth.HttpApiKeyAuth;
+import org.aktin.broker.client2.BrokerAdmin2;
+import org.aktin.broker.client2.BrokerClient2;
+import org.aktin.broker.client2.auth.ApiKeyAuthentication;
 import org.aktin.broker.server.auth.AuthProvider;
 import org.aktin.broker.xml.RequestStatus;
 
@@ -151,8 +151,8 @@ public class TestServer implements Configuration{
 		// get authentication token
 		String authToken = retrieveAdminAuthToken();
 		System.out.println("Retrieved token for admin authentication: "+authToken);
-		BrokerAdminImpl admin = new BrokerAdminImpl(http.getBrokerServiceURI());
-		admin.setClientAuthenticator(HttpApiKeyAuth.newBearer(authToken));
+		BrokerAdmin2 admin = new BrokerAdmin2(http.getBrokerServiceURI());
+		admin.setAuthFilter(new ApiKeyAuthentication(authToken));
 		
 		if( admin.listAllRequests().isEmpty() ) {
 			// make sure at least one test request exists
@@ -170,8 +170,8 @@ public class TestServer implements Configuration{
 
 	public void simulateNodes() throws IOException {
 		// add some nodes
-		BrokerClientImpl c = new BrokerClientImpl(http.getBrokerServiceURI());
-		c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey123"));
+		BrokerClient2 c = new BrokerClient2(http.getBrokerServiceURI());
+		c.setAuthFilter(new ApiKeyAuthentication("xxxApiKey123"));
 		try( InputStream in = TestServer.class.getResourceAsStream("/stats-example1.xml") ){
 			c.putMyResource("stats", "application/xml", in);
 		}
@@ -183,7 +183,7 @@ public class TestServer implements Configuration{
 		c.postRequestFailed(0, "Request failed test", new RuntimeException("Test exception"));
 
 		// second node
-		c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey567"));
+		c.setAuthFilter(new ApiKeyAuthentication("xxxApiKey567"));
 		try( InputStream in = TestServer.class.getResourceAsStream("/stats-example2.xml") ){
 			c.putMyResource("stats", "application/xml", in);
 		}
@@ -194,7 +194,7 @@ public class TestServer implements Configuration{
 		c.postRequestStatus(0, RequestStatus.interaction);
 
 		// third node
-		c.setClientAuthenticator(HttpApiKeyAuth.newBearer("xxxApiKey890"));
+		c.setAuthFilter(new ApiKeyAuthentication("xxxApiKey890"));
 		c.postRequestStatus(0, RequestStatus.retrieved);
 		c.postRequestStatus(0, RequestStatus.queued);
 		c.postRequestStatus(0, RequestStatus.processing);
