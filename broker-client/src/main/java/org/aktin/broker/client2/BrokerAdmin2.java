@@ -303,11 +303,7 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 	}
 	public <T> HttpResponse<T> getResult(int requestId, int nodeId, BodyHandler<T> handler) throws IOException {
 		HttpRequest.Builder rb = createAggregatorRequest("request/"+requestId+"/result/"+nodeId).GET();
-		try {
-			return client.send(rb.build(), handler);
-		} catch (InterruptedException e) {
-			throw new IOException(e);
-		}
+		return sendRequest(rb.build(), handler);
 	}
 
 	@Override

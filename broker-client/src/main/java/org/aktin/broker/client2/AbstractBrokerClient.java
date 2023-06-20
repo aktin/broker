@@ -56,16 +56,33 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 	private WebSocket websocket;
 	private WebsocketNotificationService notifier;
 	
+	private HttpClient client;
+
 	protected List<T> listeners;
 
-	protected HttpClient client;
 	protected Charset defaultCharset;
 
 
 	protected AbstractBrokerClient() {
 		this.defaultCharset = StandardCharsets.UTF_8;
-		this.client = HttpClient.newBuilder().version(Version.HTTP_1_1).build();
+		
+		// lazy initialization of HTTP client before first use. 
+		// this allows the auth filter (which is set later) 
+		// to modify the client builder
+		this.client = null;
+
 		this.listeners = new CopyOnWriteArrayList<>();
+	}
+
+	private void lazyInitHttpClient() throws IOException {
+		if( client != null ) {
+			return;
+		}
+		HttpClient.Builder builder = HttpClient.newBuilder().version(Version.HTTP_1_1);
+		if( authFilter != null ) {
+			authFilter.configureHttpClient(builder);
+		}
+		client = builder.build();
 	}
 
 	/**
@@ -121,6 +138,7 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 	}
 
 	protected <U> HttpResponse<U> sendRequest(HttpRequest request, BodyHandler<U> handler) throws IOException{
+		lazyInitHttpClient();
 		try {
 			return client.send(request, handler);
 		} catch (InterruptedException e) {
@@ -197,6 +215,7 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 	}
 
 	private WebSocket openWebsocket(String urlspec, WebSocket.Listener listener) throws IOException {
+		lazyInitHttpClient();
 		WebSocket.Builder wsb = client.newWebSocketBuilder();
 		if( authFilter != null ) {
 			authFilter.addAuthentication(wsb);
@@ -240,11 +259,7 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 
 	protected <U> U sendAndExpectJaxb(HttpRequest req, Class<U> type) throws IOException {
 		HttpResponse<Supplier<U>> resp;
-		try {
-			resp = client.send(req, JaxbBodyHandler.forType(type));
-		} catch (InterruptedException e) {
-			throw new IOException("HTTP connection interrupted",e);
-		}
+		resp = sendRequest(req, JaxbBodyHandler.forType(type));
 		if( resp.statusCode() == HTTP_STATUS_404_NOT_FOUND ) {
 			return null;
 		}else if( resp.statusCode() == 400 ) {
@@ -255,11 +270,7 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 
 	protected void sendAndExpectStatus(HttpRequest req, int expectedStatus) throws IOException {
 		int responseCode;
-		try {
-			responseCode = client.send(req, BodyHandlers.discarding()).statusCode();
-		} catch (InterruptedException e) {
-			throw new IOException("HTTP connection interrupted",e);
-		}
+		responseCode = sendRequest(req, BodyHandlers.discarding()).statusCode();
 		if( responseCode != expectedStatus ) {
 			throw new IOException("Unexpected response code "+responseCode+" instead of expected "+expectedStatus);
 		}
