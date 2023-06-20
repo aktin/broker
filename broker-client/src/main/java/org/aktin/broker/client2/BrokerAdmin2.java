@@ -24,7 +24,6 @@ import javax.xml.bind.JAXB;
 import javax.xml.transform.TransformerException;
 
 import org.aktin.broker.client.BrokerAdmin;
-import org.aktin.broker.client.BrokerClientImpl.OutputWriter;
 import org.aktin.broker.client.ResponseWithMetadata;
 import org.aktin.broker.xml.NodeList;
 import org.aktin.broker.xml.RequestInfo;
@@ -135,10 +134,10 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 		return sendAndExpectRequestCreated(req);
 	}
 
-	@Override
-	public int createRequest(String contentType, OutputWriter writer) throws IOException {
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public int createRequest(String contentType, OutputWriter writer) throws IOException {
+//		throw new UnsupportedOperationException();
+//	}
 
 	private int getQueryId(URI uri){
 		return Integer.parseInt(getQueryBaseURI().relativize(uri).getPath());
@@ -168,10 +167,10 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 		return sendAndExpectRequestCreated(req);
 	}
 
-	@Override
-	public int createRequest(String contentType, InputStream content) throws IOException {
-		return createRequest(contentType, BodyPublishers.ofInputStream(singleSupplier(content)));
-	}
+//	@Override
+//	public int createRequest(String contentType, InputStream content) throws IOException {
+//		return createRequest(contentType, BodyPublishers.ofInputStream(singleSupplier(content)));
+//	}
 
 	@Override
 	public int createRequest(String contentType, Node content) throws IOException {
@@ -215,10 +214,10 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 
-	@Override
-	public void putRequestDefinition(int requestId, String contentType, OutputWriter writer) throws IOException {
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public void putRequestDefinition(int requestId, String contentType, OutputWriter writer) throws IOException {
+//		throw new UnsupportedOperationException();
+//	}
 
 	public void putRequestDefinition(int requestId, String contentType, BodyPublisher publisher) throws IOException {
 		HttpRequest req = createBrokerRequest("request/"+requestId)

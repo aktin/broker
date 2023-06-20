@@ -5,8 +5,8 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 
-import org.aktin.broker.client.BrokerClientImpl;
-import org.aktin.broker.client.auth.HttpApiKeyAuth;
+import org.aktin.broker.client2.BrokerClient2;
+import org.aktin.broker.client2.auth.ApiKeyAuthentication;
 import org.aktin.broker.xml.RequestStatus;
 
 /**
@@ -52,8 +52,8 @@ public class PostRequestStatus {
 			message = args[4].replace("\\n", "\n").replace("\\t", "\t");
 			System.out.println("Posting message:"+message);
 		}
-		BrokerClientImpl client = new BrokerClientImpl(URI.create(brokerUrl));
-		client.setClientAuthenticator(HttpApiKeyAuth.newBearer(apiKey));
+		BrokerClient2 client = new BrokerClient2(URI.create(brokerUrl));
+		client.setAuthFilter(new ApiKeyAuthentication(apiKey));
 		if( message == null ){
 			client.postRequestStatus(requestId, status);
 		}else{

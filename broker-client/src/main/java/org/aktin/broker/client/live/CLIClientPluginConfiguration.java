@@ -6,7 +6,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Matcher;

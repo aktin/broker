@@ -30,6 +30,7 @@ import org.aktin.broker.xml.ResultList;
 import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Node;
 
+@Deprecated
 public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin {
 
 	public BrokerAdminImpl(URI brokerEndpoint) {
@@ -121,8 +122,7 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	 * @return request id
 	 * @throws IOException IO error
 	 */
-	@Override
-	public int createRequest(String contentType, OutputWriter writer) throws IOException{
+	private int createRequest(String contentType, OutputWriter writer) throws IOException{
 		HttpURLConnection c = openConnection("POST", "request");
 		c.setDoOutput(true);
 		c.setRequestProperty("Content-Type", contentType);
@@ -141,15 +141,15 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 		}
 	}
 	
-	@Override
-	public int createRequest(String contentType, final InputStream content) throws IOException{
-		return createRequest(contentType,  new OutputWriter(){
-			@Override
-			public void write(OutputStream dest) throws IOException {
-				writeContent(dest, content);
-			}	
-		});
-	}
+//	@Override
+//	public int createRequest(String contentType, final InputStream content) throws IOException{
+//		return createRequest(contentType,  new OutputWriter(){
+//			@Override
+//			public void write(OutputStream dest) throws IOException {
+//				writeContent(dest, content);
+//			}	
+//		});
+//	}
 	@Override
 	public int createRequest(String contentType, final Node content) throws IOException{
 		return createRequest(contentType+";charset=UTF-8", new OutputWriter(){
@@ -188,10 +188,10 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 		HttpURLConnection c = openConnection("POST", uri.resolve(uri.getPath()+"/close"));
 		c.getInputStream().close();
 	}
-	@Override
-	public void putRequestDefinition(int requestId, String contentType, OutputWriter writer) throws IOException{
-		putRequestDefinition(getQueryURI(requestId), contentType, writer);
-	}
+//	@Override
+//	public void putRequestDefinition(int requestId, String contentType, OutputWriter writer) throws IOException{
+//		putRequestDefinition(getQueryURI(requestId), contentType, writer);
+//	}
 	@Override
 	public void putRequestDefinition(int requestId, String contentType, String content) throws IOException{
 		putRequestDefinition(getQueryURI(requestId), contentType+";charset=UTF-8", new OutputWriter.ForString(content, "UTF-8"));

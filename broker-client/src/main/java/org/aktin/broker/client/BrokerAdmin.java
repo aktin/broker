@@ -1,13 +1,11 @@
 package org.aktin.broker.client;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 
-import org.aktin.broker.client.BrokerClientImpl.OutputWriter;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatusInfo;
 import org.aktin.broker.xml.ResultInfo;
@@ -55,11 +53,11 @@ public interface BrokerAdmin {
 	 * @return request id
 	 * @throws IOException IO error
 	 */
-	@Deprecated
-	int createRequest(String contentType, OutputWriter writer) throws IOException;
-
-	@Deprecated
-	int createRequest(String contentType, InputStream content) throws IOException;
+//	@Deprecated
+//	int createRequest(String contentType, OutputWriter writer) throws IOException;
+//
+//	@Deprecated
+//	int createRequest(String contentType, InputStream content) throws IOException;
 
 	int createRequest(String contentType, Node content) throws IOException;
 
@@ -76,8 +74,8 @@ public interface BrokerAdmin {
 
 	void closeRequest(int requestId) throws IOException;
 
-	@Deprecated
-	void putRequestDefinition(int requestId, String contentType, OutputWriter writer) throws IOException;
+//	@Deprecated
+//	void putRequestDefinition(int requestId, String contentType, OutputWriter writer) throws IOException;
 
 	void putRequestDefinition(int requestId, String contentType, String content) throws IOException;
 

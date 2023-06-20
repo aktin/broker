@@ -30,6 +30,7 @@ import org.aktin.broker.xml.RequestStatus;
 import org.aktin.broker.xml.util.Util;
 import org.w3c.dom.Document;
 
+@Deprecated
 public class BrokerClientImpl extends AbstractBrokerClient implements BrokerClient{	
 	public BrokerClientImpl(URI brokerEndpoint) {
 		super(brokerEndpoint);
@@ -265,8 +266,7 @@ public class BrokerClientImpl extends AbstractBrokerClient implements BrokerClie
 		}
 		c.getInputStream().close();
 	}
-	@Override
-	public void putRequestResult(int requestId, String contentType, OutputWriter writer) throws IOException{
+	private void putRequestResult(int requestId, String contentType, OutputWriter writer) throws IOException{
 		URI putResult = resolveAggregatorURI("my/request/"+requestId+"/result");
 		putResource(putResult, contentType, writer);
 	}

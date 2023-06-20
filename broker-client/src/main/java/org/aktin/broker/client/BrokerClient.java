@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.aktin.broker.client.BrokerClientImpl.OutputWriter;
 import org.aktin.broker.xml.BrokerStatus;
 import org.aktin.broker.xml.Node;
 import org.aktin.broker.xml.RequestInfo;
@@ -110,9 +109,6 @@ public interface BrokerClient {
 	void putMyResource(String name, String contentType, String content) throws IOException;
 
 	void deleteMyResource(String name) throws IOException;
-
-	@Deprecated
-	void putRequestResult(int requestId, String contentType, OutputWriter writer) throws IOException;
 
 	void putRequestResult(int requestId, String contentType, InputStream content) throws IOException;
 

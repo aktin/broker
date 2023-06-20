@@ -5,8 +5,8 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
-import org.aktin.broker.client.BrokerClientImpl;
-import org.aktin.broker.client.auth.HttpApiKeyAuth;
+import org.aktin.broker.client2.BrokerClient2;
+import org.aktin.broker.client2.auth.ApiKeyAuthentication;
 import org.aktin.broker.xml.RequestInfo;
 
 /**
@@ -24,8 +24,8 @@ public class ListRequests {
 	public static void main(String[] args) throws IOException{
 		String apiKey = args[1];
 		String brokerUrl = args[0];
-		BrokerClientImpl client = new BrokerClientImpl(URI.create(brokerUrl));
-		client.setClientAuthenticator(HttpApiKeyAuth.newBearer(apiKey));
+		BrokerClient2 client = new BrokerClient2(URI.create(brokerUrl));
+		client.setAuthFilter(new ApiKeyAuthentication(apiKey));
 		System.out.println("Connecting to broker "+brokerUrl);
 		List<RequestInfo> rl = client.listMyRequests();
 		System.out.println("Number of requests "+rl.size());

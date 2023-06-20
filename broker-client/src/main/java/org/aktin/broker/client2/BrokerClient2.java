@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.aktin.broker.client.BrokerClient;
-import org.aktin.broker.client.BrokerClientImpl.OutputWriter;
 import org.aktin.broker.client.ResponseWithMetadata;
 import org.aktin.broker.client.Utils;
 import org.aktin.broker.xml.BrokerStatus;
@@ -212,10 +211,6 @@ public class BrokerClient2 extends AbstractBrokerClient<ClientNotificationListen
 		sendAndExpectStatus(req, HTTP_STATUS_204_NO_CONTENT);
 	}
 
-	@Override
-	public void putRequestResult(int requestId, String contentType, OutputWriter writer) throws IOException {
-		throw new IllegalStateException("Not yet implemented");
-	}
 	@Override
 	public void putRequestResult(int requestId, String contentType, InputStream content) throws IOException {
 		HttpRequest req = createAggregatorRequest("my/request/"+requestId+"/result")
