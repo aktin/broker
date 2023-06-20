@@ -6,10 +6,11 @@ import java.net.URL;
 
 /**
  * Interface for establishing authenticated connections.
- * 
+ * This interface is deprecated. Use BrokerClient2/BrokerAdmin2
  * @author R.W.Majeed
  *
  */
+@Deprecated
 public interface ClientAuthenticator {
 
 	

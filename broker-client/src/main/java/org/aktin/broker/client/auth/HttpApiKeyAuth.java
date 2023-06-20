@@ -4,6 +4,13 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.aktin.broker.client2.auth.ApiKeyAuthentication;
+
+/**
+ * This class is deprecated. Instead use {@link ApiKeyAuthentication}.
+ *
+ */
+@Deprecated
 public class HttpApiKeyAuth implements ClientAuthenticator {
 
 	private String httpAuthValue;

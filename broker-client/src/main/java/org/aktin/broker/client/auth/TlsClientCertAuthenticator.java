@@ -17,10 +17,11 @@ import javax.net.ssl.SSLContext;
 
 /**
  * Authentication via SSL/TLS client certificates.
- * 
+ * This class is depreacted. Use BrokerClient2/BrokerAdmin2
  * @author R.W.Majeed
  *
  */
+@Deprecated
 public class TlsClientCertAuthenticator implements ClientAuthenticator {
 
 	private SSLContext ssl;

@@ -20,6 +20,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.aktin.broker.client.auth.ClientAuthenticator;
 import org.w3c.dom.Node;
 
+@Deprecated
 public abstract class AbstractClient {
 	private URI endpointURI;
 	private URI aggregatorEndpoint;

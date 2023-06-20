@@ -12,6 +12,7 @@ import java.util.List;
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestList;
 
+@Deprecated
 public abstract class AbstractBrokerClient extends AbstractClient{
 
 	public AbstractBrokerClient(URI endpointURI) {
