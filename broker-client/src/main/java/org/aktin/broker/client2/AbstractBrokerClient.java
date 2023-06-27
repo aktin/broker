@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
+import javax.xml.bind.DataBindingException;
 import javax.xml.bind.JAXB;
 
 import org.aktin.broker.client.ResponseWithMetadata;
@@ -265,7 +266,14 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 		}else if( resp.statusCode() == 400 ) {
 			throw new IOException("HTTP response status bad request");
 		}
-		return resp.body().get();
+		try {
+			return resp.body().get();			
+		}catch( DataBindingException e ) {
+			// this happens if the server provides 200 status with non-xml content
+			// e.g., when a proxy or server is mis-configured.
+			throw new IOException("Unable retrieve response object", e);
+		}
+
 	}
 
 	protected void sendAndExpectStatus(HttpRequest req, int expectedStatus) throws IOException {
