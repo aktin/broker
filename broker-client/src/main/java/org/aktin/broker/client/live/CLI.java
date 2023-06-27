@@ -68,12 +68,12 @@ public class CLI implements Runnable {
 		}catch( IllegalArgumentException e ) {
 			e.printStackTrace();
 			System.err.println();
-			System.out.println("Unable to instantiate AuthFilter "+config.getAuthClass());
+			System.err.println("Unable to instantiate AuthFilter "+config.getAuthClass());
 			return;
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println();
-			System.out.println("Client communication to broker failed: "+e.getMessage());
+			System.err.println("Client communication to broker failed: "+e.getMessage());
 			return;
 		}
 		// basic initialization successful, run the service 
