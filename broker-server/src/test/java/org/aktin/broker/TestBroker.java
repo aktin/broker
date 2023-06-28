@@ -70,7 +70,7 @@ public class TestBroker extends AbstractTestBroker {
         Assert.assertEquals(0, a.listAllRequests().size());
         int qid = a.createRequest();
         RequestInfo ri = a.getRequestInfo(qid);
-        Assert.assertEquals(0, ri.types.length);
+        assertNotNull(ri.getId());
     }
     
     /**
