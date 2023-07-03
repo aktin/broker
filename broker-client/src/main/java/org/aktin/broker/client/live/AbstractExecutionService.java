@@ -48,7 +48,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	private ScheduledFuture<?> pingpongTimer;
 
 	/**
-	 *  stores previous ping timestamp/id. will be cleared (=0) receiving correct pong
+	 *  stores previous ping timestamp/id. will be cleared (=0) after receiving correct pong.
 	 */
 	private long currentPingId;
 	
@@ -56,7 +56,6 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		this.abort = new AtomicBoolean();
 		this.client = client;
 		this.pending = Collections.synchronizedMap(new HashMap<>());
-		this.currentPingId = 0;
 		this.client.addListener(new ClientNotificationListener() {
 			
 			@Override
@@ -132,33 +131,29 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		}
 		if( timerMillis > 0 ) {
 			this.pingpongTimer = executor.scheduleWithFixedDelay(this::sendWebsocketPing, timerMillis, timerMillis,TimeUnit.MILLISECONDS);
+			// clear ping response
+			this.currentPingId = 0;
 		}
 	}
 
-	private void websocketReconnectDuringPing() {
-		// clear previous ping
-		this.currentPingId = 0;
-		try {
-			establishWebsocketConnection();
-			log.info("Websocket reconnected");
-		} catch (IOException e) {
-			log.warning("Websocket ping reconnect failed: "+e.getMessage());
-		}		
-	}
 	/**
 	 * Method will be called by scheduled executor thread to send a websocket ping.
 	 */
 	private void sendWebsocketPing() {
 		if( client.getWebsocket() == null || client.getWebsocket().isOutputClosed() ) {
-			// client websocket disconnected. try to reconnect
-			log.info("Websocket ping skipped because websocket is closed. Trying reconnect.");
-			websocketReconnectDuringPing();
+			// client websocket disconnected. 
+			// this should not happen because upon disconnect, pings are disabled 
+			log.info("Websocket ping skipped because websocket is closed.");
+
 		}else if( this.currentPingId != 0 ){
 			// previous ping id was not cleared by a corresponding pong message.
-			// we assume that the connection is broken or interrupted.
-			// try to reconnect
-			log.info("Websocket ping not cleared by a corresponding pong message. Trying reconnect.");
-			websocketReconnectDuringPing();
+			log.info("Websocket ping not cleared by a corresponding pong message. Closing websocket.");
+			// we assume that the connection is broken/interrupted/dropped/etc.
+			// close the connection and notify listeners 
+			client.closeWebsocket();
+			// notify application and listeners
+			onWebsocketClosed(4001);
+
 		}else {
 			// send new ping message
 			this.currentPingId = System.currentTimeMillis();
