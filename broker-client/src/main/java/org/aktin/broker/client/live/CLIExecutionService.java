@@ -84,7 +84,11 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 	protected void onWebsocketClosed(int status) {
 		if( !isAborted() ) {
 			// websocket closed by server
-			log.warning("websocket closed "+status);
+			log.warning("Websocket closed "+status);
+			// disable ping-pong
+			log.info("Websocket ping-pong temporarily disabled (no connection)");
+			setWebsocketPingPongTimer(0);
+			// wake up runner (#run method)
 			synchronized( this ) {
 				this.notifyAll();
 			}
@@ -115,6 +119,15 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 		}
 	}
 
+	private void configureWebsocketPingPong() {
+		if( config.getWebsocketPingpongSeconds() != 0 ) {
+			setWebsocketPingPongTimer(config.getWebsocketPingpongSeconds() * 1000);
+			log.info("Websocket ping-pong delay set to "+config.getWebsocketPingpongSeconds()+"s");
+		}else{
+			log.info("Websocket ping-pong disabled");
+		}
+		
+	}
 	@Override
 	public void run() {
 		if( config.websocketDisabled == true ) {
@@ -134,12 +147,7 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 			// for now, just continue trying to establish the connection
 		}
 		
-		if( config.getWebsocketPingpongSeconds() != 0 ) {
-			setWebsocketPingPongTimer(config.getWebsocketPingpongSeconds() * 1000);
-			log.info("Websocket ping-pong delay set to "+config.getWebsocketPingpongSeconds()+"s");
-		}else{
-			log.info("Websocket ping-pong disabled");
-		}
+		configureWebsocketPingPong();
 		
 		long previousConnection = System.currentTimeMillis();
 
@@ -171,11 +179,17 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 					previousConnection = System.currentTimeMillis();
 					establishWebsocketConnection();
 					log.info("websocket connection re-established");
-					// websocket established. poll for missed requests
-					pollRequests();
 				} catch (IOException e) {
 					log.warning("websocket reconnect failed: "+e.getMessage());
+					continue;
 				}
+				// websocket established. poll for missed requests
+				try {
+					pollRequests();
+				}catch( IOException e ) {
+					log.log(Level.SEVERE,"Unable to poll requests after websocket reconnect",e);
+				}
+				configureWebsocketPingPong();
 			}else {
 				// websocket established, wait for something to happen
 				// e.g. shutdown or websocket closing
