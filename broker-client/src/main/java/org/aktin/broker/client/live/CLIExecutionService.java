@@ -125,20 +125,20 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 		// regular mode using websocket connection
 		try {
 			establishWebsocketConnection();
-			log.info("websocket connection established");
+			log.info("Websocket connection established");
 			// try to load queue. this will do nothing if disabled by configuration
 			loadQueue();
 		} catch (IOException e) {
-			log.severe("websocket connection failed: "+e.getMessage());
+			log.severe("Websocket connection failed: "+e.getMessage());
 			// exit if the initial websocket connection fails?
 			// for now, just continue trying to establish the connection
 		}
 		
 		if( config.getWebsocketPingpongSeconds() != 0 ) {
 			setWebsocketPingPongTimer(config.getWebsocketPingpongSeconds() * 1000);
-			log.info("websocket ping-pong delay set to "+config.getWebsocketPingpongSeconds()+"s");
+			log.info("Websocket ping-pong delay set to "+config.getWebsocketPingpongSeconds()+"s");
 		}else{
-			log.info("websocket ping-pong disabled");
+			log.info("Websocket ping-pong disabled");
 		}
 		
 		long previousConnection = System.currentTimeMillis();

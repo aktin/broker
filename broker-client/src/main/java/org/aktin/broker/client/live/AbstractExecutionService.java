@@ -140,6 +140,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		this.currentPingId = 0;
 		try {
 			establishWebsocketConnection();
+			log.info("Websocket reconnected");
 		} catch (IOException e) {
 			log.warning("Websocket ping reconnect failed: "+e.getMessage());
 		}		
@@ -221,6 +222,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			client.closeWebsocket();
 		}
 		client.connectWebsocket();
+		
 	}
 	/**
 	 * Abort the executor by shutting down the websocket and aborting all
