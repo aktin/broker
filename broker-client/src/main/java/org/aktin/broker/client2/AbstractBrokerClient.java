@@ -15,6 +15,7 @@ import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -218,6 +219,9 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 	private WebSocket openWebsocket(String urlspec, WebSocket.Listener listener) throws IOException {
 		lazyInitHttpClient();
 		WebSocket.Builder wsb = client.newWebSocketBuilder();
+		// connection timeout of 5 seconds
+		wsb.connectTimeout(Duration.ofSeconds(10));
+		// apply authentication filter if available
 		if( authFilter != null ) {
 			authFilter.addAuthentication(wsb);
 		}
@@ -230,7 +234,8 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 		default:
 			throw new IOException("Websocket connection requires http or https scheme in broker URI");
 		};
-		
+
+
 		try {
 			URI wsuri = new URI(scheme, brokerEndpoint.resolve(urlspec).getRawSchemeSpecificPart(), null);
 			return wsb.buildAsync(wsuri, listener).get();
@@ -238,6 +243,7 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 			throw new IOException("Websocket open operation interrupted", e);
 		} catch( ExecutionException e ) {
 			if( e.getCause() instanceof IOException ) {
+				// will also include java.net.http.HttpTimeoutException
 				throw (IOException)e.getCause();
 			}else {
 				throw new IOException("Websocket connection failed",e.getCause());
