@@ -164,9 +164,9 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			try {
 				String pingMsg = Long.toString(this.currentPingId);
 				client.getWebsocket().sendText("ping "+pingMsg, true).get();
-				log.info("Websocket ping sent ("+pingMsg+")");
+				log.log(Level.FINE,"Websocket ping sent");
 			} catch (InterruptedException e) {
-				log.info("Websocket ping interrupted");
+				log.warning("Websocket ping interrupted");
 			} catch (ExecutionException e) {
 				log.log(Level.WARNING, "Websocket ping failed", e.getCause());
 			} catch( CancellationException e ) {
@@ -189,7 +189,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			// successful ping-pong. clear ping id.
 			this.currentPingId = 0; 
 			long millis = System.currentTimeMillis() - pongId;
-			log.info("Websocket received pong ("+pongId+"), roundtrip="+millis);
+			log.info("Websocket received matching pong, roundtrip="+millis);
 		}else {
 			log.warning("Mismatching pong "+pongId+" vs ping "+this.currentPingId);
 		}
