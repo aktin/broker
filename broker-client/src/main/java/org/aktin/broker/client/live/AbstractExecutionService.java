@@ -47,10 +47,16 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 
 	private ScheduledFuture<?> pingpongTimer;
 
+	/**
+	 *  stores previous ping timestamp/id. will be cleared (=0) receiving correct pong
+	 */
+	private long currentPingId;
+	
 	public AbstractExecutionService(BrokerClient2 client){
 		this.abort = new AtomicBoolean();
 		this.client = client;
 		this.pending = Collections.synchronizedMap(new HashMap<>());
+		this.currentPingId = 0;
 		this.client.addListener(new ClientNotificationListener() {
 			
 			@Override
@@ -76,8 +82,14 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 
 			@Override
 			public void onPong(String msg) {
-				long millis = System.currentTimeMillis()- Long.parseLong(msg);
-				log.info("Websocket received pong ("+msg+"), roundtrip="+millis);
+				long pongId;
+				try {
+					pongId = Long.parseLong(msg);
+				}catch( NumberFormatException e ) {
+					log.warning("Unable to parse pong message: "+msg);
+					return;
+				}
+				AbstractExecutionService.this.onWebsocketPong(pongId);
 			}
 		});
 	}
@@ -123,6 +135,15 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		}
 	}
 
+	private void websocketReconnectDuringPing() {
+		// clear previous ping
+		this.currentPingId = 0;
+		try {
+			establishWebsocketConnection();
+		} catch (IOException e) {
+			log.warning("Websocket ping reconnect failed: "+e.getMessage());
+		}		
+	}
 	/**
 	 * Method will be called by scheduled executor thread to send a websocket ping.
 	 */
@@ -130,14 +151,18 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 		if( client.getWebsocket() == null || client.getWebsocket().isOutputClosed() ) {
 			// client websocket disconnected. try to reconnect
 			log.info("Websocket ping skipped because websocket is closed. Trying reconnect.");
-			try {
-				client.connectWebsocket();
-			} catch (IOException e) {
-				log.warning("Websocket ping reconnect failed: "+e.getMessage());
-			}
+			websocketReconnectDuringPing();
+		}else if( this.currentPingId != 0 ){
+			// previous ping id was not cleared by a corresponding pong message.
+			// we assume that the connection is broken or interrupted.
+			// try to reconnect
+			log.info("Websocket ping not cleared by a corresponding pong message. Trying reconnect.");
+			websocketReconnectDuringPing();
 		}else {
+			// send new ping message
+			this.currentPingId = System.currentTimeMillis();
 			try {
-				String pingMsg = ""+System.currentTimeMillis();
+				String pingMsg = Long.toString(this.currentPingId);
 				client.getWebsocket().sendText("ping "+pingMsg, true).get();
 				log.info("Websocket ping sent ("+pingMsg+")");
 			} catch (InterruptedException e) {
@@ -151,7 +176,24 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			}
 		}
 	}
-	
+	/**
+	 * Handle a received pong message from server.
+	 * Note that we don't reconnect here even if a mismatch occurs,
+	 * because the pong message might not be received at all. Therefore
+	 * reconnect actions are taken in {@link #sendWebsocketPing()}.
+	 * @param pongId received pong id
+	 */
+	private void onWebsocketPong(long pongId) {
+		if( pongId == this.currentPingId  ) {
+			// pong matches current ping.
+			// successful ping-pong. clear ping id.
+			this.currentPingId = 0; 
+			long millis = System.currentTimeMillis() - pongId;
+			log.info("Websocket received pong ("+pongId+"), roundtrip="+millis);
+		}else {
+			log.warning("Mismatching pong "+pongId+" vs ping "+this.currentPingId);
+		}
+	}
 	public boolean isAborted() {
 		return abort.get();
 	}
@@ -168,11 +210,13 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 	}
 	/**
 	 * Start the websocket listener to retrieve live updates about published or closed requests.
+	 * This method will close a previous websocket connection first, if still open.
 	 * To close the websocket connection, call shutdown or close
 	 * @throws IOException
 	 */
-	public void startupWebsocketListener() throws IOException {
+	public void establishWebsocketConnection() throws IOException {
 		if( client.getWebsocket() != null ) {
+			log.info("Closing existing websocket link");
 			// close previous websocket
 			client.closeWebsocket();
 		}

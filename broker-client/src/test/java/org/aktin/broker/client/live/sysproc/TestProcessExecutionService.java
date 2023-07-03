@@ -57,7 +57,7 @@ public class TestProcessExecutionService {
 		when(client.getWebsocket()).thenReturn(websocket);
 		when(client.getMyRequestDefinition(eq(100), any(String.class), any(Path.class), ArgumentMatchers.<OpenOption>any())).thenReturn(Path.of("bla"));
 		ProcessExecutionService service = new ProcessExecutionService(client, loadConfig());
-		service.startupWebsocketListener();
+		service.establishWebsocketConnection();
 		
 		// make sure websocket was opened and we captured the notification listener
 		verify(client, Mockito.times(1)).addListener(captor.capture());

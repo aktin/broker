@@ -124,7 +124,7 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 		}
 		// regular mode using websocket connection
 		try {
-			startupWebsocketListener();
+			establishWebsocketConnection();
 			log.info("websocket connection established");
 			// try to load queue. this will do nothing if disabled by configuration
 			loadQueue();
@@ -169,7 +169,7 @@ public abstract class CLIExecutionService<T extends AbortableRequestExecution> e
 				}
 				try {
 					previousConnection = System.currentTimeMillis();
-					startupWebsocketListener();
+					establishWebsocketConnection();
 					log.info("websocket connection re-established");
 					// websocket established. poll for missed requests
 					pollRequests();
