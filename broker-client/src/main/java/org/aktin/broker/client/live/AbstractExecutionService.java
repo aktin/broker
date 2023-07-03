@@ -77,7 +77,7 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			@Override
 			public void onPong(String msg) {
 				long millis = System.currentTimeMillis()- Long.parseLong(msg);
-				log.info("Websocket received pong, roundtrip="+millis);
+				log.info("Websocket received pong ("+msg+"), roundtrip="+millis);
 			}
 		});
 	}
@@ -137,8 +137,9 @@ public abstract class AbstractExecutionService<T extends AbortableRequestExecuti
 			}
 		}else {
 			try {
-				client.getWebsocket().sendText("ping "+System.currentTimeMillis(), true).get();
-				log.info("Websocket ping sent");
+				String pingMsg = ""+System.currentTimeMillis();
+				client.getWebsocket().sendText("ping "+pingMsg, true).get();
+				log.info("Websocket ping sent ("+pingMsg+")");
 			} catch (InterruptedException e) {
 				log.info("Websocket ping interrupted");
 			} catch (ExecutionException e) {
