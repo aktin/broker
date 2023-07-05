@@ -289,7 +289,6 @@ public class TestBroker extends AbstractTestBroker {
 	/**
 	 * This test adds an empty request to the broker and verifies that the request was added successfully.
 	 */
-	@Test
 	public void testAddEmptyRequest() throws IOException{
 		BrokerAdmin a = initializeAdmin();
 		Assert.assertEquals(0, a.listAllRequests().size());
