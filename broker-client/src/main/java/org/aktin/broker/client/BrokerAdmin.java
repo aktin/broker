@@ -6,19 +6,17 @@ import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 
-import org.aktin.broker.xml.RequestInfo;
-import org.aktin.broker.xml.RequestStatusInfo;
-import org.aktin.broker.xml.ResultInfo;
+import org.aktin.broker.xml.*;
 import org.w3c.dom.Node;
 
 public interface BrokerAdmin {
 
 	void setEndpoint(URI brokerEndpoint);
-
 	
 	/**
 	 * Get the the request definition with the specified media type.
 	 * If the request id does not exist or the mediaType is not available, {@code null} is returned.
+	 *
 	 * @param requestId request id
 	 * @param mediaType desired media type.
 	 * @return
@@ -33,15 +31,25 @@ public interface BrokerAdmin {
 	ResponseWithMetadata getNodeResource(int nodeId, String resourceId) throws IOException;
 
 	<T> T getNodeResourceJAXB(int nodeId, String resourceId, Class<T> type) throws IOException;
-
+	
+	/**
+	 * @param nodeId     the ID of the node to retrieve the resource for
+	 * @param resourceId the name of the resource to retrieve
+	 * @return a map containing key-value pairs representing the properties of the requested resource for the specified
+	 *         node or {@code null} if the resource is non-existing (or something went wrong).
+	 * @throws IOException
+	 */
 	Properties getNodeProperties(int nodeId, String resourceId) throws IOException;
 
 	String getNodeString(int nodeId, String resourceId) throws IOException;
-
+	
 	/**
-	 * Create a request without content. Content must be specified later
-	 * via XXX
-	 * @return request id
+	 * Allocate a request without content
+	 * <p>
+	 * The ID of the allocated request is not in the body of the response, but the complete URI is written
+	 * to "Location" inside the header
+	 *
+	 * @return The ID of the newly allocated request
 	 * @throws IOException IO error
 	 */
 	int createRequest() throws IOException;
@@ -62,38 +70,80 @@ public interface BrokerAdmin {
 	int createRequest(String contentType, Node content) throws IOException;
 
 	int createRequest(String contentType, String content) throws IOException;
-
+	
 	/**
-	 * Delete a single request from database and remove all associated result data.
-	 * @param requestId request id to delete
+	 * If the targeted request does not exist on the Broker, still the code 204 is returned.
+	 * If a published request is deleted, the client will also delete it locally after being notified.
+	 *
+	 * @param requestId The ID of the request to delete.
 	 * @throws IOException IO error
 	 */
 	void deleteRequest(int requestId) throws IOException;
-
+	
+	/**
+	 * A request can also be published without a set definition or without set targets.
+	 * A published request can be published again. In this case the content is updated on the client's side after retrieval.
+	 *
+	 * @param requestId The ID of the request to publish.
+	 */
 	void publishRequest(int requestId) throws IOException;
-
+	
+	/**
+	 * Once a request is closed, it cant be open again and all interaction with the nodes stops
+	 *
+	 * @param requestId The ID of the request to close.
+	 */
 	void closeRequest(int requestId) throws IOException;
 
 //	@Deprecated
 //	void putRequestDefinition(int requestId, String contentType, OutputWriter writer) throws IOException;
-
-	void putRequestDefinition(int requestId, String contentType, String content) throws IOException;
-
-	List<org.aktin.broker.xml.Node> listNodes() throws IOException;
-
-	org.aktin.broker.xml.Node getNode(int nodeId) throws IOException;
-
-	List<RequestInfo> listAllRequests() throws IOException;
-
+	
 	/**
-	 * Retrieve request info. This info does not include the node status.
-	 * 
-	 * @param requestId request id
-	 * @return request info
-	 * @throws IOException communications error
+	 * Add/Update content of an existing request
+	 * If the targeted request does not exist on the Broker, still the code 204 is returned.
+	 * The definition of a published request can be updated, but SHOULD BE AVOIDED at all costs, to avoid inconsistencies.
+	 *
+	 * @param requestId The ID of the request to add the definition to.
+	 */
+	void putRequestDefinition(int requestId, String contentType, String content) throws IOException;
+	
+	/**
+	 * @return a list of {@link org.aktin.broker.xml.Node}
+	 * @throws IOException
+	 */
+	List<org.aktin.broker.xml.Node> listNodes() throws IOException;
+	
+	/**
+	 * @param nodeId the ID of the node to retrieve.
+	 * @return the {@link Node} with the specified ID, or null if no such node exists (or something went wrong).
+	 * @throws IOException
+	 */
+	org.aktin.broker.xml.Node getNode(int nodeId) throws IOException;
+	
+	/**
+	 * @return A list of available {@link RequestInfo}
+	 * @throws IOException
+	 */
+	List<RequestInfo> listAllRequests() throws IOException;
+	
+	/**
+	 * A {@link RequestInfo} contains a "deprecated" {@code List<RequestStatusInfo> nodeStatus}.
+	 * Regardless of the status of the request, the content of {@code nodeStatus} is always {@code null}.
+	 * See {@link RequestStatusList} to get the expected content of {@code nodeStatus}.
+	 *
+	 * @param requestId The ID of the request to retrieve information for.
+	 * @return A {@link RequestInfo} object containing timestamps and meta information about the request.
+	 * @throws IOException
 	 */
 	RequestInfo getRequestInfo(int requestId) throws IOException;
-
+	
+	/**
+	 * If request does not exist, an empty {@link RequestStatusList} is returned.
+	 *
+	 * @param requestId The ID of the request to retrieve status for.
+	 * @return A {@link RequestStatusList} object containing a list of {@link RequestStatusInfo} with timestamp information of targeted broker nodes.
+	 * @throws IOException
+	 */
 	List<RequestStatusInfo> listRequestStatus(int requestId) throws IOException;
 
 	List<ResultInfo> listResults(int requestId) throws IOException;
@@ -103,10 +153,30 @@ public interface BrokerAdmin {
 
 	String getResultString(int requestId, int nodeId) throws IOException;
 	ResponseWithMetadata getResult(int requestId, int nodeId) throws IOException;
-
+	
+	/**
+	 * Make sure, the Request is actually targeted (see {@link RequestInfo}), as otherwise an exception is thrown.
+	 *
+	 * @param requestId the ID of the request for which to get the target nodes.
+	 * @return a {@link RequestTargetNodes} object containing a list of ids corresponding to the targeted nodes.
+	 * @throws IOException
+	 */
 	int[] getRequestTargetNodes(int requestId) throws IOException;
-
+	
+	/**
+	 * If the targeted request does not exist on the Broker, still the code 204 is returned.
+	 * If no target nodes are set, the published request will be sent to all connected nodes (even retroactively to nodes that joined after the publish date).
+	 * Targeted nodes are not required to exist on the broker.
+	 *
+	 * @param requestId the ID of the request for which to set the target nodes.
+	 * @param nodes     a list of ids corresponding to the targeted nodes.
+	 * @throws IOException
+	 */
 	void setRequestTargetNodes(int requestId, int[] nodes) throws IOException;
-
+	
+	/**
+	 * @param requestId the ID of the request for which to delete the target nodes
+	 * @throws IOException
+	 */
 	void clearRequestTargetNodes(int requestId) throws IOException;
 }
