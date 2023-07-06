@@ -99,11 +99,14 @@ public interface BrokerAdmin {
 	List<ResultInfo> listResults(int requestId) throws IOException;
 
 	// TODO ResultInfo getResultInfo(int requestId, String nodeId)
-
-
+	
 	String getResultString(int requestId, int nodeId) throws IOException;
 	ResponseWithMetadata getResult(int requestId, int nodeId) throws IOException;
 
+	String getAggregatedResultUUID(int requestId) throws IOException;
+	
+	ResponseWithMetadata getAggregatedResult(String uuid) throws IOException;
+	
 	int[] getRequestTargetNodes(int requestId) throws IOException;
 
 	void setRequestTargetNodes(int requestId, int[] nodes) throws IOException;
