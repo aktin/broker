@@ -221,7 +221,7 @@ public class TestBroker extends AbstractTestBroker {
 		assertNotNull(nfo.queued);
 		assertTrue("queued "+nfo.queued+" expected after retrieved "+nfo.retrieved, nfo.queued.isAfter(nfo.retrieved));
 		assertNull(nfo.rejected);
-		assertNull(nfo.type); // should be no message type		
+		assertNull(nfo.type); // should be no message type
 		// update status (e.g. failed)
 		c.postRequestFailed(0, "Only test", new UnsupportedOperationException());
 		list = a.listRequestStatus(0);
@@ -276,7 +276,7 @@ public class TestBroker extends AbstractTestBroker {
 		BrokerAdmin a = initializeAdmin();
 		Assert.assertEquals(0, a.listAllRequests().size());
 		int qid = a.createRequest("text/x-test-1", "test1");
-		a.putRequestDefinition(qid, "text/x-test-2", "test2");			
+		a.putRequestDefinition(qid, "text/x-test-2", "test2");
 		RequestInfo ri = a.getRequestInfo(0);
 		List<RequestInfo> l = a.listAllRequests();
 		a.deleteRequest(qid); // ????
@@ -290,7 +290,7 @@ public class TestBroker extends AbstractTestBroker {
 		// replace definition
 		a.putRequestDefinition(qid, "text/x-test-2", "test2-2");
 		Reader r = a.getRequestDefinition(qid, "text/x-test-2");
-		Assert.assertEquals("test2-2", Util.readContent(r));		
+		Assert.assertEquals("test2-2", Util.readContent(r));
 	}
 	@Test
 	public void failQueryVerifyErrorMessage() throws IOException{
@@ -435,5 +435,39 @@ public class TestBroker extends AbstractTestBroker {
 		assertEquals(1, list.size());
 		assertEquals(qid, list.get(0).getId());
 	
+	}
+	
+	@Test
+	public void testGetAggregatedResults() throws IOException, InterruptedException {
+		BrokerAdmin2 a = initializeAdmin();
+		int qid = a.createRequest("text/x-test-1", "test1");
+		a.publishRequest(qid);
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
+		List<RequestInfo> l = c.listMyRequests();
+		Assert.assertEquals(1, l.size());
+		c.putRequestResult(l.get(0).getId(), "test/vnd.test.result", new ByteArrayInputStream("test-result-data".getBytes()));
+		
+		String uuid = a.getAggregatedResultUUID(qid);
+		Thread.sleep(1500); // give aggregation a bit time to finish
+		ResponseWithMetadata result = a.getAggregatedResult(uuid);
+		Assert.assertEquals("application/zip", result.getContentType());
+		Assert.assertEquals("export_" + qid + ".zip", result.getName());
+		byte[] actualBytes = result.getInputStream().readAllBytes();
+		Assert.assertTrue(actualBytes.length >= 810 && actualBytes.length <= 815);
+		a.deleteRequest(qid);
+		Assert.assertTrue(c.listMyRequests().isEmpty());
+	}
+	
+	@Test
+	public void testResultsOfUnknownRequest() {
+		BrokerAdmin2 a = initializeAdmin();
+		Assert.assertThrows(IOException.class, () ->  a.getAggregatedResultUUID(999));
+	}
+	
+	@Test
+	public void testGetUnaggregatedResults() throws IOException {
+		BrokerAdmin2 a = initializeAdmin();
+		ResponseWithMetadata result =  a.getAggregatedResult("abcd-efgh-1234-5678");
+		Assert.assertNull(result);
 	}
 }
