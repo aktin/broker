@@ -519,7 +519,7 @@ public class TestBroker extends AbstractTestBroker {
 	public void getTargetNodesOfUntargetedRequest() throws IOException {
 		BrokerAdmin a = initializeAdmin();
 		int rid = a.createRequest("text/vnd.test1", "test");
-		a.getRequestTargetNodes(rid);
+		assertNull(a.getRequestTargetNodes(rid));
 	}
 	
 	@Test

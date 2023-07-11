@@ -127,9 +127,7 @@ public interface BrokerAdmin {
 	List<RequestInfo> listAllRequests() throws IOException;
 	
 	/**
-	 * A {@link RequestInfo} contains a "deprecated" {@code List<RequestStatusInfo> nodeStatus}.
-	 * Regardless of the status of the request, the content of {@code nodeStatus} is always {@code null}.
-	 * See {@link RequestStatusList} to get the expected content of {@code nodeStatus}.
+	 * Retrieve request info. This info does not include the node status.
 	 *
 	 * @param requestId The ID of the request to retrieve information for.
 	 * @return A {@link RequestInfo} object containing timestamps and meta information about the request.
@@ -155,11 +153,15 @@ public interface BrokerAdmin {
 	ResponseWithMetadata getResult(int requestId, int nodeId) throws IOException;
 	
 	/**
-	 * Make sure, the Request is actually targeted (see {@link RequestInfo}), as otherwise an exception is thrown.
+	 * Retrieves an array of target nodes that a request is aimed at based on the specified request ID.
 	 *
-	 * @param requestId the ID of the request for which to get the target nodes.
-	 * @return a {@link RequestTargetNodes} object containing a list of ids corresponding to the targeted nodes.
-	 * @throws IOException
+	 * <p>If no target restrictions are found for the request (the broker returns null), this method also
+	 * returns null. Otherwise, it returns the array of target node IDs associated with the request.</p>
+	 *
+	 * @param requestId the ID of the request for which target nodes are to be retrieved
+	 * @return an array of integer IDs representing the target nodes for the request,
+	 *         or null if there is no target restriction
+	 * @throws IOException if there's a problem with the communication with the broker
 	 */
 	int[] getRequestTargetNodes(int requestId) throws IOException;
 	
@@ -177,6 +179,13 @@ public interface BrokerAdmin {
 	/**
 	 * @param requestId the ID of the request for which to delete the target nodes
 	 * @throws IOException
+	 */
+	
+	/**
+	 * Clears the target nodes of a given request based on the specified request ID.
+	 *
+	 * @param requestId the ID of the request for which target nodes are to be cleared
+	 * @throws IOException if there's a problem with the communication with the broker
 	 */
 	void clearRequestTargetNodes(int requestId) throws IOException;
 }
