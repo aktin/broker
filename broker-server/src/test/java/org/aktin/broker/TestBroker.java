@@ -47,8 +47,9 @@ public class TestBroker extends AbstractTestBroker {
 
 	private static final String ADMIN_00_DN = "CN=Test Adm,ST=Hessen,C=DE,O=AKTIN,OU=Uni Giessen,OU=admin";
 	private static final String ADMIN_00_SERIAL = "00";
-
-
+	/**
+	 * This method initializes and returns a new instance of BrokerClient2 with the given authorization filter based on the passed argument.
+	 */
 	@Override
 	public BrokerClient2 initializeClient(String arg) {
 		AuthFilter auth;
@@ -77,7 +78,9 @@ public class TestBroker extends AbstractTestBroker {
 //			throw new IllegalArgumentException();
 //		}
 //	}
-
+	/**
+	 * This method initializes and returns a new instance of BrokerAdmin2 with a specific authorization filter.
+	 */
 	@Override
 	public BrokerAdmin2 initializeAdmin() {
 //		return new TestAdmin(server.getBrokerServiceURI(), ADMIN_00_SERIAL, ADMIN_00_DN);
@@ -85,7 +88,10 @@ public class TestBroker extends AbstractTestBroker {
 		admin.setAuthFilter(new AuthFilterImpl(ADMIN_00_SERIAL, ADMIN_00_DN));
 		return admin;
 	}
-
+	
+	/**
+	 * This method tests whether a test client's posted software versions are correctly recorded and updated in the database.
+	 */
 	@Test
 	public void expectClientModulesInDatabase() throws IOException{
 		// TODO test update of software modules: overwrite modules, read back modules
@@ -107,6 +113,9 @@ public class TestBroker extends AbstractTestBroker {
 //		r.close();
 	}
 	
+	/**
+	 * This method tests whether a new client, who posted software versions, is successfully added to the broker administration's node list.
+	 */
 	@Test
 	public void expectNewClientAdded() throws IOException{
 		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen";
@@ -133,6 +142,9 @@ public class TestBroker extends AbstractTestBroker {
 		Assert.assertEquals(testCn, node.clientDN);
 		Assert.assertEquals("Test Nachname", node.getCommonName());
 	}
+	/**
+	 * This method tests whether requests can be successfully created, read, and then deleted in the broker administration.
+	 */
 	@Test
 	public void testAddDeleteQuery() throws IOException{
 		BrokerAdmin c = initializeAdmin();
@@ -152,7 +164,9 @@ public class TestBroker extends AbstractTestBroker {
 
 		Assert.assertEquals("test", Util.readContent(def));
 	}
-
+	/**
+	 * This test verifies if the system correctly handles a request with non-ASCII characters, ensuring they're properly stored and retrieved.
+	 */
 	@Test
 	public void testQueryCharsetConversion() throws IOException{
 		String testCn = "CN=Test Nachname,ST=Hessen,C=DE,O=DZL,OU=Uni Giessen,OU=admin";
@@ -175,7 +189,9 @@ public class TestBroker extends AbstractTestBroker {
 
 		Assert.assertEquals(nonAsciiChars, Util.readContent(def));
 	}
-
+	/**
+	 * This method tests if the system correctly returns null when attempting to retrieve non-existent request definitions.
+	 */
 	@Test
 	public void expect404ForNonExistentRequests() throws IOException{
 		BrokerAdmin a = initializeAdmin();
@@ -184,11 +200,14 @@ public class TestBroker extends AbstractTestBroker {
 		assertNull(c.getMyRequestDefinitionString(0, "text/plain"));
 		assertNull(c.getMyRequestDefinitionXml(0, "text/plain"));
 	}
+	/**
+	 * This method tests the full cycle of request handling in the system, including creating, publishing, retrieving, and updating the request status.
+	 */
 	@Test
 	public void reportAndReadRequestStatus() throws IOException{
 		BrokerAdmin a = initializeAdmin();
 		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
-		// create request
+		// create request and publish
 		int rid = a.createRequest("text/vnd.test1", "test");
 		a.publishRequest(rid);
 		// listing requests should not update the request status for the nodes
@@ -221,7 +240,7 @@ public class TestBroker extends AbstractTestBroker {
 		assertNotNull(nfo.queued);
 		assertTrue("queued "+nfo.queued+" expected after retrieved "+nfo.retrieved, nfo.queued.isAfter(nfo.retrieved));
 		assertNull(nfo.rejected);
-		assertNull(nfo.type); // should be no message type		
+		assertNull(nfo.type); // should be no message type
 		// update status (e.g. failed)
 		c.postRequestFailed(0, "Only test", new UnsupportedOperationException());
 		list = a.listRequestStatus(0);
@@ -236,7 +255,9 @@ public class TestBroker extends AbstractTestBroker {
 		assertNull(a.listRequestStatus(0).get(0).interaction);
 		assertNotNull(a.listRequestStatus(0).get(0).completed);
 	}
-
+	/**
+	 * This test adds a request to the broker and then deletes it. The test verifies that the request was added and deleted successfully.
+	 */
 	@Test
 	public void testAddRequestDeleteMyQuery() throws IOException{
 		BrokerAdmin a = initializeAdmin();
@@ -264,6 +285,10 @@ public class TestBroker extends AbstractTestBroker {
 		// delete query
 		a.deleteRequest(qid);
 	}
+	
+	/**
+	 * This test adds an empty request to the broker and verifies that the request was added successfully.
+	 */
 	public void testAddEmptyRequest() throws IOException{
 		BrokerAdmin a = initializeAdmin();
 		Assert.assertEquals(0, a.listAllRequests().size());
@@ -271,12 +296,15 @@ public class TestBroker extends AbstractTestBroker {
 		RequestInfo ri = a.getRequestInfo(qid);
 		Assert.assertEquals(0, ri.types.length);
 	}
+	/**
+	 * This test creates a request with multiple definitions and verifies that they are correctly handled.
+	 */
 	@Test
 	public void testRequestWithMultipleDefinitions() throws IOException{
 		BrokerAdmin a = initializeAdmin();
 		Assert.assertEquals(0, a.listAllRequests().size());
 		int qid = a.createRequest("text/x-test-1", "test1");
-		a.putRequestDefinition(qid, "text/x-test-2", "test2");			
+		a.putRequestDefinition(qid, "text/x-test-2", "test2");
 		RequestInfo ri = a.getRequestInfo(0);
 		List<RequestInfo> l = a.listAllRequests();
 		a.deleteRequest(qid); // ????
@@ -290,8 +318,11 @@ public class TestBroker extends AbstractTestBroker {
 		// replace definition
 		a.putRequestDefinition(qid, "text/x-test-2", "test2-2");
 		Reader r = a.getRequestDefinition(qid, "text/x-test-2");
-		Assert.assertEquals("test2-2", Util.readContent(r));		
+		Assert.assertEquals("test2-2", Util.readContent(r));
 	}
+	/**
+	 * This test adds a request, causes it to fail, and verifies that the error message matches the expected value.
+	 */
 	@Test
 	public void failQueryVerifyErrorMessage() throws IOException{
 		BrokerAdmin a = initializeAdmin();
@@ -314,6 +345,10 @@ public class TestBroker extends AbstractTestBroker {
 		}
 		// TODO unit test for null request node message
 	}
+	
+	/**
+	 * This test creates a request targeted at a specific node and verifies that the request is only visible to the targeted node.
+	 */
 	@Test
 	public void targetedRequestsInvisibleToOtherNodes() throws IOException{
 		BrokerAdmin a = initializeAdmin();
@@ -347,7 +382,9 @@ public class TestBroker extends AbstractTestBroker {
 		assertEquals(1, c1.listMyRequests().size());
 		assertEquals(1, c2.listMyRequests().size());
 	}
-
+	/**
+	 * This test submits a result for a request and verifies that the result was submitted successfully.
+	 */
 	@Test
 	public void testRequestSubmitResult() throws IOException{
 		BrokerAdmin a = initializeAdmin();
@@ -376,6 +413,9 @@ public class TestBroker extends AbstractTestBroker {
 		a.deleteRequest(qid);
 		Assert.assertTrue( c.listMyRequests().isEmpty() );
 	}
+	/**
+	 * This test verifies that the last contact timestamp of a node is updated when any authenticated interaction with the server is performed.
+	 */
 	@Test
 	public void verifyLastContactUpdated() throws IOException{
 		BrokerAdmin a = initializeAdmin();
@@ -396,7 +436,9 @@ public class TestBroker extends AbstractTestBroker {
 		node = a.getNode(0);
 		Assert.assertTrue(t1.isBefore(node.lastContact));
 	}
-
+	/**
+	 * This test verifies that the update of the Distinguished Name (DN) of a node in the database is handled correctly.
+	 */
 	@Test
 	public void databaseUpdateOfNodeDN() throws SQLException, IOException{
 		// make sure that client_01 is known to the database
@@ -411,6 +453,9 @@ public class TestBroker extends AbstractTestBroker {
 		// verify that the database was updated
 		assertEquals(1, updated);
 	}
+	/**
+	 * This test adds and deletes a resource from a node and verifies that these operations are handled correctly.
+	 */
 	@Test
 	public void addDeleteNodeResource() throws IOException{
 		BrokerAdmin a = initializeAdmin();
@@ -423,6 +468,9 @@ public class TestBroker extends AbstractTestBroker {
 		assertEquals("202cb962ac59075b964b07152d234b70", r.getMD5String());
 		assertNotEquals(0,r.getLastModified());
 	}
+	/**
+	 * This test verifies that requests can be filtered by XPath expressions correctly.
+	 */
 	@Test
 	public void filterRequestByXPath() throws IOException{
 		BrokerAdmin2 a = initializeAdmin();
@@ -435,5 +483,103 @@ public class TestBroker extends AbstractTestBroker {
 		assertEquals(1, list.size());
 		assertEquals(qid, list.get(0).getId());
 	
+	}
+	
+	@Test
+	public void getNonexistingBrokerRequest() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		assertNull(a.getRequestDefinition(99, "text/x-test-2"));
+	}
+	
+	@Test
+	public void addRequestDefinitionToNonexistingRequest() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		a.putRequestDefinition(999, "text/x-test-1", "test1");
+	}
+	
+	@Test
+	public void deleteNonexistingBrokerRequest() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		a.deleteRequest(999);
+	}
+	
+	@Test
+	public void addTargetNodesToNonexistingRequest() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		a.setRequestTargetNodes(999, new int[]{1});
+	}
+	
+	@Test
+	public void getTargetNodesOfNonexistingRequest() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		assertNull(a.getRequestTargetNodes(999));
+	}
+	
+	@Test
+	public void getTargetNodesOfUntargetedRequest() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		int rid = a.createRequest("text/vnd.test1", "test");
+		assertNull(a.getRequestTargetNodes(rid));
+	}
+	
+	@Test
+	public void deleteTargetNodesFromNonexistingRequest() {
+		BrokerAdmin a = initializeAdmin();
+		assertThrows(IOException.class, () -> a.clearRequestTargetNodes(999));
+	}
+	
+	@Test
+	public void publishRequestAndUpdateItsContent() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
+		// request 1
+		int rid = a.createRequest("text/vnd.test1", "test");
+		a.setRequestTargetNodes(rid, new int[]{1});
+		a.publishRequest(rid);
+		c.postRequestStatus(rid, RequestStatus.retrieved);
+		String content = c.getMyRequestDefinitionString(rid, "text/vnd.test1");
+		assertEquals("test", content);
+		// request updated
+		a.putRequestDefinition(rid, "text/vnd.test1", "test2");
+		a.setRequestTargetNodes(rid, new int[]{99, 88, 77});
+		a.publishRequest(rid);
+		String content2 = c.getMyRequestDefinitionString(rid, "text/vnd.test1");
+		assertEquals("test2", content2);
+	}
+	
+	@Test
+	public void publishNonexistingRequest() {
+		BrokerAdmin a = initializeAdmin();
+		assertThrows(IOException.class, () -> a.publishRequest(999));
+	}
+	
+	@Test
+	public void closeRequestAndPublishAgain() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
+		// request 1
+		int rid = a.createRequest("text/vnd.test1", "test");
+		a.setRequestTargetNodes(rid, new int[]{1});
+		a.publishRequest(rid);
+		c.postRequestStatus(rid, RequestStatus.retrieved);
+		int defaultLength = c.listMyRequests().size();
+		// close request
+		a.closeRequest(rid);
+		assertEquals(defaultLength - 1, c.listMyRequests().size());
+		// re-open again
+		a.publishRequest(rid);
+		assertEquals(defaultLength - 1, c.listMyRequests().size());
+	}
+	
+	@Test
+	public void closeNonexistingRequest() {
+		BrokerAdmin a = initializeAdmin();
+		assertThrows(IOException.class, () -> a.closeRequest(999));
+	}
+	
+	@Test
+	public void getRequestInfoOfNonexistingRequest() throws IOException {
+		BrokerAdmin a = initializeAdmin();
+		assertNull(a.getRequestInfo(999));
 	}
 }
