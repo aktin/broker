@@ -6,6 +6,10 @@ import org.aktin.broker.util.AuthFilterSSLHeaders;
 import org.junit.After;
 import org.junit.Before;
 
+/**
+ * Provides the setup and teardown methods for managing a BrokerTestServer instance for testing, and also includes abstract methods for initializing
+ * BrokerClient and BrokerAdmin instances that need to be defined by the subclasses.
+ */
 public abstract class AbstractTestBroker {
 	protected BrokerTestServer server;
 	protected BrokerClient client;
