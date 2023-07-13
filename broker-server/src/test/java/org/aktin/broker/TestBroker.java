@@ -613,6 +613,7 @@ public class TestBroker extends AbstractTestBroker {
 	@Test
 	public void testGetUnaggregatedResults() throws IOException {
 		BrokerAdmin2 a = initializeAdmin();
-		ResponseWithMetadata result =  a.getAggregatedResult("abcd-efgh-1234-5678");
+		ResponseWithMetadata result = a.getAggregatedResult("abcd-efgh-1234-5678");
 		Assert.assertNull(result);
+	}
 }

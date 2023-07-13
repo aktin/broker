@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import org.aktin.broker.xml.RequestInfo;
 import org.aktin.broker.xml.RequestStatusInfo;
+import org.aktin.broker.xml.RequestStatusList;
 import org.aktin.broker.xml.ResultInfo;
 import org.w3c.dom.Node;
 
@@ -155,7 +156,6 @@ public interface BrokerAdmin {
 	
 	String getAggregatedResultUUID(int requestId) throws IOException;
 	ResponseWithMetadata getAggregatedResult(String uuid) throws IOException;
-	
 	
 	/**
 	 * Retrieves an array of target nodes that a request is aimed at based on the specified request ID.
