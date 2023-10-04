@@ -593,9 +593,7 @@ public class TestBroker extends AbstractTestBroker {
 		Assert.assertEquals(1, l.size());
 		c.putRequestResult(l.get(0).getId(), "test/vnd.test.result", new ByteArrayInputStream("test-result-data".getBytes()));
 		
-		String uuid = a.getAggregatedResultUUID(qid);
-		Thread.sleep(1500); // give aggregation a bit time to finish
-		ResponseWithMetadata result = a.getAggregatedResult(uuid);
+		ResponseWithMetadata result = a.getRequestBundleExport(qid);
 		Assert.assertEquals("application/zip", result.getContentType());
 		Assert.assertEquals("export_" + qid + ".zip", result.getName());
 		byte[] actualBytes = result.getInputStream().readAllBytes();
@@ -607,13 +605,6 @@ public class TestBroker extends AbstractTestBroker {
 	@Test
 	public void testResultsOfUnknownRequest() {
 		BrokerAdmin2 a = initializeAdmin();
-		Assert.assertThrows(IOException.class, () ->  a.getAggregatedResultUUID(999));
-	}
-	
-	@Test
-	public void testGetUnaggregatedResults() throws IOException {
-		BrokerAdmin2 a = initializeAdmin();
-		ResponseWithMetadata result = a.getAggregatedResult("abcd-efgh-1234-5678");
-		Assert.assertNull(result);
+		Assert.assertThrows(IOException.class, () ->  a.getRequestBundleExport(999));
 	}
 }

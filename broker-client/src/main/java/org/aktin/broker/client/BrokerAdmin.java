@@ -154,8 +154,7 @@ public interface BrokerAdmin {
 	String getResultString(int requestId, int nodeId) throws IOException;
 	ResponseWithMetadata getResult(int requestId, int nodeId) throws IOException;
 	
-	String getAggregatedResultUUID(int requestId) throws IOException;
-	ResponseWithMetadata getAggregatedResult(String uuid) throws IOException;
+	ResponseWithMetadata getRequestBundleExport(int requestId) throws IOException;
 	
 	/**
 	 * Retrieves an array of target nodes that a request is aimed at based on the specified request ID.

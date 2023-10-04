@@ -351,12 +351,7 @@ public class BrokerAdminImpl extends AbstractBrokerClient implements BrokerAdmin
 	}
 	
 	@Override
-	public String getAggregatedResultUUID(int requestId) throws IOException {
-		return null;
-	}
-	
-	@Override
-	public ResponseWithMetadata getAggregatedResult(String uuid) throws IOException {
-		return null;
+	public ResponseWithMetadata getRequestBundleExport(int requestId) throws IOException {
+		throw new UnsupportedOperationException();
 	}
 }

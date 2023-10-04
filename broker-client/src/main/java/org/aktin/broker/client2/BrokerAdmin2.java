@@ -312,28 +312,25 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 		HttpResponse<InputStream> resp = getResult(requestId, nodeId, BodyHandlers.ofInputStream());
 		return wrapResource(resp, requestId+"_result_"+nodeId);
 	}
-    
-    public String getAggregatedResultUUID(int requestId) throws IOException {
-        HttpRequest req = createBrokerRequest("export/request-bundle/" + requestId)
-                .POST(BodyPublishers.noBody()).build();
-        HttpResponse<String> response = sendRequest(req, BodyHandlers.ofString());
-        if (response.statusCode() != 200)
-            throw new IOException("Unexpected response code " + response.statusCode() + " instead of expected 200");
-        return response.body();
-    }
-    
-    public <T> HttpResponse<T> getAggregatedResult(String uuid, BodyHandler<T> handler) throws IOException {
-        HttpRequest req = createBrokerRequest("download/" + uuid).GET().build();
-        return sendRequest(req, handler);
-    }
-    
-    @Override
-    public ResponseWithMetadata getAggregatedResult(String uuid) throws IOException {
-        HttpResponse<InputStream> response = getAggregatedResult(uuid, BodyHandlers.ofInputStream());
-        String filename = getFileNameFromHeaders(response.headers());
-        return wrapResource(response, filename);
-    }
-    
+	
+	public <T> HttpResponse<T> getRequestBundleExport(int requestId, BodyHandler<T> handler) throws IOException {
+		HttpRequest exportRequest = createBrokerRequest("export/request-bundle/" + requestId)
+			.POST(BodyPublishers.noBody()).build();
+		HttpResponse<String> exportResponse = sendRequest(exportRequest, BodyHandlers.ofString());
+		if (exportResponse.statusCode() != 200)
+			throw new IOException("Unexpected response code " + exportResponse.statusCode() + " (instead of 200) during request bundling");
+		String uuid = exportResponse.body();
+		HttpRequest downloadRequest = createBrokerRequest("download/" + uuid).GET().build();
+		return sendRequest(downloadRequest, handler);
+	}
+	
+	@Override
+	public ResponseWithMetadata getRequestBundleExport(int requestId) throws IOException {
+		HttpResponse<InputStream> downloadResponse = getRequestBundleExport(requestId, BodyHandlers.ofInputStream());
+		String filename = getFileNameFromHeaders(downloadResponse.headers());
+		return wrapResource(downloadResponse, filename);
+	}
+	
     private String getFileNameFromHeaders(HttpHeaders headers) {
         Optional<String> dispositionHeader = headers.firstValue("Content-Disposition");
         if (dispositionHeader.isPresent()) {
