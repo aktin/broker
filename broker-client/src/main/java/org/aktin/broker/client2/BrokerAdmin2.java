@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
@@ -18,6 +19,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.xml.bind.JAXB;
@@ -310,6 +312,39 @@ public class BrokerAdmin2 extends AbstractBrokerClient<AdminNotificationListener
 		HttpResponse<InputStream> resp = getResult(requestId, nodeId, BodyHandlers.ofInputStream());
 		return wrapResource(resp, requestId+"_result_"+nodeId);
 	}
+	
+	public <T> HttpResponse<T> getRequestBundleExport(int requestId, BodyHandler<T> handler) throws IOException {
+		HttpRequest exportRequest = createBrokerRequest("export/request-bundle/" + requestId)
+			.POST(BodyPublishers.noBody()).build();
+		HttpResponse<String> exportResponse = sendRequest(exportRequest, BodyHandlers.ofString());
+		if (exportResponse.statusCode() != 200)
+			throw new IOException("Unexpected response code " + exportResponse.statusCode() + " (instead of 200) during request bundling");
+		String uuid = exportResponse.body();
+		HttpRequest downloadRequest = createBrokerRequest("download/" + uuid).GET().build();
+		return sendRequest(downloadRequest, handler);
+	}
+	
+	@Override
+	public ResponseWithMetadata getRequestBundleExport(int requestId) throws IOException {
+		HttpResponse<InputStream> downloadResponse = getRequestBundleExport(requestId, BodyHandlers.ofInputStream());
+		String filename = getFileNameFromHeaders(downloadResponse.headers());
+		return wrapResource(downloadResponse, filename);
+	}
+	
+    private String getFileNameFromHeaders(HttpHeaders headers) {
+        Optional<String> dispositionHeader = headers.firstValue("Content-Disposition");
+        if (dispositionHeader.isPresent()) {
+            String disposition = dispositionHeader.get();
+            int startIdx = disposition.indexOf("filename=\"");
+            if (startIdx != -1) {
+                int endIdx = disposition.indexOf("\"", startIdx + 10); // 10 is the length of 'filename="'
+                if (endIdx != -1) {
+                    return disposition.substring(startIdx + 10, endIdx);
+                }
+            }
+        }
+        return null;
+    }
 
 	@Override
 	public int[] getRequestTargetNodes(int requestId) throws IOException {

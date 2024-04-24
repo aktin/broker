@@ -6,7 +6,10 @@ import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 
-import org.aktin.broker.xml.*;
+import org.aktin.broker.xml.RequestInfo;
+import org.aktin.broker.xml.RequestStatusInfo;
+import org.aktin.broker.xml.RequestStatusList;
+import org.aktin.broker.xml.ResultInfo;
 import org.w3c.dom.Node;
 
 public interface BrokerAdmin {
@@ -147,10 +150,11 @@ public interface BrokerAdmin {
 	List<ResultInfo> listResults(int requestId) throws IOException;
 
 	// TODO ResultInfo getResultInfo(int requestId, String nodeId)
-
-
+	
 	String getResultString(int requestId, int nodeId) throws IOException;
 	ResponseWithMetadata getResult(int requestId, int nodeId) throws IOException;
+	
+	ResponseWithMetadata getRequestBundleExport(int requestId) throws IOException;
 	
 	/**
 	 * Retrieves an array of target nodes that a request is aimed at based on the specified request ID.
