@@ -32,7 +32,9 @@ import org.aktin.broker.xml.RequestList;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.java.Log;
 
+@Log
 public abstract class AbstractBrokerClient<T extends NotificationListener> {
 	protected static final int HTTP_STATUS_204_NO_CONTENT = 204;
 	protected static final int HTTP_STATUS_201_CREATED = 201;
@@ -141,6 +143,8 @@ public abstract class AbstractBrokerClient<T extends NotificationListener> {
 
 	protected <U> HttpResponse<U> sendRequest(HttpRequest request, BodyHandler<U> handler) throws IOException{
 		lazyInitHttpClient();
+		log.finer(() -> "HTTP call "+request.method()+" "+request.uri().toASCIIString());
+		log.finest(() -> " .. with headers "+request.headers().toString());		
 		try {
 			return client.send(request, handler);
 		} catch (InterruptedException e) {
