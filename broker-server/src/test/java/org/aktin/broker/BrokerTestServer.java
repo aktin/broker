@@ -28,11 +28,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 /**
- * li2b2 server for unit tests
- * or demonstrations.
- * 
- * @author R.W.Majeed
+ * Sets up a local test or demonstration server with configurable authentication and authorization, websockets, and a variety of endpoints for HTTP and WebSocket connections.
  *
+ * @author R.W.Majeed
  */
 public class BrokerTestServer {
 
