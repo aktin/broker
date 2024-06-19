@@ -28,10 +28,5 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
 			;// already loaded, use existing one
 		}
 		return keys;
-//		if( System.getProperty("rewriteNodeDN") != null ){
-//			int count = BrokerImpl.updatePrincipalDN(ds, keys.getMap());
-//			// output/log what happened, use count returned from above method
-//			System.out.println("Rewritten "+count+" node DN strings.");
-//		}
 	}
 }
