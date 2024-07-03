@@ -2,11 +2,17 @@ package org.aktin.broker.auth.apikey;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Pattern;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
 
 public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
+
+  private static final int API_KEY_LENGTH = 12;
+  private static final Pattern CLIENT_DN_PATTERN = Pattern.compile("CN=[^,]+,O=[^,]+,L=[^,]+");
 
   private PropertyFileAPIKeys keys;
 
@@ -30,5 +36,37 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
 
   private Path getPropertiesPath() {
     return path.resolve("api-keys.properties");
+  }
+
+  public void storeApiKeyAndUpdatePropertiesFile(String apiKey, String clientDn) throws IOException {
+    validateApiKey(apiKey);
+    validateClientDn(clientDn);
+    if (this.keys != null) {
+      keys.addApiKey(apiKey, clientDn);
+      saveProperties(keys);
+    } else {
+      throw new IllegalStateException("API keys instance is not initialized");
+    }
+  }
+
+  private void validateApiKey(String apiKey) {
+    if (apiKey == null || apiKey.length() != API_KEY_LENGTH) {
+      throw new IllegalArgumentException("API key must be exactly " + API_KEY_LENGTH + " characters long");
+    }
+    if (!apiKey.matches("^[a-zA-Z0-9]{" + API_KEY_LENGTH + "}$")) {
+      throw new IllegalArgumentException("API key must contain only alphanumeric characters");
+    }
+  }
+
+  private void validateClientDn(String clientDn) {
+    if (clientDn == null || !CLIENT_DN_PATTERN.matcher(clientDn).matches()) {
+      throw new IllegalArgumentException("Client DN must follow the format: CN=X,O=Y,L=Z");
+    }
+  }
+
+  private void saveProperties(PropertyFileAPIKeys instance) throws IOException {
+    try (OutputStream out = Files.newOutputStream(getPropertiesPath())) {
+      instance.storeProperties(out, StandardCharsets.ISO_8859_1);
+    }
   }
 }
