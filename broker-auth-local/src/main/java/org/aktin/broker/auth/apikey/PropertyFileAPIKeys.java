@@ -42,6 +42,10 @@ public class PropertyFileAPIKeys extends HttpBearerAuthentication {
       log.info("Updated API key for client: " + clientDn);
     }
   }
+  
+  public Properties getProperties() {
+    return properties;
+  }
 
   @Override
   protected AuthInfo lookupAuthInfo(String token) {

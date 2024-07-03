@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
 
@@ -68,5 +69,15 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
     try (OutputStream out = Files.newOutputStream(getPropertiesPath())) {
       instance.storeProperties(out, StandardCharsets.ISO_8859_1);
     }
+  }
+
+  @Override
+  public Class<?>[] getEndpoints() {
+    return new Class<?>[]{ApiKeyManagementEndpoint.class};
+  }
+
+  @Override
+  public void bindSingletons(BiConsumer<Object, Class<?>> binder) {
+    binder.accept(this, ApiKeyPropertiesAuthProvider.class);
   }
 }
