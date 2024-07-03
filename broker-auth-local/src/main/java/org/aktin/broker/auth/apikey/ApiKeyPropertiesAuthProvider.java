@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
@@ -43,7 +44,7 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
     validateApiKey(apiKey);
     validateClientDn(clientDn);
     if (this.keys != null) {
-      keys.addApiKey(apiKey, clientDn);
+      keys.addApiKey(apiKey, clientDn, ApiKeyStatus.ACTIVE);
       saveProperties(keys);
     } else {
       throw new IllegalStateException("API keys instance is not initialized");
@@ -68,6 +69,23 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
   private void saveProperties(PropertyFileAPIKeys instance) throws IOException {
     try (OutputStream out = Files.newOutputStream(getPropertiesPath())) {
       instance.storeProperties(out, StandardCharsets.ISO_8859_1);
+    }
+  }
+
+  public void setStateOfApiKeyAndUpdatePropertiesFile(String apiKey, ApiKeyStatus status) throws IOException {
+    if (this.keys != null) {
+      Properties properties = keys.getProperties();
+      if (properties.containsKey(apiKey)) {
+        String property = properties.getProperty(apiKey);
+        String[] parts = property.split(",");
+        String clientDn = parts[0] + "," + parts[1] + "," + parts[2];
+        keys.addApiKey(apiKey, clientDn, status);
+        saveProperties(keys);
+      } else {
+        throw new IllegalArgumentException("API key not found: " + apiKey);
+      }
+    } else {
+      throw new IllegalStateException("API keys instance is not initialized");
     }
   }
 
