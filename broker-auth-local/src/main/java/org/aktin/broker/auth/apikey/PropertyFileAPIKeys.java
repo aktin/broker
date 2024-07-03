@@ -18,12 +18,17 @@ public class PropertyFileAPIKeys extends HttpBearerAuthentication {
 
   public PropertyFileAPIKeys(InputStream in) throws IOException {
     this.properties = new Properties();
-    loadProperties(in);
-  }
-
-  public void loadProperties(InputStream in) throws IOException {
     properties.load(in);
     log.info("Loaded " + properties.size() + " client API keys");
+  }
+
+  public Properties getProperties() {
+    return properties;
+  }
+
+  public void addApiKey(String apiKey, String clientDn, ApiKeyStatus status) {
+    properties.setProperty(apiKey, clientDn + "," + status.toString());
+    log.info("Added API key for client: " + clientDn + " with status: " + status);
   }
 
   public void storeProperties(OutputStream out, Charset charset) throws IOException {
@@ -33,24 +38,16 @@ public class PropertyFileAPIKeys extends HttpBearerAuthentication {
     log.info("Saved " + properties.size() + " client API keys");
   }
 
-  public void addApiKey(String apiKey, String clientDn) {
-    boolean isNewKey = !properties.containsKey(apiKey);
-    properties.setProperty(apiKey, clientDn);
-    if (isNewKey) {
-      log.info("Added new API key for client: " + clientDn);
-    } else {
-      log.info("Updated API key for client: " + clientDn);
-    }
-  }
-  
-  public Properties getProperties() {
-    return properties;
-  }
-
   @Override
   protected AuthInfo lookupAuthInfo(String token) {
-    String clientDn = properties.getProperty(token);
-    return clientDn != null ? createAuthInfo(token, clientDn) : null;
+    String property = properties.getProperty(token);
+    if (property != null) {
+      String[] parts = property.split(",");
+      if (parts.length == 4 && ApiKeyStatus.ACTIVE.toString().equals(parts[3])) {
+        return createAuthInfo(token, parts[0] + "," + parts[1] + "," + parts[2]);
+      }
+    }
+    return null;
   }
 
   private AuthInfo createAuthInfo(String token, String clientDn) {
