@@ -44,7 +44,7 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
     validateApiKey(apiKey);
     validateClientDn(clientDn);
     if (this.keys != null) {
-      keys.addApiKey(apiKey, clientDn, ApiKeyStatus.ACTIVE);
+        keys.putApiKey(apiKey, clientDn, ApiKeyStatus.ACTIVE);
       saveProperties(keys);
     } else {
       throw new IllegalStateException("API keys instance is not initialized");
@@ -79,7 +79,7 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
         String property = properties.getProperty(apiKey);
         String[] parts = property.split(",");
         String clientDn = parts[0] + "," + parts[1] + "," + parts[2];
-        keys.addApiKey(apiKey, clientDn, status);
+        keys.putApiKey(apiKey, clientDn, status);
         saveProperties(keys);
       } else {
         throw new IllegalArgumentException("API key not found: " + apiKey);

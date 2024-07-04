@@ -26,9 +26,9 @@ public class PropertyFileAPIKeys extends HttpBearerAuthentication {
     return properties;
   }
 
-  public void addApiKey(String apiKey, String clientDn, ApiKeyStatus status) {
+  public void putApiKey(String apiKey, String clientDn, ApiKeyStatus status) {
     properties.setProperty(apiKey, clientDn + "," + status.toString());
-    log.info("Added API key for client: " + clientDn + " with status: " + status);
+    log.info("Put API key for client: " + clientDn + " with status: " + status);
   }
 
   public void storeProperties(OutputStream out, Charset charset) throws IOException {
