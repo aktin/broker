@@ -44,7 +44,15 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
     validateApiKey(apiKey);
     validateClientDn(clientDn);
     if (this.keys != null) {
+      Properties properties = keys.getProperties();
+      if (properties.containsKey(apiKey)) {
+        String property = properties.getProperty(apiKey);
+        String[] parts = property.split(",");
+        ApiKeyStatus oldStatus = ApiKeyStatus.fromString(parts[3]);
+        keys.putApiKey(apiKey, clientDn, oldStatus);
+      } else {
         keys.putApiKey(apiKey, clientDn, ApiKeyStatus.ACTIVE);
+      }
       saveProperties(keys);
     } else {
       throw new IllegalStateException("API keys instance is not initialized");

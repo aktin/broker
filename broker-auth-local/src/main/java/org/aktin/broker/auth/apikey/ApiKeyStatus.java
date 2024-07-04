@@ -11,4 +11,13 @@ public enum ApiKeyStatus {
   public String toString() {
     return name().toLowerCase();
   }
+
+  public static ApiKeyStatus fromString(String value) {
+    for (ApiKeyStatus status : ApiKeyStatus.values()) {
+      if (status.name().equalsIgnoreCase(value)) {
+        return status;
+      }
+    }
+    throw new IllegalArgumentException("Unknown status: " + value);
+  }
 }
