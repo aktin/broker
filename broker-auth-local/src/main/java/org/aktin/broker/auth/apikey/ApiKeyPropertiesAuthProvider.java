@@ -48,10 +48,14 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
       if (properties.containsKey(apiKey)) {
         String property = properties.getProperty(apiKey);
         String[] parts = property.split(",");
+        String existingClientDn = parts[0] + "," + parts[1] + "," + parts[2];
         ApiKeyStatus oldStatus = ApiKeyStatus.fromString(parts[3]);
+        if (isAdminKey(existingClientDn)) {
+          throw new IllegalArgumentException("API key cannot be modified");
+        }
         keys.putApiKey(apiKey, clientDn, oldStatus);
       } else {
-        keys.putApiKey(apiKey, clientDn, ApiKeyStatus.ACTIVE);
+        keys.putApiKey(apiKey, clientDn, ApiKeyStatus.ACTIVE); // keys with OU=admin cannot be added because of validation constraint
       }
       saveProperties(keys);
     } else {
@@ -74,6 +78,10 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
     }
   }
 
+  private boolean isAdminKey(String clientDn) {
+    return clientDn != null && clientDn.contains("OU=admin");
+  }
+
   private void saveProperties(PropertyFileAPIKeys instance) throws IOException {
     try (OutputStream out = Files.newOutputStream(getPropertiesPath())) {
       instance.storeProperties(out, StandardCharsets.ISO_8859_1);
@@ -87,6 +95,9 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
         String property = properties.getProperty(apiKey);
         String[] parts = property.split(",");
         String clientDn = parts[0] + "," + parts[1] + "," + parts[2];
+        if (isAdminKey(clientDn)) {
+          throw new IllegalArgumentException("API key state cannot be modified");
+        }
         keys.putApiKey(apiKey, clientDn, status);
         saveProperties(keys);
       } else {
