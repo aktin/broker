@@ -26,9 +26,9 @@ public class PropertyFileAPIKeys extends HttpBearerAuthentication {
     return properties;
   }
 
-  public void putApiKey(String apiKey, String clientDn, ApiKeyStatus status) {
-    properties.setProperty(apiKey, clientDn + "," + status.toString());
-    log.info("Put API key for client: " + clientDn + " with status: " + status);
+  public void putApiKey(String apiKey, String clientDn) {
+    properties.setProperty(apiKey, clientDn);
+    log.info("Put API key for client: " + clientDn);
   }
 
   public void storeProperties(OutputStream out, Charset charset) throws IOException {
@@ -40,11 +40,11 @@ public class PropertyFileAPIKeys extends HttpBearerAuthentication {
 
   @Override
   protected AuthInfo lookupAuthInfo(String token) {
-    String property = properties.getProperty(token);
-    if (property != null) {
-      String[] parts = property.split(",");
-      if (parts.length == 4 && ApiKeyStatus.ACTIVE.toString().equals(parts[3])) {
-        return createAuthInfo(token, parts[0] + "," + parts[1] + "," + parts[2]);
+    String clientDn = properties.getProperty(token);
+    if (clientDn != null) {
+      String[] parts = clientDn.split(",");
+      if (!ApiKeyStatus.INACTIVE.name().equals(parts[parts.length - 1])) {
+        return createAuthInfo(token, clientDn);
       }
     }
     return null;
