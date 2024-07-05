@@ -3,7 +3,6 @@ package org.aktin.broker.auth.apikey;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -28,20 +27,27 @@ public class ApiKeyManagementEndpoint {
   @GET
   public Response getApiKeys() {
     try {
-      String apiKeysString = getApiKeysAsString();
-      return Response.ok(apiKeysString).build();
+      PropertyFileAPIKeys apiKeys = authProvider.getInstance();
+      Properties props = apiKeys.getProperties();
+      return Response.ok(convertPropertiesToString(props)).build();
     } catch (IOException e) {
       log.severe("Error retrieving API keys: " + e.getMessage());
       return createErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "An error occurred while retrieving API keys");
     }
   }
 
-  private String getApiKeysAsString() throws IOException {
-    PropertyFileAPIKeys apiKeys = authProvider.getInstance();
-    Properties props = apiKeys.getProperties();
-    return props.stringPropertyNames().stream()
-        .map(name -> name + "=" + props.getProperty(name))
-        .collect(Collectors.joining("\n"));
+  private String convertPropertiesToString(Properties props) {
+    StringBuilder response = new StringBuilder();
+    for (String name : props.stringPropertyNames()) {
+      response.append(name).append("=").append(props.getProperty(name)).append("\n");
+    }
+    return response.toString();
+  }
+
+  private Response createErrorResponse(Response.Status status, String message) {
+    return Response.status(status)
+        .entity(message)
+        .build();
   }
 
   @PUT
@@ -50,10 +56,6 @@ public class ApiKeyManagementEndpoint {
     if (apiKey == null || clientDn == null) {
       return createErrorResponse(Response.Status.BAD_REQUEST, "API key and client DN are required");
     }
-    return updateApiKey(apiKey, clientDn);
-  }
-
-  private Response updateApiKey(String apiKey, String clientDn) {
     try {
       authProvider.storeApiKeyAndUpdatePropertiesFile(apiKey, clientDn);
       return Response.ok().build();
@@ -92,11 +94,5 @@ public class ApiKeyManagementEndpoint {
       log.severe("Error updating API key status: " + e.getMessage());
       return createErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "An error occurred while updating the API key status");
     }
-  }
-
-  private Response createErrorResponse(Response.Status status, String message) {
-    return Response.status(status)
-        .entity(message)
-        .build();
   }
 }
