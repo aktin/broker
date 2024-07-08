@@ -1,16 +1,19 @@
 package org.aktin.broker.auth.apikey;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.aktin.broker.rest.Authenticated;
 import org.aktin.broker.rest.RequireAdmin;
 
@@ -32,7 +35,7 @@ public class ApiKeyManagementEndpoint {
       return Response.ok(convertPropertiesToString(props)).build();
     } catch (IOException e) {
       log.severe("Error retrieving API keys: " + e.getMessage());
-      return createErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "An error occurred while retrieving API keys");
+      return Response.status(Status.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -44,55 +47,64 @@ public class ApiKeyManagementEndpoint {
     return response.toString();
   }
 
-  private Response createErrorResponse(Response.Status status, String message) {
-    return Response.status(status)
-        .entity(message)
-        .build();
-  }
-
-  @PUT
-  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response putApiKey(@FormParam("apiKey") String apiKey, @FormParam("clientDn") String clientDn) {
+  /*
+  201 - Apikey created
+  400 - When apiKey or clientdn are not provided
+  409 - When the API key already exists
+  500 - When there is an error in saving the properties file or API keys instance is not initialized.
+ */
+  @POST
+  @Consumes(MediaType.APPLICATION_XML)
+  public Response postApiKey(ApiKeyDTO apiKeyDTO) {
+    String apiKey = apiKeyDTO.getApiKey();
+    String clientDn = apiKeyDTO.getClientDn();
     if (apiKey == null || clientDn == null) {
-      return createErrorResponse(Response.Status.BAD_REQUEST, "API key and client DN are required");
+      return Response.status(Status.BAD_REQUEST).build();
     }
     try {
-      authProvider.storeApiKeyAndUpdatePropertiesFile(apiKey, clientDn);
-      return Response.ok().build();
+      authProvider.addNewApiKeyAndUpdatePropertiesFile(apiKey, clientDn);
+      return Response.status(Status.CREATED).build();
     } catch (IllegalArgumentException e) {
-      return createErrorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+      return Response.status(Status.CONFLICT).build();
     } catch (IOException e) {
-      log.severe("Error storing API key: " + e.getMessage());
-      return createErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "An error occurred while storing the API key");
+      return Response.status(Status.INTERNAL_SERVER_ERROR).build();
     }
   }
 
   @PUT
-  @Path("activate")
-  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response activateApiKey(@FormParam("apiKey") String apiKey) {
+  @Path("{apiKey}/activate")
+  public Response activateApiKey(@PathParam("apiKey") String apiKey) {
     return setApiKeyStatus(apiKey, ApiKeyStatus.ACTIVE);
   }
 
   @PUT
-  @Path("deactivate")
-  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response deactivateApiKey(@FormParam("apiKey") String apiKey) {
+  @Path("{apiKey}/deactivate")
+  public Response deactivateApiKey(@PathParam("apiKey") String apiKey) {
     return setApiKeyStatus(apiKey, ApiKeyStatus.INACTIVE);
   }
 
+  /*
+  200 - status was changed or apikey was already in that state
+  404 - When the API key does not exist.
+  403 - When attempting to modify an admin API key
+  400 - When ApiKeyStatus is unknown, or apiKey or status are not provided
+  500 - When there is an error in saving the properties file or API keys instance is not initialized.
+   */
   private Response setApiKeyStatus(String apiKey, ApiKeyStatus status) {
-    if (apiKey == null) {
-      return createErrorResponse(Response.Status.BAD_REQUEST, "API key is required");
+    if (apiKey == null || status == null) {
+      return Response.status(Status.BAD_REQUEST).build();
     }
     try {
       authProvider.setStateOfApiKeyAndUpdatePropertiesFile(apiKey, status);
       return Response.ok().build();
+    } catch (NoSuchElementException e) {
+      return Response.status(Status.NOT_FOUND).build();
+    } catch (SecurityException e) {
+      return Response.status(Status.FORBIDDEN).build();
     } catch (IllegalArgumentException e) {
-      return createErrorResponse(Response.Status.BAD_REQUEST, e.getMessage());
+      return Response.status(Status.BAD_REQUEST).build();
     } catch (IOException e) {
-      log.severe("Error updating API key status: " + e.getMessage());
-      return createErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "An error occurred while updating the API key status");
+      return Response.status(Status.INTERNAL_SERVER_ERROR).build();
     }
   }
 }
