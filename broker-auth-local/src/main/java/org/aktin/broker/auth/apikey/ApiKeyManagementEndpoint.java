@@ -17,6 +17,12 @@ import javax.ws.rs.core.Response.Status;
 import org.aktin.broker.rest.Authenticated;
 import org.aktin.broker.rest.RequireAdmin;
 
+/**
+ * RESTful endpoint for managing API keys. This class provides operations to retrieve, create, activate, and deactivate API keys. Access to these
+ * operations requires authentication and admin privileges.
+ *
+ * @author akombeiz@ukaachen.de
+ */
 @Authenticated
 @RequireAdmin
 @Path("api-keys")
@@ -27,6 +33,11 @@ public class ApiKeyManagementEndpoint {
   @Inject
   ApiKeyPropertiesAuthProvider authProvider;
 
+  /**
+   * Retrieves all API keys.
+   *
+   * @return A Response with {@code 200} containing all API keys as a string, or {@code 500} if retrieval fails.
+   */
   @GET
   public Response getApiKeys() {
     try {
@@ -39,6 +50,12 @@ public class ApiKeyManagementEndpoint {
     }
   }
 
+  /**
+   * Converts Properties to a string representation.
+   *
+   * @param props The Properties object to convert.
+   * @return A string representation of the properties.
+   */
   private String convertPropertiesToString(Properties props) {
     StringBuilder response = new StringBuilder();
     for (String name : props.stringPropertyNames()) {
@@ -47,12 +64,17 @@ public class ApiKeyManagementEndpoint {
     return response.toString();
   }
 
-  /*
-  201 - Apikey created
-  400 - When apiKey or clientdn are not provided
-  409 - When the API key already exists
-  500 - When there is an error in saving the properties file or API keys instance is not initialized.
- */
+  /**
+   * Creates a new API key.
+   *
+   * @param apiKeyDTO The DTO containing the API key and client DN.
+   * @return A Response indicating the result of the operation: <ul>
+   * <li>{@code 201} - API key created successfully</li>
+   * <li>{@code 400} - API key or client DN are not provided</li>
+   * <li>{@code 409} - API key already exists</li>
+   * <li>{@code 500} - When there is an error in saving the properties file or API keys instance is not initialized</li>
+   * </ul>
+   */
   @POST
   @Consumes(MediaType.APPLICATION_XML)
   public Response postApiKey(ApiKeyDTO apiKeyDTO) {
@@ -71,24 +93,42 @@ public class ApiKeyManagementEndpoint {
     }
   }
 
+  /**
+   * Activates an API key.
+   *
+   * @param apiKey The API key to activate.
+   * @return A Response indicating the result of the operation.
+   */
   @PUT
   @Path("{apiKey}/activate")
   public Response activateApiKey(@PathParam("apiKey") String apiKey) {
     return setApiKeyStatus(apiKey, ApiKeyStatus.ACTIVE);
   }
 
+  /**
+   * Deactivates an API key.
+   *
+   * @param apiKey The API key to deactivate.
+   * @return A Response indicating the result of the operation.
+   */
   @PUT
   @Path("{apiKey}/deactivate")
   public Response deactivateApiKey(@PathParam("apiKey") String apiKey) {
     return setApiKeyStatus(apiKey, ApiKeyStatus.INACTIVE);
   }
 
-  /*
-  200 - status was changed or apikey was already in that state
-  404 - When the API key does not exist.
-  403 - When attempting to modify an admin API key
-  400 - When ApiKeyStatus is unknown, or apiKey or status are not provided
-  500 - When there is an error in saving the properties file or API keys instance is not initialized.
+  /**
+   * Sets the status of an API key.
+   *
+   * @param apiKey The API key to update.
+   * @param status The new status for the API key.
+   * @return A Response indicating the result of the operation: <ul>
+   * <li>{@code 200} - Status was changed or API key was already in that state</li>
+   * <li>{@code 404} - API key does not exist</li>
+   * <li>{@code 403} - When attempting to modify an admin API key</li>
+   * <li>{@code 400} - When ApiKeyStatus is unknown, or apiKey or status are not provided</li>
+   * <li>{@code 500} - When there is an error in saving the properties file or API keys instance is not initialized</li>
+   * </ul>
    */
   private Response setApiKeyStatus(String apiKey, ApiKeyStatus status) {
     if (apiKey == null || status == null) {

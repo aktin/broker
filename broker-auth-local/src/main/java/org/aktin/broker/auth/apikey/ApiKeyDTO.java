@@ -2,6 +2,12 @@ package org.aktin.broker.auth.apikey;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Data Transfer Object (DTO) for API key information. This class is used to transfer API key and client DN information between client and server in a
+ * XML format.
+ *
+ * @author akombeiz@ukaachen.de
+ */
 @XmlRootElement(name = "apiKeyCred")
 public class ApiKeyDTO {
 
