@@ -6,15 +6,12 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.function.BiConsumer;
-import java.util.regex.Pattern;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
 
 public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
-
-  private static final int API_KEY_LENGTH = 12;
-  private static final Pattern CLIENT_DN_PATTERN = Pattern.compile("CN=[^,]+,O=[^,]+,L=[^,]+");
 
   private PropertyFileAPIKeys keys;
 
@@ -40,71 +37,57 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
     return path.resolve("api-keys.properties");
   }
 
-  public void storeApiKeyAndUpdatePropertiesFile(String apiKey, String clientDn) throws IOException {
-    validateApiKey(apiKey);
-    validateClientDn(clientDn);
-    if (this.keys != null) {
-      Properties properties = keys.getProperties();
-      if (properties.containsKey(apiKey)) {
-        String property = properties.getProperty(apiKey);
-        String[] parts = property.split(",");
-        String existingClientDn = parts[0] + "," + parts[1] + "," + parts[2];
-        ApiKeyStatus oldStatus = ApiKeyStatus.fromString(parts[3]);
-        if (isAdminKey(existingClientDn)) {
-          throw new IllegalArgumentException("API key cannot be modified");
-        }
-        keys.putApiKey(apiKey, clientDn, oldStatus);
-      } else {
-        keys.putApiKey(apiKey, clientDn, ApiKeyStatus.ACTIVE); // keys with OU=admin cannot be added because of validation constraint
-      }
+  public void addNewApiKeyAndUpdatePropertiesFile(String apiKey, String clientDn) throws IOException {
+    checkKeysInitialized();
+    Properties properties = keys.getProperties();
+    if (properties.containsKey(apiKey)) {
+      throw new IllegalArgumentException("API key already exists: " + apiKey);
+    }
+    keys.putApiKey(apiKey, clientDn);
+    saveProperties(keys);
+  }
+
+  public void setStateOfApiKeyAndUpdatePropertiesFile(String apiKey, ApiKeyStatus status) throws IOException {
+    checkKeysInitialized();
+    Properties properties = keys.getProperties();
+    if (!properties.containsKey(apiKey)) {
+      throw new NoSuchElementException("API key does not exist");
+    }
+    String clientDn = properties.getProperty(apiKey);
+    checkNotAdminKey(clientDn);
+    String updatedClientDn = setStatusInClientDn(clientDn, status);
+    if (!clientDn.equals(updatedClientDn)) {
+      keys.putApiKey(apiKey, updatedClientDn);
       saveProperties(keys);
-    } else {
+    }
+  }
+
+  private void checkNotAdminKey(String clientDn) {
+    if (clientDn != null && clientDn.contains("OU=admin")) {
+      throw new SecurityException("Admin API key state cannot be modified");
+    }
+  }
+
+  private String setStatusInClientDn(String clientDn, ApiKeyStatus status) {
+    switch (status) {
+      case ACTIVE:
+        return clientDn.replace("," + ApiKeyStatus.INACTIVE.name(), "");
+      case INACTIVE:
+        return clientDn.endsWith(ApiKeyStatus.INACTIVE.name()) ? clientDn : clientDn + "," + ApiKeyStatus.INACTIVE.name();
+      default:
+        throw new IllegalArgumentException("Unknown status: " + status.name());
+    }
+  }
+
+  private void checkKeysInitialized() {
+    if (this.keys == null) {
       throw new IllegalStateException("API keys instance is not initialized");
     }
-  }
-
-  private void validateApiKey(String apiKey) {
-    if (apiKey == null || apiKey.length() != API_KEY_LENGTH) {
-      throw new IllegalArgumentException("API key must be exactly " + API_KEY_LENGTH + " characters long");
-    }
-    if (!apiKey.matches("^[a-zA-Z0-9]{" + API_KEY_LENGTH + "}$")) {
-      throw new IllegalArgumentException("API key must contain only alphanumeric characters");
-    }
-  }
-
-  private void validateClientDn(String clientDn) {
-    if (clientDn == null || !CLIENT_DN_PATTERN.matcher(clientDn).matches()) {
-      throw new IllegalArgumentException("Client DN must follow the format: CN=X,O=Y,L=Z");
-    }
-  }
-
-  private boolean isAdminKey(String clientDn) {
-    return clientDn != null && clientDn.contains("OU=admin");
   }
 
   private void saveProperties(PropertyFileAPIKeys instance) throws IOException {
     try (OutputStream out = Files.newOutputStream(getPropertiesPath())) {
       instance.storeProperties(out, StandardCharsets.ISO_8859_1);
-    }
-  }
-
-  public void setStateOfApiKeyAndUpdatePropertiesFile(String apiKey, ApiKeyStatus status) throws IOException {
-    if (this.keys != null) {
-      Properties properties = keys.getProperties();
-      if (properties.containsKey(apiKey)) {
-        String property = properties.getProperty(apiKey);
-        String[] parts = property.split(",");
-        String clientDn = parts[0] + "," + parts[1] + "," + parts[2];
-        if (isAdminKey(clientDn)) {
-          throw new IllegalArgumentException("API key state cannot be modified");
-        }
-        keys.putApiKey(apiKey, clientDn, status);
-        saveProperties(keys);
-      } else {
-        throw new IllegalArgumentException("API key not found: " + apiKey);
-      }
-    } else {
-      throw new IllegalStateException("API keys instance is not initialized");
     }
   }
 
