@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
@@ -99,7 +98,7 @@ public class ApiKeyManagementEndpoint {
    * @param apiKey The API key to activate.
    * @return A Response indicating the result of the operation.
    */
-  @PUT
+  @POST
   @Path("{apiKey}/activate")
   public Response activateApiKey(@PathParam("apiKey") String apiKey) {
     return setApiKeyStatus(apiKey, ApiKeyStatus.ACTIVE);
@@ -111,7 +110,7 @@ public class ApiKeyManagementEndpoint {
    * @param apiKey The API key to deactivate.
    * @return A Response indicating the result of the operation.
    */
-  @PUT
+  @POST
   @Path("{apiKey}/deactivate")
   public Response deactivateApiKey(@PathParam("apiKey") String apiKey) {
     return setApiKeyStatus(apiKey, ApiKeyStatus.INACTIVE);
