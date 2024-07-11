@@ -70,7 +70,8 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
    * @throws IllegalArgumentException If the API key already exists.
    * @throws IllegalStateException    If the PropertyFileAPIKeys instance is not initialized.
    */
-  public void addNewApiKeyAndUpdatePropertiesFile(String apiKey, String clientDn) throws IOException {
+  public void addNewApiKeyAndUpdatePropertiesFile(String apiKey, String clientDn)
+      throws IOException, IllegalArgumentException, IllegalStateException {
     checkKeysInitialized();
     Properties properties = keys.getProperties();
     if (properties.containsKey(apiKey)) {
@@ -90,7 +91,8 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
    * @throws SecurityException      If an attempt is made to modify an admin API key.
    * @throws IllegalStateException  If the PropertyFileAPIKeys instance is not initialized.
    */
-  public void setStateOfApiKeyAndUpdatePropertiesFile(String apiKey, ApiKeyStatus status) throws IOException {
+  public void setStateOfApiKeyAndUpdatePropertiesFile(String apiKey, ApiKeyStatus status)
+      throws IOException, NoSuchElementException, SecurityException, IllegalStateException {
     checkKeysInitialized();
     Properties properties = keys.getProperties();
     if (!properties.containsKey(apiKey)) {
@@ -130,7 +132,11 @@ public class ApiKeyPropertiesAuthProvider extends AbstractAuthProvider {
       case ACTIVE:
         return clientDn.replace("," + ApiKeyStatus.INACTIVE.name(), "");
       case INACTIVE:
-        return clientDn.endsWith(ApiKeyStatus.INACTIVE.name()) ? clientDn : clientDn + "," + ApiKeyStatus.INACTIVE.name();
+        if (clientDn.endsWith(ApiKeyStatus.INACTIVE.name())) {
+          return clientDn;
+        } else {
+          return clientDn + "," + ApiKeyStatus.INACTIVE.name();
+        }
       default:
         throw new IllegalArgumentException("Unknown status: " + status.name());
     }

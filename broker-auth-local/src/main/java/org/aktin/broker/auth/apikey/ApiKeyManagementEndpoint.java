@@ -77,7 +77,7 @@ public class ApiKeyManagementEndpoint {
    */
   @POST
   @Consumes(MediaType.APPLICATION_XML)
-  public Response postApiKey(ApiKeyDTO apiKeyDTO) {
+  public Response createApiKey(ApiKeyDTO apiKeyDTO) {
     String apiKey = apiKeyDTO.getApiKey();
     String clientDn = apiKeyDTO.getClientDn();
     if (apiKey == null || clientDn == null) {

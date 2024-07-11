@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author akombeiz@ukaachen.de
  */
-@XmlRootElement(name = "apiKeyCred")
+@XmlRootElement(name = "ApiKeyCred")
 public class ApiKeyDTO {
 
   private String apiKey;
