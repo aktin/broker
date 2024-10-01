@@ -582,4 +582,29 @@ public class TestBroker extends AbstractTestBroker {
 		BrokerAdmin a = initializeAdmin();
 		assertNull(a.getRequestInfo(999));
 	}
+	
+	@Test
+	public void testGetAggregatedResults() throws IOException, InterruptedException {
+		BrokerAdmin2 a = initializeAdmin();
+		int qid = a.createRequest("text/x-test-1", "test1");
+		a.publishRequest(qid);
+		BrokerClient c = initializeClient(CLIENT_01_SERIAL);
+		List<RequestInfo> l = c.listMyRequests();
+		Assert.assertEquals(1, l.size());
+		c.putRequestResult(l.get(0).getId(), "test/vnd.test.result", new ByteArrayInputStream("test-result-data".getBytes()));
+		
+		ResponseWithMetadata result = a.getRequestBundleExport(qid);
+		Assert.assertEquals("application/zip", result.getContentType());
+		Assert.assertEquals("export_" + qid + ".zip", result.getName());
+		byte[] actualBytes = result.getInputStream().readAllBytes();
+		Assert.assertTrue(actualBytes.length >= 810 && actualBytes.length <= 815);
+		a.deleteRequest(qid);
+		Assert.assertTrue(c.listMyRequests().isEmpty());
+	}
+	
+	@Test
+	public void testResultsOfUnknownRequest() {
+		BrokerAdmin2 a = initializeAdmin();
+		Assert.assertThrows(IOException.class, () ->  a.getRequestBundleExport(999));
+	}
 }
