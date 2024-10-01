@@ -12,7 +12,6 @@
 	<modules>
 		<module>broker-api</module>
 		<module>broker-client</module>
-		<module>broker-client-auth-keycloak</module>
 		<module>broker-server</module>
 		<module>broker-auth-local</module>
 		<module>broker-auth-openid</module>
