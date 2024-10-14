@@ -17,7 +17,7 @@
 	</parent>
 	<properties>
 		<java.util.logging.config.file>src/test/resources/logging.properties</java.util.logging.config.file>
-		<jetty.version>9.4.53.v20231009</jetty.version>
+		<jetty.version>9.4.55.v20240627</jetty.version>
 		<jersey.version>2.41</jersey.version>
 	</properties>
 	<build>
