@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.aktin.broker.client.TestAdmin;
 import org.aktin.broker.client.TestClient;
 import org.aktin.broker.client.Utils;
@@ -584,7 +586,7 @@ public class TestBroker extends AbstractTestBroker {
 	}
 	
 	@Test
-	public void testGetAggregatedResults() throws IOException, InterruptedException {
+	public void testGetAggregatedResults() throws IOException {
 		BrokerAdmin2 a = initializeAdmin();
 		int qid = a.createRequest("text/x-test-1", "test1");
 		a.publishRequest(qid);
@@ -596,10 +598,20 @@ public class TestBroker extends AbstractTestBroker {
 		ResponseWithMetadata result = a.getRequestBundleExport(qid);
 		Assert.assertEquals("application/zip", result.getContentType());
 		Assert.assertEquals("export_" + qid + ".zip", result.getName());
-		byte[] actualBytes = result.getInputStream().readAllBytes();
-		Assert.assertTrue(actualBytes.length >= 810 && actualBytes.length <= 815);
-		a.deleteRequest(qid);
-		Assert.assertTrue(c.listMyRequests().isEmpty());
+		try (ZipInputStream zis = new ZipInputStream(result.getInputStream())) {
+			ZipEntry entry;
+			while ((entry = zis.getNextEntry()) != null) {
+				if (entry.getName().endsWith("0_result")) {
+					String content = new String(zis.readAllBytes());
+					assertEquals("test-result-data", content);
+					return; // test passed
+				}
+			}
+			throw new AssertionError("Expected result file not found in ZIP");
+		} finally {
+			a.deleteRequest(qid);
+			Assert.assertTrue(c.listMyRequests().isEmpty());
+		}
 	}
 	
 	@Test
