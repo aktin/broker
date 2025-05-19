@@ -488,31 +488,31 @@ public class TestBroker extends AbstractTestBroker {
 	@Test
 	public void getNonexistingBrokerRequest() throws IOException {
 		BrokerAdmin a = initializeAdmin();
-		assertNull(a.getRequestDefinition(99, "text/x-test-2"));
+		assertNull(a.getRequestDefinition(990, "text/x-test-2"));
 	}
 	
 	@Test
 	public void addRequestDefinitionToNonexistingRequest() throws IOException {
 		BrokerAdmin a = initializeAdmin();
-		a.putRequestDefinition(999, "text/x-test-1", "test1");
+		a.putRequestDefinition(991, "text/x-test-1", "test1");
 	}
 	
 	@Test
 	public void deleteNonexistingBrokerRequest() throws IOException {
 		BrokerAdmin a = initializeAdmin();
-		a.deleteRequest(999);
+		a.deleteRequest(992);
 	}
 	
 	@Test
 	public void addTargetNodesToNonexistingRequest() throws IOException {
 		BrokerAdmin a = initializeAdmin();
-		a.setRequestTargetNodes(999, new int[]{1});
+		a.setRequestTargetNodes(993, new int[]{1});
 	}
 	
 	@Test
 	public void getTargetNodesOfNonexistingRequest() throws IOException {
 		BrokerAdmin a = initializeAdmin();
-		assertNull(a.getRequestTargetNodes(999));
+		assertNull(a.getRequestTargetNodes(994));
 	}
 	
 	@Test
@@ -525,7 +525,7 @@ public class TestBroker extends AbstractTestBroker {
 	@Test
 	public void deleteTargetNodesFromNonexistingRequest() {
 		BrokerAdmin a = initializeAdmin();
-		assertThrows(IOException.class, () -> a.clearRequestTargetNodes(999));
+		assertThrows(IOException.class, () -> a.clearRequestTargetNodes(995));
 	}
 	
 	@Test
@@ -550,7 +550,7 @@ public class TestBroker extends AbstractTestBroker {
 	@Test
 	public void publishNonexistingRequest() {
 		BrokerAdmin a = initializeAdmin();
-		assertThrows(IOException.class, () -> a.publishRequest(999));
+		assertThrows(IOException.class, () -> a.publishRequest(996));
 	}
 	
 	@Test
@@ -574,13 +574,13 @@ public class TestBroker extends AbstractTestBroker {
 	@Test
 	public void closeNonexistingRequest() {
 		BrokerAdmin a = initializeAdmin();
-		assertThrows(IOException.class, () -> a.closeRequest(999));
+		assertThrows(IOException.class, () -> a.closeRequest(997));
 	}
 	
 	@Test
 	public void getRequestInfoOfNonexistingRequest() throws IOException {
 		BrokerAdmin a = initializeAdmin();
-		assertNull(a.getRequestInfo(999));
+		assertNull(a.getRequestInfo(998));
 	}
 	
 	@Test
