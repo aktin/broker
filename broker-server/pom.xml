@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.aktin</groupId>
 		<artifactId>broker</artifactId>
-		<version>1.5.2-SNAPSHOT</version>
+		<version>1.5.2</version>
 	</parent>
 	<properties>
 		<java.util.logging.config.file>src/test/resources/logging.properties</java.util.logging.config.file>
@@ -106,12 +106,12 @@
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-api</artifactId>
-			<version>1.5.2-SNAPSHOT</version>
+			<version>1.5.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aktin</groupId>
 			<artifactId>broker-client</artifactId>
-			<version>1.5.2-SNAPSHOT</version>
+			<version>1.5.2</version>
 			<scope>test</scope>
 		</dependency>
 		
