@@ -25,7 +25,7 @@ jobs:
           java-version: 15
 
       - name: Cache Local Maven Repo
-        uses: actions/cache@v2.1.2
+        uses: actions/cache@v2
         with:
           path: ~/.m2/repository
           key: maven-repo
