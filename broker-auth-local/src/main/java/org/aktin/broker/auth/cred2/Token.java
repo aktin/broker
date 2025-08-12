@@ -4,12 +4,10 @@ import java.security.Principal;
 
 public class Token implements Principal {
 
-  private final Integer userId;
   private final String user;
   private final long issued;
 
-  public Token(String user, int userId) {
-    this.userId = userId;
+  public Token(String user) {
     this.user = user;
     this.issued = System.currentTimeMillis();
   }
