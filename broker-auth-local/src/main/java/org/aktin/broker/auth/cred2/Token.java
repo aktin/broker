@@ -2,44 +2,44 @@ package org.aktin.broker.auth.cred2;
 
 import java.security.Principal;
 
-public class Token implements Principal{
-	private String user;
-	private long issued;
+public class Token implements Principal {
 
-	public Token(String user){
-		this.user = user;
-		this.issued = System.currentTimeMillis();
-	}
-	public String getGUID(){
-		return Long.toHexString(System.identityHashCode(this)*this.issued);
-	}
+  private String user;
+  private long issued;
 
-	public void invalidate() {
-		// TODO Auto-generated method stub
-		
-	}
+  public Token(String user) {
+    this.user = user;
+    this.issued = System.currentTimeMillis();
+  }
 
-	public long issuedTimeMillis() {
-		return issued;
-	}
+  public String getGUID() {
+    return Long.toHexString(System.identityHashCode(this) * this.issued);
+  }
 
-	@Override
-	public String getName() {
-		return user;
-	}
+  public void invalidate() {
+    // TODO Auto-generated method stub
+  }
 
-	public boolean isAdmin() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+  public long issuedTimeMillis() {
+    return issued;
+  }
 
-	public boolean hasRole(String role) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+  @Override
+  public String getName() {
+    return user;
+  }
 
-	public void renew() {
-		// TODO Auto-generated method stub
-		
-	}
+  public boolean isAdmin() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  public boolean hasRole(String role) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  public void renew() {
+    // TODO Auto-generated method stub
+  }
 }

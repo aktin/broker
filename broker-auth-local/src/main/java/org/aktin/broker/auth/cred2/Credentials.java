@@ -8,8 +8,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Credentials implements Serializable {
-	private static final long serialVersionUID = 1L;
 
-	public String username;
-	public String password;
+  private static final long serialVersionUID = 1L;
+
+  public String username;
+  public String password;
 }

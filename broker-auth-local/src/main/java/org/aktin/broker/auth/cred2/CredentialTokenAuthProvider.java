@@ -10,18 +10,11 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider implements
   private TokenManager manager;
   private CredentialTokenAuth auth;
 
-  /**
-   * Specific constructor to use a single simple password
-   * @param simplePassword password
-   */
   public CredentialTokenAuthProvider(String simplePassword) {
     this.manager = new TokenManager(simplePassword);
     this.auth = new CredentialTokenAuth(manager);
   }
 
-  /**
-   * Default constructor using random password
-   */
   public CredentialTokenAuthProvider() {
     this.manager = new TokenManager();
     this.auth = new CredentialTokenAuth(manager);
