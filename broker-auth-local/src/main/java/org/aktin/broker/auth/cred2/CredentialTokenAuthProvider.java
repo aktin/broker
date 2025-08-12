@@ -3,43 +3,51 @@ package org.aktin.broker.auth.cred2;
 import java.io.IOException;
 import java.util.function.BiConsumer;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
+import org.aktin.broker.server.auth.DatabaseChangelogProvider;
 
-public class CredentialTokenAuthProvider extends AbstractAuthProvider{
-	private TokenManager manager;
-	private CredentialTokenAuth auth;
+public class CredentialTokenAuthProvider extends AbstractAuthProvider implements DatabaseChangelogProvider {
 
-	/**
-	 * Specific constructor to use a single simple password
-	 * @param simplePassword password
-	 */
-	public CredentialTokenAuthProvider(String simplePassword) {
-		this.manager = new TokenManager(simplePassword);
-		this.auth = new CredentialTokenAuth(manager);
-	}
+  private TokenManager manager;
+  private CredentialTokenAuth auth;
 
-	/**
-	 * Default constructor using random password
-	 */
-	public CredentialTokenAuthProvider() {
-		this.manager = new TokenManager();
-		this.auth = new CredentialTokenAuth(manager);
-	}
-	@Override
-	public CredentialTokenAuth getInstance() throws IOException {
-		return auth;
-	}
+  /**
+   * Specific constructor to use a single simple password
+   * @param simplePassword password
+   */
+  public CredentialTokenAuthProvider(String simplePassword) {
+    this.manager = new TokenManager(simplePassword);
+    this.auth = new CredentialTokenAuth(manager);
+  }
 
-	@Override
-	public void bindSingletons(BiConsumer<Object, Class<?>> binder) {
-		binder.accept(manager, TokenManager.class);
-	}
+  /**
+   * Default constructor using random password
+   */
+  public CredentialTokenAuthProvider() {
+    this.manager = new TokenManager();
+    this.auth = new CredentialTokenAuth(manager);
+  }
 
-	@Override
-	public Class<?>[] getEndpoints() {
-		return new Class<?>[] { AuthEndpoint.class };
-	}
+  @Override
+  public CredentialTokenAuth getInstance() throws IOException {
+    return auth;
+  }
 
-	public TokenManager getManager() {
-		return manager;
-	}
+  @Override
+  public void bindSingletons(BiConsumer<Object, Class<?>> binder) {
+    binder.accept(manager, TokenManager.class);
+  }
+
+  @Override
+  public Class<?>[] getEndpoints() {
+    return new Class<?>[]{AuthEndpoint.class};
+  }
+
+  public TokenManager getManager() {
+    return manager;
+  }
+
+  @Override
+  public String getChangeLogPath() {
+    return "userCreds.xml";
+  }
 }

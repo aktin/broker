@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+  <changeSet id="v0.6" author="jkramer+akombeiz">
+    <createTable tableName="user_credentials">
+      <column name="username" type="VARCHAR(64)">
+        <constraints primaryKey="false" nullable="false"/>
+      </column>
+      <column name="id" type="INTEGER" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="password" type="VARCHAR(64)">
+        <constraints primaryKey="false" nullable="false"/>
+      </column>
+    </createTable>
+    <insert tableName="user_credentials">
+      <column name="username">jojo</column>
+      <column name="password">pass</column>
+    </insert>
+  </changeSet>
+</databaseChangeLog>
