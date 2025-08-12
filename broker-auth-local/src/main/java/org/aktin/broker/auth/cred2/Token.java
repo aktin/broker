@@ -4,20 +4,18 @@ import java.security.Principal;
 
 public class Token implements Principal {
 
-  private String user;
-  private long issued;
+  private final Integer userId;
+  private final String user;
+  private final long issued;
 
-  public Token(String user) {
+  public Token(String user, int userId) {
+    this.userId = userId;
     this.user = user;
     this.issued = System.currentTimeMillis();
   }
 
   public String getGUID() {
     return Long.toHexString(System.identityHashCode(this) * this.issued);
-  }
-
-  public void invalidate() {
-    // TODO Auto-generated method stub
   }
 
   public long issuedTimeMillis() {
@@ -30,16 +28,14 @@ public class Token implements Principal {
   }
 
   public boolean isAdmin() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  public boolean hasRole(String role) {
-    // TODO Auto-generated method stub
     return false;
   }
 
   public void renew() {
-    // TODO Auto-generated method stub
+    // TODO
+  }
+
+  public void invalidate() {
+    // TODO
   }
 }

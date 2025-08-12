@@ -10,6 +10,8 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider implements
   private TokenManager manager;
   private CredentialTokenAuth auth;
 
+  public static final String CHANGELOG_RESOURCE = "userCreds.xml";
+
   public CredentialTokenAuthProvider(String simplePassword) {
     this.manager = new TokenManager(simplePassword);
     this.auth = new CredentialTokenAuth(manager);
@@ -41,6 +43,6 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider implements
 
   @Override
   public String getChangeLogPath() {
-    return "userCreds.xml";
+    return CHANGELOG_RESOURCE;
   }
 }
