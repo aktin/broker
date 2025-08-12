@@ -2,7 +2,7 @@ var rest_base='../..';
 function updateAuthStatus(onSuccess){
 		$.ajax({ 
 			type: 'GET', 
-			url: rest_base+'/auth/status',
+			url: rest_base+'/auth/v2/status',
 			success: function(data) {
 				// TODO remember token expiration date
 				onSuccess();

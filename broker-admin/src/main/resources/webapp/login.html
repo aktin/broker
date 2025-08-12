@@ -32,7 +32,7 @@ $(document).ready(function(){
         $(xml).find('password').text($('#pass').val());
 		$.ajax({
 			type: 'POST',
-			url: rest_base+'/auth/login',
+			url: rest_base+'/auth/v2/login',
 			data: xml,
 			processData: false,
 			success: function(data) {

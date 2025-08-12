@@ -18,7 +18,7 @@ import javax.sql.DataSource;
 
 import org.aktin.broker.auth.CascadedAuthProvider;
 import org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider;
-import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
+import org.aktin.broker.auth.cred2.CredentialTokenAuthProvider;
 import org.aktin.broker.auth.openid.OpenIdAuthProvider;
 import org.aktin.broker.client2.BrokerAdmin2;
 import org.aktin.broker.client2.BrokerClient2;
@@ -130,7 +130,7 @@ public class TestServer implements Configuration{
 	}
 
 	private String retrieveAdminAuthToken() throws IOException {
-		HttpURLConnection c = (HttpURLConnection)getAdminBaseURI().resolve("auth/login").toURL().openConnection();
+		HttpURLConnection c = (HttpURLConnection)getAdminBaseURI().resolve("auth/v2/login").toURL().openConnection();
 		c.setRequestMethod("POST");
 		c.setDoOutput(true);
 		c.setDoInput(true);
