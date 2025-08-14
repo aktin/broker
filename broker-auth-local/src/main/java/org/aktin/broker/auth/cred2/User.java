@@ -1,14 +1,27 @@
 package org.aktin.broker.auth.cred2;
 
-public class User {
+import java.time.Instant;
+import java.util.Objects;
+
+/** Immutable view of a row in the "users" table (see userCreds.xml). */
+public final class User {
 
   public final String username;
   public final String password;
+  public final String algorithm;
   public final boolean active;
+  public final Instant createdAt;
 
-  public User(String username, String password, boolean active) {
-    this.username = username;
-    this.password = password;
+  public User(String username, String password, String algorithm, boolean active, Instant createdAt) {
+    this.username = Objects.requireNonNull(username);
+    this.password = Objects.requireNonNull(password);
+    this.algorithm = Objects.requireNonNull(algorithm);
     this.active = active;
+    this.createdAt = Objects.requireNonNull(createdAt);
+  }
+
+  @Override
+  public String toString() {
+    return "User{username='" + username + "', alg='" + algorithm + "', active=" + active + ", createdAt=" + createdAt + "}";
   }
 }
