@@ -1,23 +1,47 @@
 package org.aktin.broker.auth.cred2;
 
 import java.security.Principal;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Objects;
 
 public class Token implements Principal {
 
+  private static final String PROPERTY_TTL_SECONDS = "aktin.broker.token.lifespan";
+  private static final long DEFAULT_TTL_SECONDS = 360L;
+
+  private static final int ID_BYTES = 32;
+  private static final SecureRandom RANDOM = new SecureRandom();
+
   private final String user;
   private final long issued;
+  private final String guid;
+
+  // Mutable Values, lastAccess and expiresAt in Milliseconds
+  private volatile boolean revoked;
+  private volatile long lastAccess;
+  private volatile long expiresAt;
 
   public Token(String user) {
-    this.user = user;
+    this(user, Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS));
+  }
+
+  public Token(String user, long tokenTimeToLive) {
+    this.user = Objects.requireNonNull(user, "user");
+    if (tokenTimeToLive <= 0) {
+      throw new IllegalArgumentException("Token lifespan must be > 0");
+    }
     this.issued = System.currentTimeMillis();
+    this.guid = generateGUID();
+    this.lastAccess = this.issued;
+    this.expiresAt = this.issued + tokenTimeToLive * 1000L;
+    this.revoked = false;
   }
 
-  public String getGUID() {
-    return Long.toHexString(System.identityHashCode(this) * this.issued);
-  }
-
-  public long issuedTimeMillis() {
-    return issued;
+  private static String generateGUID() {
+    byte[] buf = new byte[ID_BYTES];
+    RANDOM.nextBytes(buf);
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
   }
 
   @Override
@@ -29,11 +53,40 @@ public class Token implements Principal {
     return false;
   }
 
-  public void renew() {
-    // TODO
+  public long issuedTimeMillis() {
+    return issued;
   }
 
-  public void invalidate() {
-    // TODO
+  public String getGUID() {
+    return guid;
+  }
+
+  public long expiresAtMillis() {
+    return expiresAt;
+  }
+
+  public long lastAccessMillis() {
+    return lastAccess;
+  }
+
+  public boolean isExpired() {
+    return expiresAt <= System.currentTimeMillis();
+  }
+
+  public boolean isValid() {
+    return !revoked && !isExpired();
+  }
+
+  public synchronized void invalidate() {
+    this.revoked = true;
+  }
+
+  public synchronized void renew() {
+    if (!isValid()) {
+      return;
+    }
+    long tokenTimeToLive = Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS);
+    this.lastAccess = System.currentTimeMillis();
+    this.expiresAt = this.issued + tokenTimeToLive * 1000L;
   }
 }
