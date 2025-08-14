@@ -3,7 +3,9 @@ package org.aktin.broker.auth.cred2;
 import java.time.Instant;
 import java.util.Objects;
 
-/** Immutable view of a row in the "users" table (see userCreds.xml). */
+/**
+ * Immutable view of a row in the "users" table (see userCreds.xml).
+ */
 public final class User {
 
   public final String username;
@@ -18,10 +20,5 @@ public final class User {
     this.algorithm = Objects.requireNonNull(algorithm);
     this.active = active;
     this.createdAt = Objects.requireNonNull(createdAt);
-  }
-
-  @Override
-  public String toString() {
-    return "User{username='" + username + "', alg='" + algorithm + "', active=" + active + ", createdAt=" + createdAt + "}";
   }
 }

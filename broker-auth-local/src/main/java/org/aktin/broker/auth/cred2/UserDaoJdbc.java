@@ -68,7 +68,7 @@ public class UserDaoJdbc implements UserDao {
     String alg = rs.getString("alg");
     boolean active = rs.getBoolean("is_active");
     Timestamp ts = rs.getTimestamp("created_at");
-    Instant created = ts != null ? ts.toInstant() : null;
+    Instant created = ts.toInstant();
     return new User(username, hash, alg, active, created);
   }
 }
