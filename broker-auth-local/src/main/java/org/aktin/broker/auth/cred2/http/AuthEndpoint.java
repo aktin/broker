@@ -69,8 +69,6 @@ public class AuthEndpoint {
   @Authenticated
   @RequireAdmin
   @Path("logout")
-  @Produces(MediaType.APPLICATION_JSON)
-  @Consumes(MediaType.TEXT_PLAIN)
   public void logout(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
     Token t = resolveTokenFromBearerHeader(bearer);
     long durationSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - t.issuedTimeMillis());
