@@ -12,6 +12,8 @@ public interface UserRepository {
 
   void insert(Connection c, String username, String hash, String alg) throws SQLException;
 
+  void update(Connection c, String username, String hash, String alg) throws SQLException;
+
   void activate(Connection c, String username) throws SQLException;
 
   void deactivate(Connection c, String username) throws SQLException;

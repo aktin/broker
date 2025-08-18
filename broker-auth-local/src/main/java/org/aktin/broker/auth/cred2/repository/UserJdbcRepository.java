@@ -47,6 +47,16 @@ class UserJdbcRepository implements UserRepository {
   }
 
   @Override
+  public void update(Connection c, String username, String hash, String alg) throws SQLException {
+    try (PreparedStatement ps = c.prepareStatement("UPDATE users SET password = ?, alg = ? WHERE username = ?")) {
+      ps.setString(1, hash);
+      ps.setString(2, alg);
+      ps.setString(3, username);
+      ps.executeUpdate();
+    }
+  }
+
+  @Override
   public void activate(Connection c, String username) throws SQLException {
     try (PreparedStatement ps = c.prepareStatement("UPDATE users SET is_active = TRUE WHERE username = ?")) {
       ps.setString(1, username);

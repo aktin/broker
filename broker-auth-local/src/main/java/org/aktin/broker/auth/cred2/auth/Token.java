@@ -27,7 +27,7 @@ public class Token implements Principal {
   }
 
   public Token(String user, long tokenTimeToLive) {
-    this.user = Objects.requireNonNull(user, "user");
+    this.user = Objects.requireNonNull(user);
     if (tokenTimeToLive <= 0) {
       throw new IllegalArgumentException("Token lifespan must be > 0");
     }
