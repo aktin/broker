@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-class UserJdbcRepository implements UserRepository {
+class JdbcUserRepository implements UserRepository {
 
   @Override
   public User find(Connection c, String username) throws SQLException {

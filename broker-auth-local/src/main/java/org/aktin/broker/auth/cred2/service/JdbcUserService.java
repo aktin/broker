@@ -26,13 +26,13 @@ class JdbcUserService implements UserService {
   private final PasswordHasher passwordHasher;
 
   @Inject
-  public JdbcUserService(DataSource ds, UserRepository repo, PasswordHasher hasher) {
+  public JdbcUserService(DataSource ds, UserRepository repo, PasswordHasher hasher) throws SQLException {
     this.dataSource = Objects.requireNonNull(ds);
     this.repository = Objects.requireNonNull(repo);
     this.passwordHasher = Objects.requireNonNull(hasher);
+    initializeDefaultUser();
   }
 
-  @Override
   public void initializeDefaultUser() throws SQLException {
     String username = System.getProperty(PROPERTY_ADMIN_USER, DEFAULT_ADMIN_USER);
     String password = System.getProperty(PROPERTY_ADMIN_PASSWORD);

@@ -6,8 +6,6 @@ import org.aktin.broker.auth.cred2.repository.User;
 
 public interface UserService {
 
-  void initializeDefaultUser() throws SQLException;
-
   User get(String username) throws SQLException;
 
   List<User> list() throws SQLException;

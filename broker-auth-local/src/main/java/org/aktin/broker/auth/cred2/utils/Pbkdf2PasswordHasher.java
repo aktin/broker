@@ -5,7 +5,7 @@ import java.util.Base64;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-final class Pbkdf2PasswordHasher implements PasswordHasher {
+class Pbkdf2PasswordHasher implements PasswordHasher {
 
   private static final SecureRandom RNG = new SecureRandom();
   private static final String ALG = "pbkdf2";
