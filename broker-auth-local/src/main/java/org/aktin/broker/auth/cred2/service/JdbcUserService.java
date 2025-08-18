@@ -12,6 +12,7 @@ import org.aktin.broker.auth.cred2.repository.User;
 import org.aktin.broker.auth.cred2.repository.UserRepository;
 import org.aktin.broker.auth.cred2.utils.PasswordHasher;
 
+// TODO add build of datasource from system properties
 @Singleton
 class JdbcUserService implements UserService {
 
