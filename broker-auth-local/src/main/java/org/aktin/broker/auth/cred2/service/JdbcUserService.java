@@ -41,7 +41,7 @@ class JdbcUserService implements UserService {
       if (initialUser == null) {
         createDefaultUser(c, username, password);
       } else {
-        updateDefaultUser(c, username, password);
+        updateDefaultUser(c, initialUser, password);
       }
     }
   }
@@ -50,22 +50,26 @@ class JdbcUserService implements UserService {
     String raw;
     if (password == null || password.isBlank()) {
       raw = generateRandomPassword();
-      log.info(String.format("Creating initial user %s with random password %s", username, raw));
+      log.info(String.format("Creating default user %s with random password %s", username, raw));
     } else {
       raw = password;
-      log.info(String.format("Creating initial user %s from system properties", username));
+      log.info(String.format("Creating default user %s from system properties", username));
     }
     String hash = passwordHasher.hash(raw.toCharArray());
     repository.insert(c, username, hash, passwordHasher.algorithm());
   }
 
-  private void updateDefaultUser(Connection c, String username, String password) throws SQLException {
+  private void updateDefaultUser(Connection c, User user, String password) throws SQLException {
     if (password == null || password.isBlank()) {
+      log.info("No password provided for default user. Skipping password update.");
       return;
     }
-    log.info(String.format("Updating initial user %s from system properties", username));
-    String hash = passwordHasher.hash(password.toCharArray());
-    repository.update(c, username, hash, passwordHasher.algorithm());
+    String newHash = passwordHasher.hash(password.toCharArray());
+    if (newHash.equals(user.password) && passwordHasher.algorithm().equalsIgnoreCase(user.algorithm)) {
+      return;
+    }
+    log.info(String.format("Updating default user %s from system properties", user.username));
+    repository.update(c, user.username, newHash, passwordHasher.algorithm());
   }
 
   @Override
@@ -88,6 +92,7 @@ class JdbcUserService implements UserService {
       String hash = passwordHasher.hash(password);
       repository.insert(c, username, hash, passwordHasher.algorithm());
     }
+    log.info(String.format("New user created: %s (alg=%s)", username, passwordHasher.algorithm()));
   }
 
   @Override
@@ -95,6 +100,7 @@ class JdbcUserService implements UserService {
     try (Connection c = dataSource.getConnection()) {
       repository.activate(c, username);
     }
+    log.info("User activated: " + username);
   }
 
   @Override
@@ -102,6 +108,7 @@ class JdbcUserService implements UserService {
     try (Connection c = dataSource.getConnection()) {
       repository.deactivate(c, username);
     }
+    log.info("User deactivated: " + username);
   }
 
   private static String generateRandomPassword() {
