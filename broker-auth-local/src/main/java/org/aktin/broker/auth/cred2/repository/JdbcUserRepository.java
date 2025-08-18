@@ -8,7 +8,9 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Singleton;
 
+@Singleton
 class JdbcUserRepository implements UserRepository {
 
   @Override

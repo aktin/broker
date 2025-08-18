@@ -83,9 +83,10 @@ public class Token implements Principal {
 
   public synchronized void renew() {
     if (isValid()) {
-      long tokenTimeToLive = Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS);
-      this.lastAccess = System.currentTimeMillis();
-      this.expiresAt = this.issued + tokenTimeToLive * 1000L;
+      long ttl = Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS);
+      long now = System.currentTimeMillis();
+      this.lastAccess = now;
+      this.expiresAt = now + ttl * 1000L;
     }
   }
 }
