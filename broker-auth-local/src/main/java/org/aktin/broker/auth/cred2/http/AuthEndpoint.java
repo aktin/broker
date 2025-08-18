@@ -1,6 +1,6 @@
 package org.aktin.broker.auth.cred2.http;
 
-import java.util.logging.Level;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
@@ -15,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.aktin.broker.auth.cred2.auth.Token;
 import org.aktin.broker.auth.cred2.auth.TokenManager;
+import org.aktin.broker.auth.cred2.service.UserAuthService;
 import org.aktin.broker.rest.Authenticated;
 import org.aktin.broker.rest.RequireAdmin;
 import org.aktin.broker.server.auth.HttpBearerAuthentication;
@@ -25,35 +26,29 @@ public class AuthEndpoint {
   private static final Logger log = Logger.getLogger(AuthEndpoint.class.getName());
 
   @Inject
-  private TokenManager tokens;
+  private TokenManager manager;
+
+  @Inject
+  private UserAuthService auth;
 
   @POST
   @Path("login")
   @Produces(MediaType.TEXT_PLAIN)
   @Consumes(MediaType.APPLICATION_XML)
-  public String authenticateUser(Credentials cred) {
-    // TODO allow access for other users
-    Token t = tokens.authenticate(cred.username, cred.password.toCharArray());
-    if (t != null) {
-      log.log(Level.INFO, "Login successful: {0}", cred.username);
-      return t.getGUID();
-    } else {
-      log.log(Level.INFO, "Access denied for {0}", cred.username);
-      // access denied
+  public String login(Credentials cred) {
+    if (cred == null || cred.username == null || cred.username.isBlank() || cred.password == null || cred.password.isBlank()) {
+      throw new ClientErrorException(Response.Status.BAD_REQUEST);
+    }
+    String username = cred.username;
+    char[] password = cred.password.toCharArray();
+    boolean ok = auth.authenticate(username, password);
+    if (!ok) {
+      log.info(String.format("Access denied: %s", username));
       throw new ClientErrorException(Response.Status.UNAUTHORIZED);
     }
-  }
-
-  private Token resolveTokenFromBearerHeader(String bearer) throws ClientErrorException {
-    String key = HttpBearerAuthentication.extractBearerToken(bearer);
-    if (key == null) {
-      throw new ClientErrorException(Response.Status.BAD_REQUEST);
-    }
-    Token token = tokens.lookupToken(key);
-    if (token == null) {
-      throw new ClientErrorException(Response.Status.BAD_REQUEST);
-    }
-    return token;
+    Token t = manager.issue(username);
+    log.info(String.format("Login successful: %s", username));
+    return t.getGUID();
   }
 
   @GET
@@ -61,10 +56,12 @@ public class AuthEndpoint {
   @RequireAdmin
   @Path("status")
   @Produces(MediaType.APPLICATION_XML)
-  public Status getStatus(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
+  public Status status(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
     Token t = resolveTokenFromBearerHeader(bearer);
     Status s = new Status();
+    s.username = t.getName();
     s.issued = t.issuedTimeMillis();
+    s.expiresAt = t.expiresAtMillis();
     return s;
   }
 
@@ -74,9 +71,22 @@ public class AuthEndpoint {
   @Path("logout")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.TEXT_PLAIN)
-  public String logout(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
+  public void logout(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
     Token t = resolveTokenFromBearerHeader(bearer);
-    t.invalidate();
-    return "{duration=" + (System.currentTimeMillis() - t.issuedTimeMillis()) + "}";
+    long durationSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - t.issuedTimeMillis());
+    manager.revoke(t.getGUID());
+    log.info(String.format("Logged out user: %s (Session duration: %d s)", t.getName(), durationSeconds));
+  }
+
+  private Token resolveTokenFromBearerHeader(String bearer) throws ClientErrorException {
+    String guid = HttpBearerAuthentication.extractBearerToken(bearer);
+    if (guid == null || guid.isBlank()) {
+      throw new ClientErrorException(Response.Status.BAD_REQUEST);
+    }
+    Token token = manager.lookup(guid);
+    if (token == null) {
+      throw new ClientErrorException(Response.Status.BAD_REQUEST);
+    }
+    return token;
   }
 }
