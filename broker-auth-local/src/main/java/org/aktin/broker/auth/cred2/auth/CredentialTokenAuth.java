@@ -33,7 +33,7 @@ public class CredentialTokenAuth extends HttpBearerAuthentication {
     try {
       token.renew();
     } catch (RuntimeException e) {
-      log.log(Level.WARNING, "Failed to renew token", e);
+      log.log(Level.WARNING, String.format("Failed to renew token for user: %s", token.getName()), e);
     }
     final String dn = getClientDn(token);
     return new AuthInfoImpl(token.getName(), dn, defaultRolesForClientDN(dn));

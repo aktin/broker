@@ -24,7 +24,7 @@ class JdbcUserAuthService implements UserAuthService {
 
   @Override
   public boolean authenticate(String username, char[] providedPassword) {
-    log.info(String.format("Authenticating user %s...", username));
+    log.info(String.format("Authenticating user: %s...", username));
     try {
       User user = userService.get(username);
       if (user == null) {
@@ -36,7 +36,7 @@ class JdbcUserAuthService implements UserAuthService {
         return false;
       }
       if (!passwordHasher.algorithm().equalsIgnoreCase(user.algorithm)) {
-        log.warning(String.format("User has unsupported alg: %s", user.algorithm));
+        log.warning(String.format("User has unsupported algorithm: %s", user.algorithm));
         return false;
       }
       boolean ok = passwordHasher.verify(providedPassword, user.password);
