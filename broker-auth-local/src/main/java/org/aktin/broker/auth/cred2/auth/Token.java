@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2;
+package org.aktin.broker.auth.cred2.auth;
 
 import java.security.Principal;
 import java.security.SecureRandom;
@@ -82,11 +82,10 @@ public class Token implements Principal {
   }
 
   public synchronized void renew() {
-    if (!isValid()) {
-      return;
+    if (isValid()) {
+      long tokenTimeToLive = Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS);
+      this.lastAccess = System.currentTimeMillis();
+      this.expiresAt = this.issued + tokenTimeToLive * 1000L;
     }
-    long tokenTimeToLive = Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS);
-    this.lastAccess = System.currentTimeMillis();
-    this.expiresAt = this.issued + tokenTimeToLive * 1000L;
   }
 }

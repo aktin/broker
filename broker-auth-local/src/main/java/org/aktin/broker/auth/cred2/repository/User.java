@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2;
+package org.aktin.broker.auth.cred2.repository;
 
 import java.time.Instant;
 import java.util.Objects;

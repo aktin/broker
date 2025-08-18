@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2;
+package org.aktin.broker.auth.cred2.auth;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import javax.inject.Singleton;
 
 @Singleton
-public class TokenManager {
+public class TokenManager implements TokenService{
 
   public static final String PROPERTY_BROKER_PASSWORD = "aktin.broker.password";
   private static final Logger log = Logger.getLogger(TokenManager.class.getName());

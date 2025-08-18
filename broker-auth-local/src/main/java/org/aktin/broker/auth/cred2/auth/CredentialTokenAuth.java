@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2;
+package org.aktin.broker.auth.cred2.auth;
 
 import java.io.IOException;
 import org.aktin.broker.server.auth.AuthInfo;

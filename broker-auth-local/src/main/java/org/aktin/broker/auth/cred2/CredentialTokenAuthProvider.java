@@ -2,6 +2,9 @@ package org.aktin.broker.auth.cred2;
 
 import java.io.IOException;
 import java.util.function.BiConsumer;
+import org.aktin.broker.auth.cred2.auth.CredentialTokenAuth;
+import org.aktin.broker.auth.cred2.auth.TokenManager;
+import org.aktin.broker.auth.cred2.http.AuthEndpoint;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
 import org.aktin.broker.server.auth.DatabaseChangelogProvider;
 

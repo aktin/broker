@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2;
+package org.aktin.broker.auth.cred2.repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserDaoJdbc implements UserDao {
+public class UserJdbcRepository implements UserRepository {
 
   @Override
   public User find(Connection c, String username) throws SQLException {
