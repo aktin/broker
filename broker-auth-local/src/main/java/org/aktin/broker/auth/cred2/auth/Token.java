@@ -16,6 +16,7 @@ public class Token implements Principal {
   private final String user;
   private final long issued;
   private final String guid;
+  private final long ttl;
 
   // Mutable Values, lastAccess and expiresAt in Milliseconds
   private volatile boolean revoked;
@@ -31,6 +32,7 @@ public class Token implements Principal {
     if (tokenTimeToLive <= 0) {
       throw new IllegalArgumentException("Token lifespan must be > 0");
     }
+    this.ttl = tokenTimeToLive;
     this.issued = System.currentTimeMillis();
     this.guid = generateGUID();
     this.lastAccess = this.issued;
@@ -83,10 +85,9 @@ public class Token implements Principal {
 
   public synchronized void renew() {
     if (isValid()) {
-      long ttl = Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS);
       long now = System.currentTimeMillis();
       this.lastAccess = now;
-      this.expiresAt = now + ttl * 1000L;
+      this.expiresAt = now + this.ttl * 1000L;
     }
   }
 }
