@@ -1,5 +1,7 @@
 package org.aktin.broker.auth.cred2.service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -13,7 +15,6 @@ import org.aktin.broker.auth.cred2.repository.User;
 import org.aktin.broker.auth.cred2.repository.UserRepository;
 import org.aktin.broker.auth.cred2.utils.PasswordHasher;
 
-// TODO add build of datasource from system properties
 @Singleton
 public class JdbcUserService implements UserService {
 
@@ -28,8 +29,8 @@ public class JdbcUserService implements UserService {
   private final PasswordHasher passwordHasher;
 
   @Inject
-  public JdbcUserService(DataSource ds, UserRepository repo, PasswordHasher hasher) {
-    this.dataSource = Objects.requireNonNull(ds);
+  public JdbcUserService(UserRepository repo, PasswordHasher hasher) {
+    this.dataSource = initializeDataSourceFromSystemProperties();
     this.repository = Objects.requireNonNull(repo);
     this.passwordHasher = Objects.requireNonNull(hasher);
     try {
@@ -39,7 +40,23 @@ public class JdbcUserService implements UserService {
     }
   }
 
-  public void initializeDefaultUser() throws SQLException {
+  // dirty, rebuilds manually datasource like DefaultConfiguration.java
+  private DataSource initializeDataSourceFromSystemProperties() {
+    String dsClassName = "org.hsqldb.jdbc.JDBCDataSource";
+    Path basePath = Paths.get(".");
+    String path = basePath.resolve("broker").toString();
+    String url = "jdbc:hsqldb:file:" + path + ";shutdown=false;user=admin;password=secret";
+    try {
+      Class<?> clazz = Class.forName(dsClassName);
+      Object ds = clazz.getConstructor().newInstance();
+      clazz.getMethod("setURL", String.class).invoke(ds, url);
+      return (DataSource) ds;
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to create DataSource from system properties", e);
+    }
+  }
+
+  private void initializeDefaultUser() throws SQLException {
     String username = System.getProperty(PROPERTY_ADMIN_USER, DEFAULT_ADMIN_USER);
     String password = System.getProperty(PROPERTY_ADMIN_PASSWORD);
     try (Connection c = dataSource.getConnection()) {

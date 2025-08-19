@@ -37,7 +37,7 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider implements
     this.tokenAuth = new CredentialTokenAuth(manager);
     this.repository = new JdbcUserRepository();
     this.hasher = new Pbkdf2PasswordHasher();
-    this.service = new JdbcUserService(null, repository, hasher);
+    this.service = new JdbcUserService(repository, hasher);
     this.userAuth = new UserAuthServiceImpl(service, hasher);
   }
 
