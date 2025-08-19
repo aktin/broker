@@ -64,6 +64,16 @@ public class UserEndpoint {
     if (cred == null || cred.username == null || cred.username.isBlank() || cred.password == null || cred.password.isBlank()) {
       throw new ClientErrorException(Response.Status.BAD_REQUEST);
     }
+    User user;
+    try {
+      user = service.get(cred.username);
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Error while getting user", e);
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
+    }
+    if (user != null) {
+      throw new ClientErrorException(Response.Status.CONFLICT);
+    }
     char[] pw = cred.password.toCharArray();
     try {
       service.create(cred.username, pw);
@@ -100,6 +110,10 @@ public class UserEndpoint {
     requireDefaultAdmin(bearer);
     if (username == null || username.isBlank()) {
       throw new ClientErrorException(Response.Status.BAD_REQUEST);
+    }
+    String defaultUser = System.getProperty(PROPERTY_ADMIN_USER, DEFAULT_ADMIN_USER);
+    if (username.equals(defaultUser)) {
+      throw new ClientErrorException(Response.Status.FORBIDDEN);
     }
     try {
       service.deactivate(username);
