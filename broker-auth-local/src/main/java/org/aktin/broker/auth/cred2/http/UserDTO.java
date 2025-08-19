@@ -16,7 +16,7 @@ public class UserDTO implements Serializable {
   public String username;
   public String algorithm;
   public boolean active;
-  public Instant createdAt;
+  public long createdAt;
 
   public UserDTO() {
   }

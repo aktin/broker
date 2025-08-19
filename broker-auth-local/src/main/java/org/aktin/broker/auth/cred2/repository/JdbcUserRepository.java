@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Singleton;
@@ -76,11 +74,10 @@ public class JdbcUserRepository implements UserRepository {
 
   private static User map(ResultSet rs) throws SQLException {
     String username = rs.getString("username");
-    String hash = rs.getString("password");
+    String password = rs.getString("password");
     String alg = rs.getString("algorithm");
     boolean active = rs.getBoolean("is_active");
-    Timestamp ts = rs.getTimestamp("created_at");
-    Instant created = ts.toInstant();
-    return new User(username, hash, alg, active, created);
+    long createdAt = rs.getTimestamp("created_at").getTime();
+    return new User(username, password, alg, active, createdAt);
   }
 }
