@@ -7,7 +7,7 @@
   <changeSet id="v0.6" author="jkramer+akombeiz">
     <createTable tableName="users">
       <column name="username" type="varchar(100)">
-        <constraints nullable="false" primaryKey="true" unique="true"/>
+        <constraints nullable="false" primaryKey="true"/>
       </column>
       <column name="password" type="varchar(255)">
         <constraints nullable="false"/>

@@ -130,7 +130,7 @@ public class TestServer implements Configuration{
 	}
 
 	private String retrieveAdminAuthToken() throws IOException {
-		HttpURLConnection c = (HttpURLConnection)getAdminBaseURI().resolve("auth/v2/login").toURL().openConnection();
+		HttpURLConnection c = (HttpURLConnection)getAdminBaseURI().resolve("auth/login").toURL().openConnection();
 		c.setRequestMethod("POST");
 		c.setDoOutput(true);
 		c.setDoInput(true);
