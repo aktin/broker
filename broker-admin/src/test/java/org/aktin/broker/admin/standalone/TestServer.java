@@ -18,7 +18,7 @@ import javax.sql.DataSource;
 
 import org.aktin.broker.auth.CascadedAuthProvider;
 import org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider;
-import org.aktin.broker.auth.cred2.CredentialTokenAuthProvider;
+import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
 import org.aktin.broker.auth.openid.OpenIdAuthProvider;
 import org.aktin.broker.client2.BrokerAdmin2;
 import org.aktin.broker.client2.BrokerClient2;

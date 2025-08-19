@@ -6,8 +6,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Singleton;
 import org.aktin.broker.auth.cred2.auth.TokenManager;
 
+@Singleton
 public class TokenPruneService implements AutoCloseable {
 
   private static final Logger log = Logger.getLogger(TokenPruneService.class.getName());

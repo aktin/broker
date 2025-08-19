@@ -11,7 +11,7 @@ import org.aktin.broker.auth.cred2.utils.PasswordHasher;
 @Singleton
 class UserAuthServiceImpl implements UserAuthService {
 
-  private static final Logger log = Logger.getLogger(UserAuthService.class.getName());
+  private static final Logger log = Logger.getLogger(UserAuthServiceImpl.class.getName());
 
   private final UserService userService;
   private final PasswordHasher passwordHasher;

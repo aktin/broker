@@ -1,5 +1,6 @@
 package org.aktin.broker.auth.cred2.http;
 
+import java.io.Serializable;
 import java.time.Instant;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -8,7 +9,9 @@ import org.aktin.broker.auth.cred2.repository.User;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class UserDTO {
+public class UserDTO implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   public String username;
   public String algorithm;
