@@ -2,6 +2,8 @@ package org.aktin.broker.auth.cred2.http;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
@@ -26,6 +28,8 @@ import org.aktin.broker.server.auth.HttpBearerAuthentication;
 @Path("users")
 public class UserEndpoint {
 
+  private static final Logger log = Logger.getLogger(UserEndpoint.class.getName());
+
   // must match JdbcUserService bootstrap property
   private static final String PROPERTY_ADMIN_USER = "aktin.broker.username";
   private static final String DEFAULT_ADMIN_USER = "admin";
@@ -45,7 +49,8 @@ public class UserEndpoint {
     try {
       return service.list().stream().map(UserDTO::of).collect(Collectors.toList());
     } catch (Exception e) {
-      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+      log.log(Level.SEVERE, "Error listing users", e);
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -64,7 +69,8 @@ public class UserEndpoint {
       service.create(cred.username, pw);
       return Response.status(Response.Status.CREATED).build();
     } catch (Exception e) {
-      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+      log.log(Level.SEVERE, "Error while creating new user", e);
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -81,7 +87,8 @@ public class UserEndpoint {
       service.activate(username);
       return Response.ok().build();
     } catch (Exception e) {
-      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+      log.log(Level.SEVERE, "Error while activating user", e);
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -98,7 +105,8 @@ public class UserEndpoint {
       service.deactivate(username);
       return Response.ok().build();
     } catch (Exception e) {
-      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+      log.log(Level.SEVERE, "Error while deactivating user", e);
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR);
     }
   }
 
