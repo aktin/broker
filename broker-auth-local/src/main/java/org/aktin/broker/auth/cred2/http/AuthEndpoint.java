@@ -20,6 +20,7 @@ import org.aktin.broker.rest.Authenticated;
 import org.aktin.broker.rest.RequireAdmin;
 import org.aktin.broker.server.auth.HttpBearerAuthentication;
 
+// TODO add proper logging of user actions
 @Path("auth/v2/")
 public class AuthEndpoint {
 

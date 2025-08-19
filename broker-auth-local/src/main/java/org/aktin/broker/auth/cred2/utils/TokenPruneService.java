@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import javax.inject.Singleton;
 import org.aktin.broker.auth.cred2.auth.TokenManager;
 
+//TODO add which token have been deleted
 @Singleton
 public class TokenPruneService implements AutoCloseable {
 

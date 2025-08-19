@@ -20,11 +20,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.aktin.broker.auth.cred2.auth.Token;
 import org.aktin.broker.auth.cred2.auth.TokenManager;
+import org.aktin.broker.auth.cred2.repository.User;
 import org.aktin.broker.auth.cred2.service.UserService;
 import org.aktin.broker.rest.Authenticated;
 import org.aktin.broker.rest.RequireAdmin;
 import org.aktin.broker.server.auth.HttpBearerAuthentication;
 
+// TODO add proper logging of user actions
 @Path("users")
 public class UserEndpoint {
 

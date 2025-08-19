@@ -13,13 +13,13 @@ import org.aktin.broker.server.auth.AuthProvider;
 
 public class Cred2TestConfiguration implements Configuration {
 
-  private AuthProvider auth;
+  private AuthProvider authProvider;
 
   public Cred2TestConfiguration() throws IOException {
-    auth = useDevAuthentication();
+    authProvider = useDevAuthentication();
   }
 
-  private static AuthProvider useDevAuthentication() throws IOException {
+  private static AuthProvider useDevAuthentication() {
     List<AuthProvider> auths = new ArrayList<>();
     auths.add(new CredentialTokenAuthProvider());
     return new CascadedAuthProvider(auths);
@@ -34,11 +34,11 @@ public class Cred2TestConfiguration implements Configuration {
     Class.forName("org.hsqldb.jdbcDriver");
 
     // start server
-    Cred2TestConfiguration server = new Cred2TestConfiguration();
-    HttpServer http = new HttpServer(server);
+    Cred2TestConfiguration config = new Cred2TestConfiguration();
+    HttpServer http = new HttpServer(config);
     try {
       http.start(new InetSocketAddress(port));
-      System.err.println("Broker service at: " + http.getBrokerServiceURI());
+      System.out.println("Broker service at: " + http.getBrokerServiceURI());
       http.join();
     } finally {
       http.destroy();
@@ -47,7 +47,7 @@ public class Cred2TestConfiguration implements Configuration {
 
   @Override
   public AuthProvider getAuthProvider() {
-    return auth;
+    return authProvider;
   }
 
   @Override
