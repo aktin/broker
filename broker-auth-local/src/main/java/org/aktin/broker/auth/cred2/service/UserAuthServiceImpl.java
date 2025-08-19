@@ -9,7 +9,7 @@ import org.aktin.broker.auth.cred2.repository.User;
 import org.aktin.broker.auth.cred2.utils.PasswordHasher;
 
 @Singleton
-class JdbcUserAuthService implements UserAuthService {
+class UserAuthServiceImpl implements UserAuthService {
 
   private static final Logger log = Logger.getLogger(UserAuthService.class.getName());
 
@@ -17,7 +17,7 @@ class JdbcUserAuthService implements UserAuthService {
   private final PasswordHasher passwordHasher;
 
   @Inject
-  public JdbcUserAuthService(UserService service, PasswordHasher hasher) {
+  public UserAuthServiceImpl(UserService service, PasswordHasher hasher) {
     this.userService = Objects.requireNonNull(service);
     this.passwordHasher = Objects.requireNonNull(hasher);
   }
