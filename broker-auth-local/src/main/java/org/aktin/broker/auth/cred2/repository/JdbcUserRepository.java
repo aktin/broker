@@ -15,7 +15,7 @@ class JdbcUserRepository implements UserRepository {
 
   @Override
   public User find(Connection c, String username) throws SQLException {
-    try (PreparedStatement ps = c.prepareStatement("SELECT username, password, alg, is_active, created_at FROM users WHERE username = ?")) {
+    try (PreparedStatement ps = c.prepareStatement("SELECT username, password, algorithm, is_active, created_at FROM users WHERE username = ?")) {
       ps.setString(1, username);
       try (ResultSet rs = ps.executeQuery()) {
         if (!rs.next()) {
@@ -29,7 +29,7 @@ class JdbcUserRepository implements UserRepository {
   @Override
   public List<User> findAll(Connection c) throws SQLException {
     List<User> out = new ArrayList<>();
-    try (PreparedStatement ps = c.prepareStatement("SELECT username, password, alg, is_active, created_at FROM users ORDER BY username");
+    try (PreparedStatement ps = c.prepareStatement("SELECT username, password, algorithm, is_active, created_at FROM users ORDER BY username");
         ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         out.add(map(rs));
@@ -40,7 +40,7 @@ class JdbcUserRepository implements UserRepository {
 
   @Override
   public void insert(Connection c, String username, String hash, String alg) throws SQLException {
-    try (PreparedStatement ps = c.prepareStatement("INSERT INTO users (username, password, alg, is_active, created_at) VALUES (?, ?, ?, TRUE, CURRENT_TIMESTAMP)")) {
+    try (PreparedStatement ps = c.prepareStatement("INSERT INTO users (username, password, algorithm, is_active, created_at) VALUES (?, ?, ?, TRUE, CURRENT_TIMESTAMP)")) {
       ps.setString(1, username);
       ps.setString(2, hash);
       ps.setString(3, alg);
@@ -50,7 +50,7 @@ class JdbcUserRepository implements UserRepository {
 
   @Override
   public void update(Connection c, String username, String hash, String alg) throws SQLException {
-    try (PreparedStatement ps = c.prepareStatement("UPDATE users SET password = ?, alg = ? WHERE username = ?")) {
+    try (PreparedStatement ps = c.prepareStatement("UPDATE users SET password = ?, algorithm = ? WHERE username = ?")) {
       ps.setString(1, hash);
       ps.setString(2, alg);
       ps.setString(3, username);

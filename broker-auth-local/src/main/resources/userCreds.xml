@@ -12,7 +12,7 @@
       <column name="password" type="varchar(255)">
         <constraints nullable="false"/>
       </column>
-      <column name="alg" type="varchar(20)" defaultValue="bcrypt">
+      <column name="algorithm" type="varchar(20)">
         <constraints nullable="false"/>
       </column>
       <column name="is_active" type="boolean" defaultValueBoolean="true">
