@@ -12,6 +12,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -38,9 +39,14 @@ public class UserEndpoint {
   @GET
   @Authenticated
   @RequireAdmin
-  public List<UserDTO> list(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) throws Exception {
+  @Produces(MediaType.APPLICATION_XML)
+  public List<UserDTO> list(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
     requireDefaultAdmin(bearer);
-    return service.list().stream().map(UserDTO::of).collect(Collectors.toList());
+    try {
+      return service.list().stream().map(UserDTO::of).collect(Collectors.toList());
+    } catch (Exception e) {
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+    }
   }
 
   @POST
@@ -48,40 +54,52 @@ public class UserEndpoint {
   @RequireAdmin
   @Produces(MediaType.TEXT_PLAIN)
   @Consumes(MediaType.APPLICATION_XML)
-  public Response create(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, Credentials cred) throws Exception {
+  public Response create(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, Credentials cred) {
     requireDefaultAdmin(bearer);
     if (cred == null || cred.username == null || cred.username.isBlank() || cred.password == null || cred.password.isBlank()) {
       throw new ClientErrorException(Response.Status.BAD_REQUEST);
     }
     char[] pw = cred.password.toCharArray();
-    service.create(cred.username, pw);
-    return Response.status(Response.Status.CREATED).build();
+    try {
+      service.create(cred.username, pw);
+      return Response.status(Response.Status.CREATED).build();
+    } catch (Exception e) {
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+    }
   }
 
   @POST
   @Authenticated
   @RequireAdmin
   @Path("{username}/activate")
-  public Response activate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) throws Exception {
+  public Response activate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) {
     requireDefaultAdmin(bearer);
     if (username == null || username.isBlank()) {
       throw new ClientErrorException(Response.Status.BAD_REQUEST);
     }
-    service.activate(username);
-    return Response.ok().build();
+    try {
+      service.activate(username);
+      return Response.ok().build();
+    } catch (Exception e) {
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+    }
   }
 
   @POST
   @Authenticated
   @RequireAdmin
   @Path("{username}/deactivate")
-  public Response deactivate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) throws Exception {
+  public Response deactivate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) {
     requireDefaultAdmin(bearer);
     if (username == null || username.isBlank()) {
       throw new ClientErrorException(Response.Status.BAD_REQUEST);
     }
-    service.deactivate(username);
-    return Response.ok().build();
+    try {
+      service.deactivate(username);
+      return Response.ok().build();
+    } catch (Exception e) {
+      throw new ServerErrorException(Response.Status.INTERNAL_SERVER_ERROR, e);
+    }
   }
 
   private void requireDefaultAdmin(String bearer) {
