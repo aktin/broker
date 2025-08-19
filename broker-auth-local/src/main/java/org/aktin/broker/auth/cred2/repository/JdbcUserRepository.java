@@ -11,7 +11,7 @@ import java.util.List;
 import javax.inject.Singleton;
 
 @Singleton
-class JdbcUserRepository implements UserRepository {
+public class JdbcUserRepository implements UserRepository {
 
   @Override
   public User find(Connection c, String username) throws SQLException {

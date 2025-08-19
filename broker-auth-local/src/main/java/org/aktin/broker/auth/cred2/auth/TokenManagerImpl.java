@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Singleton;
 
 @Singleton
-class TokenManagerImpl implements TokenManager {
+public class TokenManagerImpl implements TokenManager {
 
   private final Map<String, Token> sessions = new ConcurrentHashMap<>();
 

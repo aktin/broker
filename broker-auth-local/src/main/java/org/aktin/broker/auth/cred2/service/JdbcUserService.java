@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -14,7 +15,7 @@ import org.aktin.broker.auth.cred2.utils.PasswordHasher;
 
 // TODO add build of datasource from system properties
 @Singleton
-class JdbcUserService implements UserService {
+public class JdbcUserService implements UserService {
 
   private static final Logger log = Logger.getLogger(JdbcUserService.class.getName());
 
@@ -27,11 +28,15 @@ class JdbcUserService implements UserService {
   private final PasswordHasher passwordHasher;
 
   @Inject
-  public JdbcUserService(DataSource ds, UserRepository repo, PasswordHasher hasher) throws SQLException {
+  public JdbcUserService(DataSource ds, UserRepository repo, PasswordHasher hasher) {
     this.dataSource = Objects.requireNonNull(ds);
     this.repository = Objects.requireNonNull(repo);
     this.passwordHasher = Objects.requireNonNull(hasher);
-    initializeDefaultUser();
+    try {
+      initializeDefaultUser();
+    } catch (SQLException e) {
+      log.log(Level.SEVERE, "Initialization of default user failed", e);
+    }
   }
 
   public void initializeDefaultUser() throws SQLException {

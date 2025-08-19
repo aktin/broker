@@ -9,7 +9,7 @@ import org.aktin.broker.auth.cred2.repository.User;
 import org.aktin.broker.auth.cred2.utils.PasswordHasher;
 
 @Singleton
-class UserAuthServiceImpl implements UserAuthService {
+public class UserAuthServiceImpl implements UserAuthService {
 
   private static final Logger log = Logger.getLogger(UserAuthServiceImpl.class.getName());
 
