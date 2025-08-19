@@ -27,20 +27,16 @@ public class JdbcUserService implements UserService {
   private final DataSource dataSource;
   private final UserRepository repository;
   private final PasswordHasher passwordHasher;
+  private volatile boolean defaultUserInitialized = false;
 
   @Inject
   public JdbcUserService(UserRepository repo, PasswordHasher hasher) {
     this.dataSource = initializeDataSourceFromSystemProperties();
     this.repository = Objects.requireNonNull(repo);
     this.passwordHasher = Objects.requireNonNull(hasher);
-    try {
-      initializeDefaultUser();
-    } catch (SQLException e) {
-      log.log(Level.SEVERE, "Initialization of default user failed", e);
-    }
   }
 
-  // dirty, rebuilds manually datasource like DefaultConfiguration.java
+  // dirty, rebuilds manually datasource like DefaultConfiguration.java does it
   private DataSource initializeDataSourceFromSystemProperties() {
     String dsClassName = "org.hsqldb.jdbc.JDBCDataSource";
     Path basePath = Paths.get(".");
@@ -53,6 +49,21 @@ public class JdbcUserService implements UserService {
       return (DataSource) ds;
     } catch (Exception e) {
       throw new IllegalStateException("Failed to create DataSource from system properties", e);
+    }
+  }
+
+  private void ensureDefaultUserInitialized() {
+    if (!defaultUserInitialized) {
+      synchronized (this) {
+        if (!defaultUserInitialized) {
+          try {
+            initializeDefaultUser();
+            defaultUserInitialized = true;
+          } catch (SQLException e) {
+            log.log(Level.WARNING, "Failed to initialize default user", e);
+          }
+        }
+      }
     }
   }
 
@@ -97,6 +108,7 @@ public class JdbcUserService implements UserService {
 
   @Override
   public User get(String username) throws SQLException {
+    ensureDefaultUserInitialized();
     try (Connection c = dataSource.getConnection()) {
       return repository.find(c, username);
     }
@@ -104,6 +116,7 @@ public class JdbcUserService implements UserService {
 
   @Override
   public List<User> list() throws SQLException {
+    ensureDefaultUserInitialized();
     try (Connection c = dataSource.getConnection()) {
       return repository.findAll(c);
     }
@@ -111,6 +124,7 @@ public class JdbcUserService implements UserService {
 
   @Override
   public void create(String username, char[] password) throws SQLException {
+    ensureDefaultUserInitialized();
     try (Connection c = dataSource.getConnection()) {
       String hash = passwordHasher.hash(password);
       repository.insert(c, username, hash, passwordHasher.algorithm());
@@ -120,6 +134,7 @@ public class JdbcUserService implements UserService {
 
   @Override
   public void activate(String username) throws SQLException {
+    ensureDefaultUserInitialized();
     try (Connection c = dataSource.getConnection()) {
       repository.activate(c, username);
     }
@@ -128,6 +143,7 @@ public class JdbcUserService implements UserService {
 
   @Override
   public void deactivate(String username) throws SQLException {
+    ensureDefaultUserInitialized();
     try (Connection c = dataSource.getConnection()) {
       repository.deactivate(c, username);
     }
