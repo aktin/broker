@@ -42,7 +42,7 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider implements
   }
 
   @Override
-  public CredentialTokenAuth getInstance() throws IOException {
+  public CredentialTokenAuth getInstance() {
     return tokenAuth;
   }
 

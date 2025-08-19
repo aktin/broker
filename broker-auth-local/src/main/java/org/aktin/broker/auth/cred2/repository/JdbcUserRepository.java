@@ -77,7 +77,7 @@ public class JdbcUserRepository implements UserRepository {
   private static User map(ResultSet rs) throws SQLException {
     String username = rs.getString("username");
     String hash = rs.getString("password");
-    String alg = rs.getString("alg");
+    String alg = rs.getString("algorithm");
     boolean active = rs.getBoolean("is_active");
     Timestamp ts = rs.getTimestamp("created_at");
     Instant created = ts.toInstant();
