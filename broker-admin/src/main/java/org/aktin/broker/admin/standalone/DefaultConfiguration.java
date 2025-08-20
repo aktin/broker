@@ -26,7 +26,7 @@ import lombok.extern.java.Log;
  */
 @Log
 public class DefaultConfiguration implements Configuration{
-	private static final String DEFAULT_AUTH_PROVIDER = "org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider,org.aktin.broker.auth.cred2.CredentialTokenAuthProvider";
+	private static final String DEFAULT_AUTH_PROVIDER = "org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider,org.aktin.broker.auth.cred.CredentialTokenAuthProvider";
 	private AuthProvider authProvider;
 
 

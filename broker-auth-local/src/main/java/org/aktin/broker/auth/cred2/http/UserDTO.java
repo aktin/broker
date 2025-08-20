@@ -1,7 +1,6 @@
 package org.aktin.broker.auth.cred2.http;
 
 import java.io.Serializable;
-import java.time.Instant;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
