@@ -36,7 +36,7 @@ public class AuthEndpoint {
   @Path("login")
   @Produces(MediaType.TEXT_PLAIN)
   @Consumes(MediaType.APPLICATION_XML)
-  public String login(Credentials cred) {
+  public String login(CredentialsDTO cred) {
     if (cred == null || cred.username == null || cred.username.isBlank() || cred.password == null || cred.password.isBlank()) {
       throw new ClientErrorException(Response.Status.BAD_REQUEST);
     }
@@ -57,9 +57,9 @@ public class AuthEndpoint {
   @RequireAdmin
   @Path("status")
   @Produces(MediaType.APPLICATION_XML)
-  public Status status(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
+  public StatusDTO status(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
     Token t = resolveTokenFromBearerHeader(bearer);
-    Status s = new Status();
+    StatusDTO s = new StatusDTO();
     s.username = t.getName();
     s.issued = t.issuedTimeMillis();
     s.expiresAt = t.expiresAtMillis();

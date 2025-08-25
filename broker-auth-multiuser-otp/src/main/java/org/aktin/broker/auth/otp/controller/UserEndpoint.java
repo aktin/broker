@@ -61,7 +61,7 @@ public class UserEndpoint {
   @RequireAdmin
   @Produces(MediaType.TEXT_PLAIN)
   @Consumes(MediaType.APPLICATION_XML)
-  public Response create(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, Credentials cred) {
+  public Response create(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, CredentialsDTO cred) {
     requireDefaultAdmin(bearer);
     if (cred == null || cred.username == null || cred.username.isBlank() || cred.password == null || cred.password.isBlank()) {
       throw new ClientErrorException(Response.Status.BAD_REQUEST);

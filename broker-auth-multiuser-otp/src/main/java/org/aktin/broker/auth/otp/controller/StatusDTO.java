@@ -5,12 +5,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement
+@XmlRootElement(name = "status")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Credentials implements Serializable {
+public class StatusDTO implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
 
   public String username;
-  public String password;
+  public long issued;
+  public long expiresAt;
 }
