@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.otp.http;
+package org.aktin.broker.auth.otp.controller;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;

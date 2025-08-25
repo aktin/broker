@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.otp.http;
+package org.aktin.broker.auth.otp.controller;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,8 +18,8 @@ import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.aktin.broker.auth.otp.auth.Token;
-import org.aktin.broker.auth.otp.auth.TokenManager;
+import org.aktin.broker.auth.otp.token.Token;
+import org.aktin.broker.auth.otp.token.TokenManager;
 import org.aktin.broker.auth.otp.repository.User;
 import org.aktin.broker.auth.otp.service.UserService;
 import org.aktin.broker.rest.Authenticated;
