@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.otp.auth;
+package org.aktin.broker.auth.otp.token;
 
 import java.security.Principal;
 import java.security.SecureRandom;

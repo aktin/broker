@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.otp.auth;
+package org.aktin.broker.auth.otp.token;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.otp.auth;
+package org.aktin.broker.auth.otp.token;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,10 +44,5 @@ public class TokenManagerImpl implements TokenManager {
     if (token != null) {
       token.invalidate();
     }
-  }
-
-  @Override
-  public void pruneInvalid() {
-    sessions.values().removeIf(token -> !token.isValid());
   }
 }

@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.otp.auth;
+package org.aktin.broker.auth.otp.token;
 
 public interface TokenManager {
 
@@ -7,6 +7,4 @@ public interface TokenManager {
   Token lookup(String guid);
 
   void revoke(String guid);
-
-  void pruneInvalid();
 }

@@ -1,11 +1,11 @@
 package org.aktin.broker.auth.otp;
 
 import java.util.function.BiConsumer;
-import org.aktin.broker.auth.otp.auth.CredentialTokenAuth;
-import org.aktin.broker.auth.otp.auth.TokenManager;
-import org.aktin.broker.auth.otp.auth.TokenManagerImpl;
-import org.aktin.broker.auth.otp.http.AuthEndpoint;
-import org.aktin.broker.auth.otp.http.UserEndpoint;
+import org.aktin.broker.auth.otp.token.CredentialTokenAuth;
+import org.aktin.broker.auth.otp.token.TokenManager;
+import org.aktin.broker.auth.otp.token.TokenManagerImpl;
+import org.aktin.broker.auth.otp.controller.AuthEndpoint;
+import org.aktin.broker.auth.otp.controller.UserEndpoint;
 import org.aktin.broker.auth.otp.repository.JdbcUserRepository;
 import org.aktin.broker.auth.otp.repository.UserRepository;
 import org.aktin.broker.auth.otp.service.JdbcUserService;
