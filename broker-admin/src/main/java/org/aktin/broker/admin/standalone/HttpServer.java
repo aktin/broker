@@ -20,7 +20,6 @@ import org.aktin.broker.Broker;
 import org.aktin.broker.admin.rest.FormTemplateEndpoint;
 import org.aktin.broker.db.LiquibaseWrapper;
 import org.aktin.broker.server.auth.AuthProvider;
-import org.aktin.broker.server.auth.DatabaseChangelogProvider;
 import org.aktin.broker.server.auth.HeaderAuthentication;
 import org.aktin.broker.websocket.HeaderAuthSessionConfigurator;
 import org.eclipse.jetty.server.Handler;
@@ -99,35 +98,8 @@ public class HttpServer {
 		
 		try( LiquibaseWrapper w = new LiquibaseWrapper(ds.getConnection()) ){
 			w.update();
-			applyAuthProviderDatabaseChangelogs(w);
 		} catch (LiquibaseException e ) {
 			throw new SQLException("Unable to initialise database", e);
-		}
-	}
-
-	/**
-	 * Apply database changes contributed by auth providers.
-	 * <p>
-	 * If {@code authFactory} is a {@code CascadedAuthProvider}, iterate its children
-	 * otherwise treat {@code authFactory} as the single provider. For each provider
-	 * that implements {@link DatabaseChangelogProvider}, call {@code wrapper.update(path)}
-	 * with the provider’s classpath changelog
-	 *
-	 * @param wrapper initialized Liquibase wrapper bound to the target DB
-	 * @throws liquibase.exception.LiquibaseException if applying a provider changelog fails
-	 */
-	private void applyAuthProviderDatabaseChangelogs(LiquibaseWrapper wrapper) throws LiquibaseException {
-		final java.util.List<? extends AuthProvider> providers =
-				(authFactory instanceof org.aktin.broker.auth.CascadedAuthProvider)
-						? ((org.aktin.broker.auth.CascadedAuthProvider) authFactory).getProviders()
-						: java.util.Collections.singletonList(authFactory);
-		for (AuthProvider p : providers) {
-			if (p instanceof DatabaseChangelogProvider) {
-				String path = ((DatabaseChangelogProvider) p).getChangeLogPath();
-				if (path != null && !path.trim().isEmpty()) {
-					wrapper.update(path);
-				}
-			}
 		}
 	}
 	

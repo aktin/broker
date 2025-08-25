@@ -46,24 +46,12 @@ public class LiquibaseWrapper implements AutoCloseable {
 	public void update() throws LiquibaseException{
 		liquibase.update(new Contexts(), new LabelExpression());
 	}
-
-  /**
-   * Runs an additional Liquibase changelog against the same database connection.
-   * Use this to apply provider-specific changes
-   *
-   * @param changelogResource classpath path to the changelog
-   * @throws liquibase.exception.LiquibaseException if parsing or applying the changesets fails
-   */
-  public void update(String changelogResource) throws LiquibaseException {
-    ResourceAccessor ra = new ClassLoaderResourceAccessor(this.getClass().getClassLoader());
-    Liquibase lb = new Liquibase(changelogResource, ra, database);
-    lb.update(new Contexts(), new LabelExpression());
-  }
-
 	public void reset() throws LiquibaseException{
 		liquibase.dropAll();
 		update();
 	}
+
+
 
 	@Override
 	public void close() throws DatabaseException{

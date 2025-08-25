@@ -43,7 +43,4 @@ public class CascadedAuthProvider extends AbstractAuthProvider{
 		return endpoints.toArray(new Class<?>[endpoints.size()]);
 	}
 
-	public List<AuthProvider> getProviders() {
-		return java.util.Collections.unmodifiableList(providers);
-	}
 }
