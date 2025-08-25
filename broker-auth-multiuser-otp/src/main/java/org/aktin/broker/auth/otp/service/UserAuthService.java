@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2.service;
+package org.aktin.broker.auth.otp.service;
 
 public interface UserAuthService {
 

@@ -1,8 +1,8 @@
-package org.aktin.broker.auth.cred2.service;
+package org.aktin.broker.auth.otp.service;
 
 import java.sql.SQLException;
 import java.util.List;
-import org.aktin.broker.auth.cred2.repository.User;
+import org.aktin.broker.auth.otp.repository.User;
 
 public interface UserService {
 

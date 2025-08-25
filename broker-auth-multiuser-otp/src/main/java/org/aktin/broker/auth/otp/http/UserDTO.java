@@ -1,10 +1,10 @@
-package org.aktin.broker.auth.cred2.http;
+package org.aktin.broker.auth.otp.http;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.aktin.broker.auth.cred2.repository.User;
+import org.aktin.broker.auth.otp.repository.User;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)

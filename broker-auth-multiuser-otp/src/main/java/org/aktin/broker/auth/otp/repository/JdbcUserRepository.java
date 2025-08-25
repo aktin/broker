@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2.repository;
+package org.aktin.broker.auth.otp.repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

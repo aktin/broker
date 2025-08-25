@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2.utils;
+package org.aktin.broker.auth.otp.utils;
 
 import java.security.SecureRandom;
 import java.util.Base64;

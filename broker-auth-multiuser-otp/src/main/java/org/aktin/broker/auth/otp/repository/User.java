@@ -1,6 +1,5 @@
-package org.aktin.broker.auth.cred2.repository;
+package org.aktin.broker.auth.otp.repository;
 
-import java.sql.Timestamp;
 import java.util.Objects;
 
 /**

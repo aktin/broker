@@ -1,4 +1,4 @@
-package org.aktin.broker.auth.cred2.auth;
+package org.aktin.broker.auth.otp.auth;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

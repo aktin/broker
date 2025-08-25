@@ -1,12 +1,12 @@
-package org.aktin.broker.auth.cred2.service;
+package org.aktin.broker.auth.otp.service;
 
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.aktin.broker.auth.cred2.repository.User;
-import org.aktin.broker.auth.cred2.utils.PasswordHasher;
+import org.aktin.broker.auth.otp.repository.User;
+import org.aktin.broker.auth.otp.utils.PasswordHasher;
 
 @Singleton
 public class UserAuthServiceImpl implements UserAuthService {
