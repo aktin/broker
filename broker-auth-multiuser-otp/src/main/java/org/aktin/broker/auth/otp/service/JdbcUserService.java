@@ -15,6 +15,8 @@ import org.aktin.broker.auth.otp.repository.User;
 import org.aktin.broker.auth.otp.repository.UserRepository;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
 
+//TODO init own database
+
 @Singleton
 public class JdbcUserService implements UserService {
 
@@ -56,11 +58,11 @@ public class JdbcUserService implements UserService {
     if (!defaultUserInitialized) {
       synchronized (this) {
         if (!defaultUserInitialized) {
-          try {
-            initializeDefaultUser();
-            defaultUserInitialized = true;
-          } catch (SQLException e) {
-            log.log(Level.WARNING, "Failed to initialize default user", e);
+        try {
+          initializeDefaultUser();
+          defaultUserInitialized = true;
+        } catch (SQLException e) {
+          log.log(Level.WARNING, "Failed to initialize default user", e);
           }
         }
       }

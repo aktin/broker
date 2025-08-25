@@ -8,6 +8,9 @@ import javax.inject.Singleton;
 import org.aktin.broker.auth.otp.repository.User;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
 
+//TODO add option to enforce OTP
+//TODO only verify OTP if user has OTP in db
+
 @Singleton
 public class UserAuthServiceImpl implements UserAuthService {
 
