@@ -17,7 +17,8 @@
 		<module>broker-auth-openid</module>
 		<module>broker-admin</module>
 		<module>broker-admin-dist</module>
-	</modules>
+    <module>broker-auth-multiuser-otp</module>
+  </modules>
 
 	<url>https://github.com/aktin/broker</url>
 
