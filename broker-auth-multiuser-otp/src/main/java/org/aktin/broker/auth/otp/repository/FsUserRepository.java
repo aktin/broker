@@ -20,7 +20,7 @@ public class FsUserRepository implements UserRepository {
 
   private static final Logger log = Logger.getLogger(FsUserRepository.class.getName());
 
-  private static final String PROPERTY_USER_FILE = "aktin.broker.user.file";
+  private static final String PROPERTY_USER_FILE = "aktin.broker.users.file";
   private static final String DEFAULT_USER_FILE = "users.txt";
   private static final String FIELD_SEPARATOR = ";";
 
@@ -48,7 +48,7 @@ public class FsUserRepository implements UserRepository {
         Files.createFile(usersFile);
         log.info("Created users file: " + usersFile.toAbsolutePath());
       } catch (IOException e) {
-        throw new RuntimeException("Could not create users file: " + e.getMessage());
+        log.severe("Could not create users file: " + e.getMessage());
       }
     }
   }
@@ -88,7 +88,7 @@ public class FsUserRepository implements UserRepository {
           .forEach(user -> lines.add(formatUserLine(user)));
       Files.write(usersFile, lines);
     } catch (IOException e) {
-      throw new RuntimeException("Failed to persist user data: " + e.getMessage());
+      log.severe("Failed to persist user data: " + e.getMessage());
     }
   }
 

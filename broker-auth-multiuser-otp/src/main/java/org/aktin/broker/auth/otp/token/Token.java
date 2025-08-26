@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class Token implements Principal {
 
-  private static final String PROPERTY_TTL_SECONDS = "aktin.broker.token.lifespan";
+  private static final String PROPERTY_TTL_SECONDS = "aktin.broker.auth.token.lifespan";
   private static final long DEFAULT_TTL_SECONDS = 360L;
 
   private static final int ID_BYTES = 32;
