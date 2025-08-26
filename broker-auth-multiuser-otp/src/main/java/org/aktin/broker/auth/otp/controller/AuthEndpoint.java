@@ -13,14 +13,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.aktin.broker.auth.otp.service.UserAuthService;
 import org.aktin.broker.auth.otp.token.Token;
 import org.aktin.broker.auth.otp.token.TokenManager;
-import org.aktin.broker.auth.otp.service.UserAuthService;
+import org.aktin.broker.auth.otp.utils.EndpointUtils;
 import org.aktin.broker.rest.Authenticated;
 import org.aktin.broker.rest.RequireAdmin;
-import org.aktin.broker.server.auth.HttpBearerAuthentication;
 
-// TODO add proper logging of user actions
 @Path("auth")
 public class AuthEndpoint {
 
@@ -37,18 +36,14 @@ public class AuthEndpoint {
   @Produces(MediaType.TEXT_PLAIN)
   @Consumes(MediaType.APPLICATION_XML)
   public String login(CredentialsDTO cred) {
-    if (cred == null || cred.username == null || cred.username.isBlank() || cred.password == null || cred.password.isBlank()) {
-      throw new ClientErrorException(Response.Status.BAD_REQUEST);
-    }
+    EndpointUtils.validateCredentials(cred);
     String username = cred.username;
     char[] password = cred.password.toCharArray();
     boolean ok = auth.authenticate(username, password);
     if (!ok) {
-      log.info(String.format("Access denied: %s", username));
       throw new ClientErrorException(Response.Status.UNAUTHORIZED);
     }
     Token t = manager.issue(username);
-    log.info(String.format("Login successful: %s", username));
     return t.getGUID();
   }
 
@@ -58,7 +53,7 @@ public class AuthEndpoint {
   @Path("status")
   @Produces(MediaType.APPLICATION_XML)
   public StatusDTO status(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
-    Token t = resolveTokenFromBearerHeader(bearer);
+    Token t = EndpointUtils.resolveTokenFromBearerHeader(bearer, manager);
     StatusDTO s = new StatusDTO();
     s.username = t.getName();
     s.issued = t.issuedTimeMillis();
@@ -71,21 +66,9 @@ public class AuthEndpoint {
   @RequireAdmin
   @Path("logout")
   public void logout(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer) {
-    Token t = resolveTokenFromBearerHeader(bearer);
+    Token t = EndpointUtils.resolveTokenFromBearerHeader(bearer, manager);
     long durationSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - t.issuedTimeMillis());
     manager.revoke(t.getGUID());
     log.info(String.format("Logged out user: %s (Session duration: %d s)", t.getName(), durationSeconds));
-  }
-
-  private Token resolveTokenFromBearerHeader(String bearer) throws ClientErrorException {
-    String guid = HttpBearerAuthentication.extractBearerToken(bearer);
-    if (guid == null || guid.isBlank()) {
-      throw new ClientErrorException(Response.Status.BAD_REQUEST);
-    }
-    Token token = manager.lookup(guid);
-    if (token == null) {
-      throw new ClientErrorException(Response.Status.BAD_REQUEST);
-    }
-    return token;
   }
 }
