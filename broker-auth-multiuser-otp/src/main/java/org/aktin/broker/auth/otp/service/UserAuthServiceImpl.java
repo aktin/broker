@@ -50,21 +50,24 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
     boolean otpEnforced = Boolean.parseBoolean(System.getProperty(PROPERTY_ENFORCE_OTP, "false"));
     boolean userHasOtp = user.token.isPresent();
-    if (otpEnforced || userHasOtp || token != null) {
-      if (token == null || token.trim().isEmpty()) {
+    boolean hasToken = token != null && !token.trim().isEmpty();
+    if (otpEnforced || userHasOtp) {
+      if (!hasToken) {
         log.info(String.format("User %s denied - OTP token required", username));
         return false;
       }
-      if (!userHasOtp) {
-        OperationResult result = userService.setToken(username, token);
-        if (result == OperationResult.SUCCESS) {
-          log.info(String.format("User %s assigned first-time OTP token", username));
-          return true; // password already validated, OTP now registered
-        } else {
-          log.warning(String.format("User %s failed to store first-time OTP token", username));
-          return false;
-        }
+    }
+    if (!userHasOtp && hasToken) {
+      OperationResult result = userService.setToken(username, token);
+      if (result == OperationResult.SUCCESS) {
+        log.info(String.format("User %s assigned first-time OTP token", username));
+        return true; // password already validated, OTP now registered
+      } else {
+        log.warning(String.format("User %s failed to store first-time OTP token", username));
+        return false;
       }
+    }
+    if (userHasOtp && hasToken) {
       if (!isPublicIdValid(user, token)) {
         log.info(String.format("User %s denied - public ID mismatch", username));
         return false;
@@ -80,6 +83,9 @@ public class UserAuthServiceImpl implements UserAuthService {
   }
 
   private boolean isPublicIdValid(User user, String token) {
+    if (token.length() < 12) {
+      return false;
+    }
     String expectedPublicId = user.token.get();
     String actualPublicId = token.substring(0, 12);
     return expectedPublicId.equals(actualPublicId);
