@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import org.aktin.broker.auth.CascadedAuthProvider;
-import org.aktin.broker.auth.cred2.CredentialTokenAuthProvider;
+import org.aktin.broker.auth.cred.CredentialTokenAuthProvider;
 import org.aktin.broker.server.auth.AuthProvider;
 
 public class Cred2TestConfiguration implements Configuration {
