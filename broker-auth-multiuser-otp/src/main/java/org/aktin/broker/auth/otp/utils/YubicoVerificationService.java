@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+// docs: https://developers.yubico.com/OTP/Specifications/OTP_validation_protocol.html
 public class YubicoVerificationService implements OtpVerificationService {
 
   private static final Logger log = Logger.getLogger(YubicoVerificationService.class.getName());
@@ -52,7 +53,6 @@ public class YubicoVerificationService implements OtpVerificationService {
     if (!isValidOtp(token)) {
       return false;
     }
-    // Generate random nonce to verify yubikey response
     String nonce = UUID.randomUUID().toString().replace("-", "");
     for (String url : YUBICO_VALIDATION_URLS) {
       try {
@@ -65,11 +65,11 @@ public class YubicoVerificationService implements OtpVerificationService {
           return false;
         }
         if (isSuccessful(response) && isNonceValid(response, nonce)) {
+          log.fine("OTP successfully verified");
           return true;
         }
       } catch (Exception e) {
-        log.fine("Error communicating with Yubico API at " + url + ": " + e.getMessage());
-        // Try the next server in the list if there's an error
+        log.fine("Error communicating with Yubico server at " + url + ": " + e.getMessage());
       }
     }
     log.warning("OTP verification failed after trying all Yubico servers");
@@ -78,51 +78,48 @@ public class YubicoVerificationService implements OtpVerificationService {
 
   private boolean isValidOtp(String otp) {
     boolean valid = otp != null && !otp.trim().isEmpty();
-    if (!valid) log.warning("OTP cannot be null or empty");
+    if (!valid) {
+      log.warning("OTP cannot be null or empty");
+    }
     return valid;
   }
 
-
-  private String buildValidationUrl(String baseUrl, String otp, String nonce) {
+  private String buildValidationUrl(String baseUrl, String token, String nonce) {
     String query = String.format("id=%s&nonce=%s&otp=%s",
         URLEncoder.encode(clientId, StandardCharsets.UTF_8),
         URLEncoder.encode(nonce, StandardCharsets.UTF_8),
-        URLEncoder.encode(otp, StandardCharsets.UTF_8));
+        URLEncoder.encode(token, StandardCharsets.UTF_8));
     String signature = createQuerySignature(query);
     String fullUrl = baseUrl + "?" + query + "&h=" + signature;
-    log.fine(String.format("Created Yubico Verification Request:\n%s", fullUrl));
+    log.fine("Created Yubico Verification Request: " + fullUrl);
     return fullUrl;
   }
 
   private String createQuerySignature(String query) {
-    String signature = "";
     try {
       log.fine("Signing query...");
       byte[] secretKeyBytes = Base64.getDecoder().decode(secretKey);
       Mac mac = Mac.getInstance("HmacSHA1");
       mac.init(new SecretKeySpec(secretKeyBytes, "HmacSHA1"));
       byte[] signatureBytes = mac.doFinal(query.getBytes(StandardCharsets.UTF_8));
-      signature = Base64.getEncoder().encodeToString(signatureBytes);
-      log.fine("Created Signature: " + signature);
-    } catch (InvalidKeyException e) {
-      log.fine("Invalid key provided: " + e.getMessage());
-    } catch (NoSuchAlgorithmException e) {
-      log.fine("No such algorithm: " + e.getMessage());
+      String signature = Base64.getEncoder().encodeToString(signatureBytes);
+      log.fine("Query signed successfully");
+      return signature;
+    } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+      log.severe("Failed to create query signature: " + e.getMessage());
+      return "";
     }
-    return signature;
   }
 
   private String fetchYubicoResponse(String urlStr) throws Exception {
     URL url = new URL(urlStr);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
     conn.setRequestMethod("GET");
-    conn.setConnectTimeout(5000); // 5 seconds
-    conn.setReadTimeout(5000);    // 5 seconds
+    conn.setConnectTimeout(5000);
+    conn.setReadTimeout(5000);
     int responseCode = conn.getResponseCode();
     if (responseCode != HttpURLConnection.HTTP_OK) {
       throw new Exception("Yubico verification failed: " + responseCode);
-    } else {
-      log.fine("Yubico Response Code: " + responseCode);
     }
     StringBuilder response = new StringBuilder();
     try (InputStreamReader isr = new InputStreamReader(conn.getInputStream()); BufferedReader reader = new BufferedReader(isr)) {
@@ -132,7 +129,7 @@ public class YubicoVerificationService implements OtpVerificationService {
       }
     }
     String raw = response.toString();
-    log.fine("Yubico Raw Response:\n" + raw);
+    log.fine("Yubico Raw Response: " + raw);
     return raw;
   }
 
@@ -145,18 +142,14 @@ public class YubicoVerificationService implements OtpVerificationService {
       }
       String signingString = buildSigningString(params);
       String computedSignature = createQuerySignature(signingString);
-      if (computedSignature == null) {
+      if (computedSignature == null || !computedSignature.equals(receivedSignature)) {
+        log.warning("Signature mismatch");
         return false;
       }
-      boolean match = computedSignature.equals(receivedSignature);
-      if (match) {
-        log.fine("Signature verification successful");
-      } else {
-        log.warning("Signature mismatch");
-      }
-      return match;
+      log.fine("Signature verification successful");
+      return true;
     } catch (Exception e) {
-      log.warning("Exception during signature validation: " + e.getMessage());
+      log.severe("Exception during signature validation: " + e.getMessage());
       return false;
     }
   }
@@ -171,7 +164,7 @@ public class YubicoVerificationService implements OtpVerificationService {
         params.put(key, value);
       }
     }
-    log.fine("Parsed parameters: " + params);
+    log.fine("Parsed response parameters");
     return params;
   }
 
@@ -181,7 +174,7 @@ public class YubicoVerificationService implements OtpVerificationService {
       log.warning("Missing signature in response (h=)");
       return null;
     }
-    log.info("Extracted signature: " + signature);
+    log.fine("Extracted signature");
     return signature;
   }
 
@@ -191,38 +184,65 @@ public class YubicoVerificationService implements OtpVerificationService {
     String signingString = sortedKeys.stream()
         .map(k -> k + "=" + params.get(k))
         .collect(Collectors.joining("&"));
-    log.info("Query String: " + signingString);
+    log.fine("Built signing string for verification");
     return signingString;
   }
 
   private boolean isSuccessful(String response) {
-    if (response.contains("status=OK")) {
-      log.info("OTP status: OK");
-      return true;
+    boolean ok = response.contains("status=OK");
+    if (ok) {
+      log.fine("OTP status OK");
     }
-    return false;
+    return ok;
   }
 
   private boolean isNonceValid(String response, String expectedNonce) {
     boolean match = response.contains("nonce=" + expectedNonce);
-    if (match) {
-      log.info("Nonce verified: " + expectedNonce);
-    } else {
+    if (!match) {
       log.warning("Nonce mismatch! Expected: " + expectedNonce);
+    } else {
+      log.fine("Nonce verified successfully");
     }
     return match;
   }
 
   private boolean isFailure(String response) {
-    if (response.contains("status=REPLAYED_OTP")) {
-      log.warning("OTP status: REPLAYED_OTP");
-      return true;
-    }
     if (response.contains("status=BAD_OTP")) {
-      log.warning("OTP status: BAD_OTP");
+      log.warning("OTP status: BAD_OTP - invalid format");
       return true;
     }
-    // Add more status checks as per Yubico API documentation (e.g., NO_SUCH_CLIENT, BAD_SIGNATURE)
+    if (response.contains("status=REPLAYED_OTP")) {
+      log.warning("OTP status: REPLAYED_OTP - OTP has already been seen");
+      return true;
+    }
+    if (response.contains("status=BAD_SIGNATURE")) {
+      log.warning("OTP status: BAD_SIGNATURE - HMAC signature verification failed");
+      return true;
+    }
+    if (response.contains("status=MISSING_PARAMETER")) {
+      log.warning("OTP status: MISSING_PARAMETER - request lacks a parameter");
+      return true;
+    }
+    if (response.contains("status=NO_SUCH_CLIENT")) {
+      log.warning("OTP status: NO_SUCH_CLIENT - client ID does not exist");
+      return true;
+    }
+    if (response.contains("status=OPERATION_NOT_ALLOWED")) {
+      log.warning("OTP status: OPERATION_NOT_ALLOWED - request ID not allowed to verify OTPs");
+      return true;
+    }
+    if (response.contains("status=BACKEND_ERROR")) {
+      log.warning("OTP status: BACKEND_ERROR - server error");
+      return true;
+    }
+    if (response.contains("status=NOT_ENOUGH_ANSWERS")) {
+      log.warning("OTP status: NOT_ENOUGH_ANSWERS - insufficient syncs during verification");
+      return true;
+    }
+    if (response.contains("status=REPLAYED_REQUEST")) {
+      log.warning("OTP status: REPLAYED_REQUEST - combination already seen");
+      return true;
+    }
     return false;
   }
 }
