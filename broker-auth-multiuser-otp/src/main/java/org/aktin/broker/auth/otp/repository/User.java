@@ -2,9 +2,6 @@ package org.aktin.broker.auth.otp.repository;
 
 import java.util.Objects;
 
-/**
- * Immutable view of a row in the "users" table (see userCreds.xml).
- */
 public final class User {
 
   public final String username;

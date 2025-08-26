@@ -1,20 +1,18 @@
 package org.aktin.broker.auth.otp.repository;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 public interface UserRepository {
 
-  User find(Connection c, String username) throws SQLException;
+  User find(String username);
 
-  List<User> findAll(Connection c) throws SQLException;
+  List<User> findAll();
 
-  void insert(Connection c, String username, String hash, String alg) throws SQLException;
+  boolean insert(String username, String hash, String algorithm);
 
-  void update(Connection c, String username, String hash, String alg) throws SQLException;
+  boolean updatePassword(String username, String hash, String algorithm);
 
-  void activate(Connection c, String username) throws SQLException;
+  boolean activate(String username);
 
-  void deactivate(Connection c, String username) throws SQLException;
+  boolean deactivate(String username);
 }
