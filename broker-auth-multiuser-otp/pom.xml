@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <name>AKTIN : Broker : local authentication plugin</name>
+  <name>AKTIN : Broker : multi-user authentication + OTP plugin</name>
   <packaging>jar</packaging>
 
   <description>
-    Authentication module using local authentication and authorization.
+    Provides user authentication via username/password with optional YubiKey OTP support.
     This module is meant for the broker-server.
   </description>
 
@@ -47,11 +47,6 @@
       <groupId>org.aktin</groupId>
       <artifactId>broker-server</artifactId>
       <version>1.5.3-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
