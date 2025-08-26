@@ -3,6 +3,7 @@ package org.aktin.broker.auth.otp.utils;
 import java.util.Objects;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import org.aktin.broker.auth.otp.controller.CredentialsDTO;
 import org.aktin.broker.auth.otp.token.Token;
 import org.aktin.broker.auth.otp.token.TokenManager;
@@ -41,7 +42,7 @@ public class EndpointUtils {
     Token token = resolveTokenFromBearerHeader(bearer, manager);
     String defaultUser = System.getProperty(PROPERTY_ADMIN_USER, DEFAULT_ADMIN_USER);
     if (!Objects.equals(token.getName(), defaultUser)) {
-      throw new ClientErrorException(Response.Status.FORBIDDEN);
+      throw new ClientErrorException(Status.UNAUTHORIZED);
     }
     return token;
   }

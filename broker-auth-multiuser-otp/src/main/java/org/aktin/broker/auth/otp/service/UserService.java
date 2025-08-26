@@ -1,6 +1,7 @@
 package org.aktin.broker.auth.otp.service;
 
 import java.util.List;
+import org.aktin.broker.auth.otp.repository.OperationResult;
 import org.aktin.broker.auth.otp.repository.User;
 
 public interface UserService {
@@ -9,11 +10,11 @@ public interface UserService {
 
   List<User> list();
 
-  boolean create(String username, char[] password);
+  OperationResult create(String username, char[] password);
 
-  boolean activate(String username);
+  OperationResult activate(String username);
 
-  boolean deactivate(String username);
+  OperationResult deactivate(String username);
 
-  boolean setToken(String username, String token);
+  OperationResult setToken(String username, String token);
 }

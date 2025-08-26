@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.aktin.broker.auth.otp.repository.OperationResult;
 import org.aktin.broker.auth.otp.repository.User;
 import org.aktin.broker.auth.otp.utils.OtpVerificationService;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
@@ -55,8 +56,8 @@ public class UserAuthServiceImpl implements UserAuthService {
         return false;
       }
       if (!userHasOtp) {
-        boolean stored = userService.setToken(username, token);
-        if (stored) {
+        OperationResult result = userService.setToken(username, token);
+        if (result == OperationResult.SUCCESS) {
           log.info(String.format("User %s assigned first-time OTP token", username));
           return true; // password already validated, OTP now registered
         } else {

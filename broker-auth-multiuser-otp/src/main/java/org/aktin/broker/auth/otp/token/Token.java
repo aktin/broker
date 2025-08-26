@@ -4,8 +4,11 @@ import java.security.Principal;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 public class Token implements Principal {
+
+  private static final Logger log = Logger.getLogger(Token.class.getName());
 
   private static final String PROPERTY_TTL_SECONDS = "aktin.broker.auth.token.lifespan";
   private static final long DEFAULT_TTL_SECONDS = 360L;
@@ -30,7 +33,8 @@ public class Token implements Principal {
   public Token(String user, long tokenTimeToLive) {
     this.user = Objects.requireNonNull(user);
     if (tokenTimeToLive <= 0) {
-      throw new IllegalArgumentException("Token lifespan must be > 0");
+      log.warning("Token lifespan must be > 0. Using default lifespan.");
+      tokenTimeToLive = DEFAULT_TTL_SECONDS;
     }
     this.ttl = tokenTimeToLive;
     this.issued = System.currentTimeMillis();

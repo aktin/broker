@@ -2,9 +2,11 @@ package org.aktin.broker.auth.otp.service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.aktin.broker.auth.otp.repository.OperationResult;
 import org.aktin.broker.auth.otp.repository.User;
 import org.aktin.broker.auth.otp.repository.UserRepository;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
@@ -67,23 +69,27 @@ public class FsUserService implements UserService {
   }
 
   @Override
-  public boolean create(String username, char[] password) {
+  public OperationResult create(String username, char[] password) {
     String hash = passwordHasher.hash(password);
     return repository.insert(username, hash, passwordHasher.algorithm());
   }
 
   @Override
-  public boolean activate(String username) {
-    return repository.activate(username);
+  public OperationResult activate(String username) {
+    return repository.update(username, null, null, true, Optional.empty());
   }
 
   @Override
-  public boolean deactivate(String username) {
-    return repository.deactivate(username);
+  public OperationResult deactivate(String username) {
+    return repository.update(username, null, null, false, Optional.empty());
   }
 
   @Override
-  public boolean setToken(String username, String token) {
-    return repository.setToken(username, token);
+  public OperationResult setToken(String username, String token) {
+    if (token == null || token.length() < 12) {
+      return OperationResult.FAILED;
+    }
+    String publicId = token.substring(0, 12);
+    return repository.update(username, null, null, null, Optional.of(publicId));
   }
 }

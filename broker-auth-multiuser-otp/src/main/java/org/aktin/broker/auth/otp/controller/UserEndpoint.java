@@ -15,7 +15,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.aktin.broker.auth.otp.repository.User;
+import javax.ws.rs.core.Response.Status;
+import org.aktin.broker.auth.otp.repository.OperationResult;
 import org.aktin.broker.auth.otp.service.UserService;
 import org.aktin.broker.auth.otp.token.Token;
 import org.aktin.broker.auth.otp.token.TokenManager;
@@ -52,17 +53,19 @@ public class UserEndpoint {
     Token token = EndpointUtils.requireDefaultAdmin(bearer, manager);
     log.info(String.format("User %s attempts to create new user: %s", token.getName(), cred.username));
     EndpointUtils.validateCredentials(cred);
-    User user = service.get(cred.username);
-    if (user != null) {
-      log.warning("User already exists: " + cred.username);
-      throw new ClientErrorException(Response.Status.CONFLICT);
-    }
     char[] pw = cred.password.toCharArray();
-    boolean success = service.create(cred.username, pw);
-    if (success) {
-      return Response.status(Response.Status.CREATED).build();
+    OperationResult result = service.create(cred.username, pw);
+    switch (result) {
+      case SUCCESS:
+        log.info("User created: " + cred.username);
+        return Response.status(Status.CREATED).build();
+      case USER_ALREADY_EXISTS:
+        log.warning("User already exists: " + cred.username);
+        throw new ClientErrorException(Status.CONFLICT);
+      default:
+        log.warning("Failed to create user: " + cred.username);
+        throw new ClientErrorException(Status.INTERNAL_SERVER_ERROR);
     }
-    throw new ClientErrorException(Response.Status.INTERNAL_SERVER_ERROR);
   }
 
   @POST
@@ -72,11 +75,18 @@ public class UserEndpoint {
   public Response activate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) {
     Token token = EndpointUtils.requireDefaultAdmin(bearer, manager);
     log.info(String.format("User %s attempts to activate user: %s", token.getName(), username));
-    boolean success = service.activate(username);
-    if (success) {
-      return Response.ok().build();
+    OperationResult result = service.activate(username);
+    switch (result) {
+      case SUCCESS:
+        log.info("User activated: " + username);
+        return Response.status(Status.ACCEPTED).build();
+      case USER_NOT_FOUND:
+        log.warning("User not found: " + username);
+        throw new ClientErrorException(Status.NOT_FOUND);
+      default:
+        log.warning("Failed to activate user: " + username);
+        throw new ClientErrorException(Status.INTERNAL_SERVER_ERROR);
     }
-    throw new ClientErrorException(Response.Status.NOT_FOUND);
   }
 
   @POST
@@ -87,13 +97,20 @@ public class UserEndpoint {
     Token token = EndpointUtils.requireDefaultAdmin(bearer, manager);
     log.info(String.format("User %s attempts to deactivate user: %s", token.getName(), username));
     if (EndpointUtils.checkForDefaultUser(username)) {
-      log.warning("Cannot deactivate default admin user: " + username);
+      log.warning("Cannot deactivate default user: " + username);
       throw new ClientErrorException(Response.Status.FORBIDDEN);
     }
-    boolean success = service.deactivate(username);
-    if (success) {
-      return Response.ok().build();
+    OperationResult result = service.deactivate(username);
+    switch (result) {
+      case SUCCESS:
+        log.info("User deactivated: " + username);
+        return Response.status(Status.ACCEPTED).build();
+      case USER_NOT_FOUND:
+        log.warning("User not found: " + username);
+        throw new ClientErrorException(Status.NOT_FOUND);
+      default:
+        log.warning("Failed to deactivate user: " + username);
+        throw new ClientErrorException(Status.INTERNAL_SERVER_ERROR);
     }
-    throw new ClientErrorException(Response.Status.NOT_FOUND);
   }
 }
