@@ -81,4 +81,9 @@ public class FsUserService implements UserService {
   public boolean deactivate(String username) {
     return repository.deactivate(username);
   }
+
+  @Override
+  public boolean setToken(String username, String token) {
+    return repository.setToken(username, token);
+  }
 }

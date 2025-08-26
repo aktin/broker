@@ -14,4 +14,6 @@ public interface UserService {
   boolean activate(String username);
 
   boolean deactivate(String username);
+
+  boolean setToken(String username, String token);
 }
