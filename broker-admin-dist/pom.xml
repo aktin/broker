@@ -41,6 +41,12 @@
 			<artifactId>broker-auth-local</artifactId>
 			<version>1.5.3-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.aktin</groupId>
+			<artifactId>broker-auth-openid</artifactId>
+			<version>1.5.3-SNAPSHOT</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
