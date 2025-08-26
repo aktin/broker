@@ -137,11 +137,6 @@ public class FsUserRepository implements UserRepository {
   }
 
   @Override
-  public boolean updatePassword(String username, String hash, String algorithm) {
-    return updateUser(username, hash, algorithm, null);
-  }
-
-  @Override
   public boolean activate(String username) {
     return updateUser(username, null, null, true);
   }

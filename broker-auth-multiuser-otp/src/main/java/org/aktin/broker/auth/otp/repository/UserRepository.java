@@ -10,8 +10,6 @@ public interface UserRepository {
 
   boolean insert(String username, String hash, String algorithm);
 
-  boolean updatePassword(String username, String hash, String algorithm);
-
   boolean activate(String username);
 
   boolean deactivate(String username);

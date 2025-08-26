@@ -33,23 +33,17 @@ public class FsUserService implements UserService {
     String password = System.getProperty(PROPERTY_ADMIN_PASSWORD);
     User initialUser = repository.find(username);
     if (initialUser == null) {
-      createDefaultUser(username, password);
-    } else {
-      updateDefaultUser(initialUser, password);
+      String raw;
+      if (password == null || password.isBlank()) {
+        raw = generateRandomPassword();
+        log.info(String.format("Creating default user %s with random password %s", username, raw));
+      } else {
+        raw = password;
+        log.info(String.format("Creating default user %s from system properties", username));
+      }
+      String hash = passwordHasher.hash(raw.toCharArray());
+      repository.insert(username, hash, passwordHasher.algorithm());
     }
-  }
-
-  private void createDefaultUser(String username, String password) {
-    String raw;
-    if (password == null || password.isBlank()) {
-      raw = generateRandomPassword();
-      log.info(String.format("Creating default user %s with random password %s", username, raw));
-    } else {
-      raw = password;
-      log.info(String.format("Creating default user %s from system properties", username));
-    }
-    String hash = passwordHasher.hash(raw.toCharArray());
-    repository.insert(username, hash, passwordHasher.algorithm());
   }
 
   private static String generateRandomPassword() {
@@ -60,19 +54,6 @@ public class FsUserService implements UserService {
       b.append(alpha.charAt(idx));
     }
     return b.toString();
-  }
-
-  private void updateDefaultUser(User user, String password) {
-    if (password == null || password.isBlank()) {
-      log.info("No password provided for default user. Skipping password update.");
-      return;
-    }
-    String newHash = passwordHasher.hash(password.toCharArray());
-    if (newHash.equals(user.password) && passwordHasher.algorithm().equalsIgnoreCase(user.algorithm)) {
-      return;
-    }
-    log.info(String.format("Updating default user %s from system properties", user.username));
-    repository.updatePassword(user.username, newHash, passwordHasher.algorithm());
   }
 
   @Override
