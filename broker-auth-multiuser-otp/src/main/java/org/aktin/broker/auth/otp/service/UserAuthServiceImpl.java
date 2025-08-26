@@ -29,22 +29,22 @@ public class UserAuthServiceImpl implements UserAuthService {
     log.info(String.format("Authenticating user: %s...", username));
     User user = userService.get(username);
     if (user == null) {
-      log.info("User not found");
+      log.info(String.format("User %s not found", username));
       return false;
     }
     if (!user.active) {
-      log.info("User is inactive");
+      log.info(String.format("User %s is inactive", username));
       return false;
     }
     if (!passwordHasher.algorithm().equalsIgnoreCase(user.algorithm)) {
-      log.warning(String.format("User has unsupported algorithm: %s", user.algorithm));
+      log.warning(String.format("User %s has unsupported algorithm: %s", username, user.algorithm));
       return false;
     }
     boolean ok = passwordHasher.verify(providedPassword, user.password);
     if (ok) {
-      log.info("User accepted");
+      log.info(String.format("User %s accepted", username));
     } else {
-      log.info("User denied");
+      log.info(String.format("User %s denied", username));
     }
     return ok;
   }

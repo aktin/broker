@@ -70,7 +70,7 @@ public class FsUserRepository implements UserRepository {
         }
       }
       cacheLoaded = true;
-      log.info("Loaded " + loadedCount + " users into cache from " + usersFile.getFileName());
+      log.info(String.format("Loaded %d users into cache from %s", loadedCount, usersFile.getFileName()));
     } catch (IOException e) {
       log.severe("Failed to load users from file: " + e.getMessage());
       cacheLoaded = true;
@@ -126,10 +126,10 @@ public class FsUserRepository implements UserRepository {
       User user = new User(username, hash, algorithm, true, createdAt);
       userCache.put(username, user);
       saveUsersToFile();
-      log.info("New User created: " + username);
+      log.info("User created: " + username);
       return true;
     } catch (Exception e) {
-      log.severe("Failed to insert user " + username + ": " + e.getMessage());
+      log.severe(String.format("Failed to insert user %s: %s", username, e.getMessage()));
       return false;
     } finally {
       lock.writeLock().unlock();
@@ -169,7 +169,7 @@ public class FsUserRepository implements UserRepository {
       log.info("User updated: " + username);
       return true;
     } catch (Exception e) {
-      log.severe("Failed to update user " + username + ": " + e.getMessage());
+      log.severe(String.format("Failed to update user %s: %s", username, e.getMessage()));
       return false;
     } finally {
       lock.writeLock().unlock();

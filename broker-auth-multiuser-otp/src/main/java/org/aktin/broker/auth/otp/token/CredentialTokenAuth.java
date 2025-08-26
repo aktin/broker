@@ -1,6 +1,5 @@
 package org.aktin.broker.auth.otp.token;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.aktin.broker.server.auth.AuthInfo;
 import org.aktin.broker.server.auth.AuthInfoImpl;
@@ -33,7 +32,7 @@ public class CredentialTokenAuth extends HttpBearerAuthentication {
     try {
       token.renew();
     } catch (RuntimeException e) {
-      log.log(Level.WARNING, String.format("Failed to renew token for user: %s", token.getName()), e);
+      log.warning(String.format("Failed to renew token for user %s: %s", token.getName(), e.getMessage()));
     }
     final String dn = getClientDn(token);
     return new AuthInfoImpl(token.getName(), dn, defaultRolesForClientDN(dn));
