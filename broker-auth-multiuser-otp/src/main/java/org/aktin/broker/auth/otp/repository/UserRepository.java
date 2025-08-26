@@ -1,6 +1,7 @@
 package org.aktin.broker.auth.otp.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository {
 
@@ -8,11 +9,7 @@ public interface UserRepository {
 
   List<User> findAll();
 
-  boolean insert(String username, String hash, String algorithm);
+  OperationResult insert(String username, String hash, String algorithm);
 
-  boolean activate(String username);
-
-  boolean deactivate(String username);
-
-  boolean setToken(String username, String token);
+  OperationResult update(String username, String hash, String algorithm, Boolean active, Optional<String> token);
 }

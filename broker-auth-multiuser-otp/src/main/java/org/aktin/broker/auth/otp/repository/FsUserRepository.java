@@ -115,51 +115,34 @@ public class FsUserRepository implements UserRepository {
   }
 
   @Override
-  public boolean insert(String username, String hash, String algorithm) {
+  public OperationResult insert(String username, String hash, String algorithm) {
     ensureCacheLoaded();
     lock.writeLock().lock();
     try {
       if (userCache.containsKey(username)) {
-        log.warning("User already exists: " + username);
-        return false;
+        return OperationResult.USER_ALREADY_EXISTS;
       }
       long createdAt = System.currentTimeMillis();
       User user = new User(username, hash, algorithm, true, createdAt, Optional.empty());
       userCache.put(username, user);
       saveUsersToFile();
-      log.info("User created: " + username);
-      return true;
+      return OperationResult.SUCCESS;
     } catch (Exception e) {
       log.severe(String.format("Failed to insert user %s: %s", username, e.getMessage()));
-      return false;
+      return OperationResult.FAILED;
     } finally {
       lock.writeLock().unlock();
     }
   }
 
   @Override
-  public boolean activate(String username) {
-    return updateUser(username, null, null, true, Optional.empty());
-  }
-
-  @Override
-  public boolean deactivate(String username) {
-    return updateUser(username, null, null, false, Optional.empty());
-  }
-
-  @Override
-  public boolean setToken(String username, String token) {
-    return updateUser(username, null, null, null, Optional.ofNullable(token));
-  }
-
-  private boolean updateUser(String username, String hash, String algorithm, Boolean active, Optional<String> token) {
+  public OperationResult update(String username, String hash, String algorithm, Boolean active, Optional<String> token) {
     ensureCacheLoaded();
     lock.writeLock().lock();
     try {
       User existingUser = userCache.get(username);
       if (existingUser == null) {
-        log.warning("User not found for update: " + username);
-        return false;
+        return OperationResult.USER_NOT_FOUND;
       }
       String newHash = (hash != null) ? hash : existingUser.password;
       String newAlg = (algorithm != null) ? algorithm : existingUser.algorithm;
@@ -168,11 +151,10 @@ public class FsUserRepository implements UserRepository {
       User updatedUser = new User(username, newHash, newAlg, newActive, existingUser.createdAt, newToken);
       userCache.put(username, updatedUser);
       saveUsersToFile();
-      log.info("User updated: " + username);
-      return true;
+      return OperationResult.SUCCESS;
     } catch (Exception e) {
       log.severe(String.format("Failed to update user %s: %s", username, e.getMessage()));
-      return false;
+      return OperationResult.FAILED;
     } finally {
       lock.writeLock().unlock();
     }
