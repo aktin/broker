@@ -2,5 +2,5 @@ package org.aktin.broker.auth.otp.service;
 
 public interface UserAuthService {
 
-  boolean authenticate(String username, char[] providedPassword);
+  boolean authenticate(String username, char[] providedPassword, String token);
 }

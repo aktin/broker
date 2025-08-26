@@ -5,27 +5,29 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.aktin.broker.auth.otp.repository.User;
+import org.aktin.broker.auth.otp.utils.OtpVerificationService;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
-
-//TODO add option to enforce OTP
-//TODO only verify OTP if user has OTP in db
 
 @Singleton
 public class UserAuthServiceImpl implements UserAuthService {
 
   private static final Logger log = Logger.getLogger(UserAuthServiceImpl.class.getName());
 
+  private static final String PROPERTY_ENFORCE_OTP = "aktin.broker.auth.enforce.otp";
+
   private final UserService userService;
   private final PasswordHasher passwordHasher;
+  private final OtpVerificationService otpVerificationService;
 
   @Inject
-  public UserAuthServiceImpl(UserService service, PasswordHasher hasher) {
+  public UserAuthServiceImpl(UserService service, PasswordHasher hasher, OtpVerificationService otpVerificationService) {
     this.userService = Objects.requireNonNull(service);
     this.passwordHasher = Objects.requireNonNull(hasher);
+    this.otpVerificationService = Objects.requireNonNull(otpVerificationService);
   }
 
   @Override
-  public boolean authenticate(String username, char[] providedPassword) {
+  public boolean authenticate(String username, char[] providedPassword, String token) {
     log.info(String.format("Authenticating user: %s...", username));
     User user = userService.get(username);
     if (user == null) {
@@ -40,12 +42,35 @@ public class UserAuthServiceImpl implements UserAuthService {
       log.warning(String.format("User %s has unsupported algorithm: %s", username, user.algorithm));
       return false;
     }
-    boolean ok = passwordHasher.verify(providedPassword, user.password);
-    if (ok) {
-      log.info(String.format("User %s accepted", username));
-    } else {
-      log.info(String.format("User %s denied", username));
+    boolean passwordValid = passwordHasher.verify(providedPassword, user.password);
+    if (!passwordValid) {
+      log.info(String.format("User %s denied - invalid password", username));
+      return false;
     }
-    return ok;
+    boolean otpEnforced = Boolean.parseBoolean(System.getProperty(PROPERTY_ENFORCE_OTP, "false"));
+    boolean userHasOtp = user.token.isPresent();
+    if (otpEnforced || userHasOtp || token != null) {
+      if (token == null || token.trim().isEmpty()) {
+        log.info(String.format("User %s denied - OTP token required", username));
+        return false;
+      }
+      if (!userHasOtp) {
+        boolean stored = userService.setToken(username, token);
+        if (stored) {
+          log.info(String.format("User %s assigned first-time OTP token", username));
+          return true; // password already validated, OTP now registered
+        } else {
+          log.warning(String.format("User %s failed to store first-time OTP token", username));
+          return false;
+        }
+      }
+      boolean otpValid = otpVerificationService.verify(token);
+      if (!otpValid) {
+        log.info(String.format("User %s denied - invalid OTP token", username));
+        return false;
+      }
+    }
+    log.info(String.format("User %s accepted", username));
+    return true;
   }
 }
