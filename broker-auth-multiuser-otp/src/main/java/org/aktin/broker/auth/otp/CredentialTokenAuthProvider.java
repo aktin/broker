@@ -12,8 +12,10 @@ import org.aktin.broker.auth.otp.service.UserService;
 import org.aktin.broker.auth.otp.token.CredentialTokenAuth;
 import org.aktin.broker.auth.otp.token.TokenManager;
 import org.aktin.broker.auth.otp.token.TokenManagerImpl;
+import org.aktin.broker.auth.otp.utils.OtpVerificationService;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
 import org.aktin.broker.auth.otp.utils.Pbkdf2PasswordHasher;
+import org.aktin.broker.auth.otp.utils.YubicoVerificationService;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
 
 public class CredentialTokenAuthProvider extends AbstractAuthProvider {
@@ -23,6 +25,7 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider {
   private final UserRepository repository;
   private final PasswordHasher hasher;
   private final UserService service;
+  private final OtpVerificationService otpVerification;
   private final UserAuthService userAuth;
 
   public CredentialTokenAuthProvider() {
@@ -31,7 +34,8 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider {
     this.repository = new FsUserRepository();
     this.hasher = new Pbkdf2PasswordHasher();
     this.service = new FsUserService(repository, hasher);
-    this.userAuth = new UserAuthServiceImpl(service, hasher);
+    this.otpVerification = new YubicoVerificationService();
+    this.userAuth = new UserAuthServiceImpl(service, hasher, otpVerification);
   }
 
   @Override
@@ -49,6 +53,7 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider {
     binder.accept(repository, UserRepository.class);
     binder.accept(hasher, PasswordHasher.class);
     binder.accept(service, UserService.class);
+    binder.accept(otpVerification, YubicoVerificationService.class);
     binder.accept(userAuth, UserAuthService.class);
   }
 

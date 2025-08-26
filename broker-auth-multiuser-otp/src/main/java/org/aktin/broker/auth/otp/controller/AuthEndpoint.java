@@ -39,7 +39,8 @@ public class AuthEndpoint {
     EndpointUtils.validateCredentials(cred);
     String username = cred.username;
     char[] password = cred.password.toCharArray();
-    boolean ok = auth.authenticate(username, password);
+    String token = cred.token;
+    boolean ok = auth.authenticate(username, password, token);
     if (!ok) {
       throw new ClientErrorException(Response.Status.UNAUTHORIZED);
     }

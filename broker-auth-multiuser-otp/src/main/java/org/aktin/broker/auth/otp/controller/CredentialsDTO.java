@@ -13,4 +13,5 @@ public class CredentialsDTO implements Serializable {
 
   public String username;
   public String password;
+  public String token;
 }

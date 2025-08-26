@@ -9,9 +9,6 @@ public class TokenManagerImpl implements TokenManager {
 
   private final Map<String, Token> sessions = new ConcurrentHashMap<>();
 
-  public TokenManagerImpl() {
-  }
-
   @Override
   public Token issue(String username) {
     if (username == null) {
