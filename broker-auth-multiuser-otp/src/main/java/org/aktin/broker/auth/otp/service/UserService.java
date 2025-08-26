@@ -1,18 +1,17 @@
 package org.aktin.broker.auth.otp.service;
 
-import java.sql.SQLException;
 import java.util.List;
 import org.aktin.broker.auth.otp.repository.User;
 
 public interface UserService {
 
-  User get(String username) throws SQLException;
+  User get(String username);
 
-  List<User> list() throws SQLException;
+  List<User> list();
 
-  void create(String username, char[] password) throws SQLException;
+  boolean create(String username, char[] password);
 
-  void activate(String username) throws SQLException;
+  boolean activate(String username);
 
-  void deactivate(String username) throws SQLException;
+  boolean deactivate(String username);
 }

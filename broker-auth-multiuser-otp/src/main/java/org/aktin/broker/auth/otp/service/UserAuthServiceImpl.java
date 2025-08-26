@@ -1,6 +1,5 @@
 package org.aktin.broker.auth.otp.service;
 
-import java.sql.SQLException;
 import java.util.Objects;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -28,30 +27,25 @@ public class UserAuthServiceImpl implements UserAuthService {
   @Override
   public boolean authenticate(String username, char[] providedPassword) {
     log.info(String.format("Authenticating user: %s...", username));
-    try {
-      User user = userService.get(username);
-      if (user == null) {
-        log.info("User not found");
-        return false;
-      }
-      if (!user.active) {
-        log.info("User is inactive");
-        return false;
-      }
-      if (!passwordHasher.algorithm().equalsIgnoreCase(user.algorithm)) {
-        log.warning(String.format("User has unsupported algorithm: %s", user.algorithm));
-        return false;
-      }
-      boolean ok = passwordHasher.verify(providedPassword, user.password);
-      if (ok) {
-        log.info("User accepted");
-      } else {
-        log.info("User denied");
-      }
-      return ok;
-    } catch (SQLException e) {
-      log.severe(String.format("SQL error for user %s: %s", username, e.getMessage()));
+    User user = userService.get(username);
+    if (user == null) {
+      log.info("User not found");
       return false;
     }
+    if (!user.active) {
+      log.info("User is inactive");
+      return false;
+    }
+    if (!passwordHasher.algorithm().equalsIgnoreCase(user.algorithm)) {
+      log.warning(String.format("User has unsupported algorithm: %s", user.algorithm));
+      return false;
+    }
+    boolean ok = passwordHasher.verify(providedPassword, user.password);
+    if (ok) {
+      log.info("User accepted");
+    } else {
+      log.info("User denied");
+    }
+    return ok;
   }
 }
