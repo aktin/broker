@@ -65,6 +65,10 @@ public class UserAuthServiceImpl implements UserAuthService {
           return false;
         }
       }
+      if (!isPublicIdValid(user, token)) {
+        log.info(String.format("User %s denied - public ID mismatch", username));
+        return false;
+      }
       boolean otpValid = otpVerificationService.verify(token);
       if (!otpValid) {
         log.info(String.format("User %s denied - invalid OTP token", username));
@@ -73,5 +77,11 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
     log.info(String.format("User %s accepted", username));
     return true;
+  }
+
+  private boolean isPublicIdValid(User user, String token) {
+    String expectedPublicId = user.token.get();
+    String actualPublicId = token.substring(0, 12);
+    return expectedPublicId.equals(actualPublicId);
   }
 }
