@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -123,7 +124,7 @@ public class FsUserRepository implements UserRepository {
         return false;
       }
       long createdAt = System.currentTimeMillis();
-      User user = new User(username, hash, algorithm, true, createdAt);
+      User user = new User(username, hash, algorithm, true, createdAt, Optional.empty());
       userCache.put(username, user);
       saveUsersToFile();
       log.info("User created: " + username);
@@ -138,15 +139,20 @@ public class FsUserRepository implements UserRepository {
 
   @Override
   public boolean activate(String username) {
-    return updateUser(username, null, null, true);
+    return updateUser(username, null, null, true, Optional.empty());
   }
 
   @Override
   public boolean deactivate(String username) {
-    return updateUser(username, null, null, false);
+    return updateUser(username, null, null, false, Optional.empty());
   }
 
-  private boolean updateUser(String username, String hash, String algorithm, Boolean active) {
+  @Override
+  public boolean setToken(String username, String token) {
+    return updateUser(username, null, null, null, Optional.ofNullable(token));
+  }
+
+  private boolean updateUser(String username, String hash, String algorithm, Boolean active, Optional<String> token) {
     ensureCacheLoaded();
     lock.writeLock().lock();
     try {
@@ -158,7 +164,8 @@ public class FsUserRepository implements UserRepository {
       String newHash = (hash != null) ? hash : existingUser.password;
       String newAlg = (algorithm != null) ? algorithm : existingUser.algorithm;
       boolean newActive = (active != null) ? active : existingUser.active;
-      User updatedUser = new User(username, newHash, newAlg, newActive, existingUser.createdAt);
+      Optional<String> newToken = token.isPresent() ? token : existingUser.token;
+      User updatedUser = new User(username, newHash, newAlg, newActive, existingUser.createdAt, newToken);
       userCache.put(username, updatedUser);
       saveUsersToFile();
       log.info("User updated: " + username);
@@ -183,7 +190,8 @@ public class FsUserRepository implements UserRepository {
     String algorithm = parts[2];
     boolean active = Boolean.parseBoolean(parts[3]);
     long createdAt = Long.parseLong(parts[4]);
-    return new User(username, password, algorithm, active, createdAt);
+    Optional<String> token = (parts.length > 5 && !parts[5].isEmpty()) ? Optional.of(parts[5]) : Optional.empty();
+    return new User(username, password, algorithm, active, createdAt, token);
   }
 
   private String formatUserLine(User user) {
@@ -192,6 +200,7 @@ public class FsUserRepository implements UserRepository {
         user.password,
         user.algorithm,
         String.valueOf(user.active),
-        String.valueOf(user.createdAt));
+        String.valueOf(user.createdAt),
+        user.token.orElse(""));
   }
 }

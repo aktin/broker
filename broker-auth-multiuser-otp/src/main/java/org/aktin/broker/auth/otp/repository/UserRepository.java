@@ -13,4 +13,6 @@ public interface UserRepository {
   boolean activate(String username);
 
   boolean deactivate(String username);
+
+  boolean setToken(String username, String token);
 }
