@@ -1,17 +1,17 @@
 package org.aktin.broker.auth.otp;
 
 import java.util.function.BiConsumer;
-import org.aktin.broker.auth.otp.token.CredentialTokenAuth;
-import org.aktin.broker.auth.otp.token.TokenManager;
-import org.aktin.broker.auth.otp.token.TokenManagerImpl;
 import org.aktin.broker.auth.otp.controller.AuthEndpoint;
 import org.aktin.broker.auth.otp.controller.UserEndpoint;
-import org.aktin.broker.auth.otp.repository.JdbcUserRepository;
+import org.aktin.broker.auth.otp.repository.FsUserRepository;
 import org.aktin.broker.auth.otp.repository.UserRepository;
-import org.aktin.broker.auth.otp.service.JdbcUserService;
+import org.aktin.broker.auth.otp.service.FsUserService;
 import org.aktin.broker.auth.otp.service.UserAuthService;
 import org.aktin.broker.auth.otp.service.UserAuthServiceImpl;
 import org.aktin.broker.auth.otp.service.UserService;
+import org.aktin.broker.auth.otp.token.CredentialTokenAuth;
+import org.aktin.broker.auth.otp.token.TokenManager;
+import org.aktin.broker.auth.otp.token.TokenManagerImpl;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
 import org.aktin.broker.auth.otp.utils.Pbkdf2PasswordHasher;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
@@ -28,9 +28,9 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider {
   public CredentialTokenAuthProvider() {
     this.manager = new TokenManagerImpl();
     this.tokenAuth = new CredentialTokenAuth(manager);
-    this.repository = new JdbcUserRepository();
+    this.repository = new FsUserRepository();
     this.hasher = new Pbkdf2PasswordHasher();
-    this.service = new JdbcUserService(repository, hasher);
+    this.service = new FsUserService(repository, hasher);
     this.userAuth = new UserAuthServiceImpl(service, hasher);
   }
 
