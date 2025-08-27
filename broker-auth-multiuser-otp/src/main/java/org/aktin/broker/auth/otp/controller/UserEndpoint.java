@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -71,7 +72,7 @@ public class UserEndpoint {
   @POST
   @Authenticated
   @RequireAdmin
-  @Path("{username}/activate")
+  @Path("{username}/active")
   public Response activate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) {
     Token token = EndpointUtils.requireDefaultAdmin(bearer, manager);
     log.info(String.format("User %s attempts to activate user: %s", token.getName(), username));
@@ -89,10 +90,10 @@ public class UserEndpoint {
     }
   }
 
-  @POST
+  @DELETE
   @Authenticated
   @RequireAdmin
-  @Path("{username}/deactivate")
+  @Path("{username}/active")
   public Response deactivate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) {
     Token token = EndpointUtils.requireDefaultAdmin(bearer, manager);
     log.info(String.format("User %s attempts to deactivate user: %s", token.getName(), username));
