@@ -6,10 +6,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
@@ -22,12 +22,11 @@ public class FsUserRepository implements UserRepository {
 
   private static final String PROPERTY_USER_FILE = "aktin.broker.users.file";
   private static final String DEFAULT_USER_FILE = "users.txt";
-  private static final String FIELD_SEPARATOR = ";";
+  private static final String FIELD_SEPARATOR = "\t";
 
   private final Path usersFile;
-  private final Map<String, User> userCache = new ConcurrentHashMap<>();
+  private final Map<String, User> userCache = new HashMap<>();
   private final ReadWriteLock lock = new ReentrantReadWriteLock();
-  private volatile boolean cacheLoaded = false;
 
   public FsUserRepository() {
     this(System.getProperty(PROPERTY_USER_FILE, DEFAULT_USER_FILE));
@@ -54,9 +53,7 @@ public class FsUserRepository implements UserRepository {
   }
 
   private void loadUsersIntoCache() {
-    lock.writeLock().lock();
     try {
-      userCache.clear();
       List<String> lines = Files.readAllLines(usersFile);
       int loadedCount = 0;
       for (String line : lines) {
@@ -64,37 +61,22 @@ public class FsUserRepository implements UserRepository {
           continue;
         }
         String[] parts = line.split(FIELD_SEPARATOR, -1);
-        if (parts.length >= 5) {
+        if (parts.length == 6) {
           User user = parseUser(parts);
           userCache.put(user.username, user);
           loadedCount++;
+        } else {
+          log.warning(String.format("Skipping malformed line in %s: expected 6 fields, got %d", usersFile.getFileName(), parts.length));
         }
       }
-      cacheLoaded = true;
       log.info(String.format("Loaded %d users into cache from %s", loadedCount, usersFile.getFileName()));
     } catch (IOException e) {
       log.severe("Failed to load users from file: " + e.getMessage());
-      cacheLoaded = true;
-    } finally {
-      lock.writeLock().unlock();
-    }
-  }
-
-  private void saveUsersToFile() {
-    try {
-      List<String> lines = new ArrayList<>();
-      userCache.values().stream()
-          .sorted(Comparator.comparing(u -> u.username))
-          .forEach(user -> lines.add(formatUserLine(user)));
-      Files.write(usersFile, lines);
-    } catch (IOException e) {
-      log.severe("Failed to persist user data: " + e.getMessage());
     }
   }
 
   @Override
   public User find(String username) {
-    ensureCacheLoaded();
     lock.readLock().lock();
     try {
       return userCache.get(username);
@@ -105,7 +87,6 @@ public class FsUserRepository implements UserRepository {
 
   @Override
   public List<User> findAll() {
-    ensureCacheLoaded();
     lock.readLock().lock();
     try {
       return new ArrayList<>(userCache.values());
@@ -116,7 +97,6 @@ public class FsUserRepository implements UserRepository {
 
   @Override
   public OperationResult insert(String username, String hash, String algorithm) {
-    ensureCacheLoaded();
     lock.writeLock().lock();
     try {
       if (userCache.containsKey(username)) {
@@ -125,7 +105,7 @@ public class FsUserRepository implements UserRepository {
       long createdAt = System.currentTimeMillis();
       User user = new User(username, hash, algorithm, true, createdAt, Optional.empty());
       userCache.put(username, user);
-      saveUsersToFile();
+      saveUsersToFile((ReentrantReadWriteLock) lock);
       return OperationResult.SUCCESS;
     } catch (Exception e) {
       log.severe(String.format("Failed to insert user %s: %s", username, e.getMessage()));
@@ -137,7 +117,6 @@ public class FsUserRepository implements UserRepository {
 
   @Override
   public OperationResult update(String username, String hash, String algorithm, Boolean active, Optional<String> token) {
-    ensureCacheLoaded();
     lock.writeLock().lock();
     try {
       User existingUser = userCache.get(username);
@@ -150,7 +129,7 @@ public class FsUserRepository implements UserRepository {
       Optional<String> newToken = token.isPresent() ? token : existingUser.token;
       User updatedUser = new User(username, newHash, newAlg, newActive, existingUser.createdAt, newToken);
       userCache.put(username, updatedUser);
-      saveUsersToFile();
+      saveUsersToFile((ReentrantReadWriteLock) lock);
       return OperationResult.SUCCESS;
     } catch (Exception e) {
       log.severe(String.format("Failed to update user %s: %s", username, e.getMessage()));
@@ -160,9 +139,18 @@ public class FsUserRepository implements UserRepository {
     }
   }
 
-  private void ensureCacheLoaded() {
-    if (!cacheLoaded) {
-      loadUsersIntoCache();
+  private void saveUsersToFile(ReentrantReadWriteLock rw) {
+    if (!rw.isWriteLockedByCurrentThread()) {
+      throw new IllegalStateException("saveUsersToFile requires the write lock");
+    }
+    try {
+      List<String> lines = new ArrayList<>();
+      userCache.values().stream()
+          .sorted(Comparator.comparing(u -> u.username))
+          .forEach(user -> lines.add(formatUserLine(user)));
+      Files.write(usersFile, lines);
+    } catch (IOException e) {
+      log.severe("Failed to persist user data: " + e.getMessage());
     }
   }
 
@@ -172,7 +160,8 @@ public class FsUserRepository implements UserRepository {
     String algorithm = parts[2];
     boolean active = Boolean.parseBoolean(parts[3]);
     long createdAt = Long.parseLong(parts[4]);
-    Optional<String> token = (parts.length > 5 && !parts[5].isEmpty()) ? Optional.of(parts[5]) : Optional.empty();
+    String tokenStr = parts[5];
+    Optional<String> token = tokenStr.isEmpty() ? Optional.empty() : Optional.of(tokenStr);
     return new User(username, password, algorithm, active, createdAt, token);
   }
 
