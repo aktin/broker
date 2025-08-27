@@ -52,19 +52,18 @@ public class UserEndpoint {
   @Consumes(MediaType.APPLICATION_XML)
   public Response create(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, CredentialsDTO cred) {
     Token token = EndpointUtils.requireDefaultAdmin(bearer, manager);
-    log.info(String.format("User %s attempts to create new user: %s", token.getName(), cred.username));
     EndpointUtils.validateCredentials(cred);
     char[] pw = cred.password.toCharArray();
     OperationResult result = service.create(cred.username, pw);
     switch (result) {
       case SUCCESS:
-        log.info("User created: " + cred.username);
+        log.info(String.format("User %s created new user %s", token.getName(), cred.username));
         return Response.status(Status.CREATED).build();
       case USER_ALREADY_EXISTS:
-        log.warning("User already exists: " + cred.username);
+        log.warning(String.format("User %s failed to create user %s: already exists", token.getName(), cred.username));
         throw new ClientErrorException(Status.CONFLICT);
       default:
-        log.warning("Failed to create user: " + cred.username);
+        log.warning(String.format("User %s failed to create user %s", token.getName(), cred.username));
         throw new ClientErrorException(Status.INTERNAL_SERVER_ERROR);
     }
   }
@@ -75,17 +74,16 @@ public class UserEndpoint {
   @Path("{username}/active")
   public Response activate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) {
     Token token = EndpointUtils.requireDefaultAdmin(bearer, manager);
-    log.info(String.format("User %s attempts to activate user: %s", token.getName(), username));
     OperationResult result = service.activate(username);
     switch (result) {
       case SUCCESS:
-        log.info("User activated: " + username);
+        log.info(String.format("User %s activated user %s", token.getName(), username));
         return Response.status(Status.ACCEPTED).build();
       case USER_NOT_FOUND:
-        log.warning("User not found: " + username);
+        log.warning(String.format("User %s failed to activate user %s: not found", token.getName(), username));
         throw new ClientErrorException(Status.NOT_FOUND);
       default:
-        log.warning("Failed to activate user: " + username);
+        log.warning(String.format("User %s failed to activate user %s", token.getName(), username));
         throw new ClientErrorException(Status.INTERNAL_SERVER_ERROR);
     }
   }
@@ -96,21 +94,20 @@ public class UserEndpoint {
   @Path("{username}/active")
   public Response deactivate(@HeaderParam(HttpHeaders.AUTHORIZATION) String bearer, @PathParam("username") String username) {
     Token token = EndpointUtils.requireDefaultAdmin(bearer, manager);
-    log.info(String.format("User %s attempts to deactivate user: %s", token.getName(), username));
     if (EndpointUtils.checkForDefaultUser(username)) {
-      log.warning("Cannot deactivate default user: " + username);
+      log.warning(String.format("User %s tried to deactivate default user %s", token.getName(), username));
       throw new ClientErrorException(Response.Status.FORBIDDEN);
     }
     OperationResult result = service.deactivate(username);
     switch (result) {
       case SUCCESS:
-        log.info("User deactivated: " + username);
+        log.info(String.format("User %s deactivated user %s", token.getName(), username));
         return Response.status(Status.ACCEPTED).build();
       case USER_NOT_FOUND:
-        log.warning("User not found: " + username);
+        log.warning(String.format("User %s failed to deactivate user %s: not found", token.getName(), username));
         throw new ClientErrorException(Status.NOT_FOUND);
       default:
-        log.warning("Failed to deactivate user: " + username);
+        log.warning(String.format("User %s failed to deactivate user %s", token.getName(), username));
         throw new ClientErrorException(Status.INTERNAL_SERVER_ERROR);
     }
   }

@@ -29,56 +29,57 @@ public class UserAuthServiceImpl implements UserAuthService {
 
   @Override
   public boolean authenticate(String username, char[] providedPassword, String token) {
-    log.info(String.format("Authenticating user: %s...", username));
     User user = userService.get(username);
     if (user == null) {
-      log.info(String.format("User %s not found", username));
+      log.info(String.format("Authentication failed for %s: user not found", username));
       return false;
     }
     if (!user.active) {
-      log.info(String.format("User %s is inactive", username));
+      log.info(String.format("Authentication failed for %s: user inactive", username));
       return false;
     }
     if (!passwordHasher.algorithm().equalsIgnoreCase(user.algorithm)) {
-      log.warning(String.format("User %s has unsupported algorithm: %s", username, user.algorithm));
+      log.warning(String.format("Authentication failed for %s: unsupported algorithm %s", username, user.algorithm));
       return false;
     }
     boolean passwordValid = passwordHasher.verify(providedPassword, user.password);
     if (!passwordValid) {
-      log.info(String.format("User %s denied - invalid password", username));
+      log.info(String.format("Authentication failed for %s: invalid password", username));
       return false;
     }
+
     boolean otpEnforced = Boolean.parseBoolean(System.getProperty(PROPERTY_ENFORCE_OTP, "false"));
     boolean userHasOtp = user.token.isPresent();
     boolean hasToken = token != null && !token.trim().isEmpty();
+
     if (otpEnforced || userHasOtp) {
       if (!hasToken) {
-        log.info(String.format("User %s denied - OTP token required", username));
+        log.info(String.format("Authentication failed for %s: OTP token required", username));
         return false;
       }
     }
     if (!userHasOtp && hasToken) {
       OperationResult result = userService.setToken(username, token);
       if (result == OperationResult.SUCCESS) {
-        log.info(String.format("User %s assigned first-time OTP token", username));
+        log.info(String.format("Authentication succeeded for %s: password valid, assigned first-time OTP token", username));
         return true; // password already validated, OTP now registered
       } else {
-        log.warning(String.format("User %s failed to store first-time OTP token", username));
+        log.warning(String.format("Authentication failed for %s: could not store OTP token", username));
         return false;
       }
     }
     if (userHasOtp && hasToken) {
       if (!isPublicIdValid(user, token)) {
-        log.info(String.format("User %s denied - public ID mismatch", username));
+        log.info(String.format("Authentication failed for %s: OTP public ID mismatch", username));
         return false;
       }
       boolean otpValid = otpVerificationService.verify(token);
       if (!otpValid) {
-        log.info(String.format("User %s denied - invalid OTP token", username));
+        log.info(String.format("Authentication failed for %s: invalid OTP token", username));
         return false;
       }
     }
-    log.info(String.format("User %s accepted", username));
+    log.info(String.format("Authentication succeeded for %s", username));
     return true;
   }
 
