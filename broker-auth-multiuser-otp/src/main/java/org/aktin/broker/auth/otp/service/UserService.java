@@ -17,4 +17,8 @@ public interface UserService {
   OperationResult deactivate(String username);
 
   OperationResult setToken(String username, String token);
+
+  boolean verifyUserPassword(User user, char[] password);
+
+  boolean isUserAlgorithmSupported(User user);
 }

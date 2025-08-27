@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 import org.aktin.broker.auth.otp.repository.OperationResult;
 import org.aktin.broker.auth.otp.repository.User;
 import org.aktin.broker.auth.otp.utils.OtpVerificationService;
-import org.aktin.broker.auth.otp.utils.PasswordHasher;
 
 @Singleton
 public class UserAuthServiceImpl implements UserAuthService {
@@ -17,13 +16,11 @@ public class UserAuthServiceImpl implements UserAuthService {
   private static final String PROPERTY_ENFORCE_OTP = "aktin.broker.auth.enforce.otp";
 
   private final UserService userService;
-  private final PasswordHasher passwordHasher;
   private final OtpVerificationService otpVerificationService;
 
   @Inject
-  public UserAuthServiceImpl(UserService service, PasswordHasher hasher, OtpVerificationService otpVerificationService) {
+  public UserAuthServiceImpl(UserService service, OtpVerificationService otpVerificationService) {
     this.userService = Objects.requireNonNull(service);
-    this.passwordHasher = Objects.requireNonNull(hasher);
     this.otpVerificationService = Objects.requireNonNull(otpVerificationService);
   }
 
@@ -38,12 +35,11 @@ public class UserAuthServiceImpl implements UserAuthService {
       log.info(String.format("Authentication failed for %s: user inactive", username));
       return false;
     }
-    if (!passwordHasher.algorithm().equalsIgnoreCase(user.algorithm)) {
+    if (!userService.isUserAlgorithmSupported(user)) {
       log.warning(String.format("Authentication failed for %s: unsupported algorithm %s", username, user.algorithm));
       return false;
     }
-    boolean passwordValid = passwordHasher.verify(providedPassword, user.password);
-    if (!passwordValid) {
+    if (!userService.verifyUserPassword(user, providedPassword)) {
       log.info(String.format("Authentication failed for %s: invalid password", username));
       return false;
     }
@@ -62,7 +58,7 @@ public class UserAuthServiceImpl implements UserAuthService {
       OperationResult result = userService.setToken(username, token);
       if (result == OperationResult.SUCCESS) {
         log.info(String.format("Authentication succeeded for %s: password valid, assigned first-time OTP token", username));
-        return true; // password already validated, OTP now registered
+        return true;
       } else {
         log.warning(String.format("Authentication failed for %s: could not store OTP token", username));
         return false;

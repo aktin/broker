@@ -92,4 +92,17 @@ public class FsUserService implements UserService {
     String publicId = token.substring(0, 12);
     return repository.update(username, null, null, null, Optional.of(publicId));
   }
+
+  @Override
+  public boolean verifyUserPassword(User user, char[] password) {
+    if (user == null) {
+      return false;
+    }
+    return passwordHasher.verify(password, user.password);
+  }
+
+  @Override
+  public boolean isUserAlgorithmSupported(User user) {
+    return user != null && passwordHasher.algorithm().equalsIgnoreCase(user.algorithm);
+  }
 }

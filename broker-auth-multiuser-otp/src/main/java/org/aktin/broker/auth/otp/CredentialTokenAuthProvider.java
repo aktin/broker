@@ -23,19 +23,17 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider {
   private final TokenManager manager;
   private final CredentialTokenAuth tokenAuth;
   private final UserRepository repository;
-  private final PasswordHasher hasher;
   private final UserService service;
-  private final OtpVerificationService otpVerification;
   private final UserAuthService userAuth;
 
   public CredentialTokenAuthProvider() {
     this.manager = new TokenManagerImpl();
     this.tokenAuth = new CredentialTokenAuth(manager);
     this.repository = new FsUserRepository();
-    this.hasher = new Pbkdf2PasswordHasher();
+    PasswordHasher hasher = new Pbkdf2PasswordHasher();
     this.service = new FsUserService(repository, hasher);
-    this.otpVerification = new YubicoVerificationService();
-    this.userAuth = new UserAuthServiceImpl(service, hasher, otpVerification);
+    OtpVerificationService otpVerification = new YubicoVerificationService();
+    this.userAuth = new UserAuthServiceImpl(service, otpVerification);
   }
 
   @Override
@@ -51,9 +49,7 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider {
   public void bindSingletons(BiConsumer<Object, Class<?>> binder) {
     binder.accept(manager, TokenManager.class);
     binder.accept(repository, UserRepository.class);
-    binder.accept(hasher, PasswordHasher.class);
     binder.accept(service, UserService.class);
-    binder.accept(otpVerification, YubicoVerificationService.class);
     binder.accept(userAuth, UserAuthService.class);
   }
 
