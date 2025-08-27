@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 import org.aktin.broker.auth.otp.repository.OperationResult;
 import org.aktin.broker.auth.otp.repository.User;
 import org.aktin.broker.auth.otp.repository.UserRepository;
+import org.aktin.broker.auth.otp.utils.OtpProvider;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
 
 @Singleton
@@ -22,11 +23,13 @@ public class FsUserService implements UserService {
 
   private final UserRepository repository;
   private final PasswordHasher passwordHasher;
+  private final OtpProvider otpProvider;
 
   @Inject
-  public FsUserService(UserRepository repo, PasswordHasher hasher) {
+  public FsUserService(UserRepository repo, PasswordHasher hasher, OtpProvider otpProvider) {
     this.repository = Objects.requireNonNull(repo);
     this.passwordHasher = Objects.requireNonNull(hasher);
+    this.otpProvider = Objects.requireNonNull(otpProvider);
     initializeDefaultUser();
   }
 
@@ -76,21 +79,25 @@ public class FsUserService implements UserService {
 
   @Override
   public OperationResult activate(String username) {
-    return repository.update(username, null, null, true, Optional.empty());
+    return repository.update(username, null, null, true, Optional.empty(), Optional.empty());
   }
 
   @Override
   public OperationResult deactivate(String username) {
-    return repository.update(username, null, null, false, Optional.empty());
+    return repository.update(username, null, null, false, Optional.empty(), Optional.empty());
   }
 
   @Override
   public OperationResult setToken(String username, String token) {
-    if (token == null || token.length() < 12) {
+    if (token == null || token.isBlank()) {
       return OperationResult.FAILED;
     }
-    String publicId = token.substring(0, 12);
-    return repository.update(username, null, null, null, Optional.of(publicId));
+    Optional<String> maybeBinding = otpProvider.deriveBinding(token);
+    if (maybeBinding.isEmpty()) {
+      return OperationResult.FAILED;
+    }
+    String binding = maybeBinding.get();
+    return repository.update(username, null, null, null, Optional.of(otpProvider.id()), Optional.of(binding));
   }
 
   @Override
@@ -104,5 +111,31 @@ public class FsUserService implements UserService {
   @Override
   public boolean isUserAlgorithmSupported(User user) {
     return user != null && passwordHasher.algorithm().equalsIgnoreCase(user.algorithm);
+  }
+
+  @Override
+  public boolean doesOtpBindingMatch(User user, String token) {
+    if (user == null || user.token.isEmpty() || token == null || token.isBlank()) {
+      return false;
+    }
+    Optional<String> maybeBinding = otpProvider.deriveBinding(token);
+    if (maybeBinding.isEmpty()) {
+      return false;
+    }
+    String binding = maybeBinding.get();
+    return user.token.get().equals(binding);
+  }
+
+  @Override
+  public boolean verifyOtpToken(String token) {
+    return otpProvider.verify(token);
+  }
+
+  @Override
+  public boolean isOtpProviderSupported(User user) {
+    if (user == null || user.tokenProvider.isEmpty()) {
+      return false;
+    }
+    return otpProvider.id().equalsIgnoreCase(user.tokenProvider.get());
   }
 }

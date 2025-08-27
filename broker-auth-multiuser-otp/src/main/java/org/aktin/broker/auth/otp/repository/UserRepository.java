@@ -11,5 +11,5 @@ public interface UserRepository {
 
   OperationResult insert(String username, String hash, String algorithm);
 
-  OperationResult update(String username, String hash, String algorithm, Boolean active, Optional<String> token);
+  OperationResult update(String username, String hash, String algorithm, Boolean active, Optional<String> provider, Optional<String> token);
 }

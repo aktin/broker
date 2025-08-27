@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -21,9 +22,9 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 // docs: https://developers.yubico.com/OTP/Specifications/OTP_validation_protocol.html
-public class YubicoVerificationService implements OtpVerificationService {
+public class YubicoOtpProvider implements OtpProvider {
 
-  private static final Logger log = Logger.getLogger(YubicoVerificationService.class.getName());
+  private static final Logger log = Logger.getLogger(YubicoOtpProvider.class.getName());
 
   private static final String PROPERTY_CLIENT_ID = "aktin.broker.auth.yubico.clientId";
   private static final String PROPERTY_SECRET_KEY = "aktin.broker.auth.yubico.secretKey";
@@ -39,13 +40,26 @@ public class YubicoVerificationService implements OtpVerificationService {
       "https://api5.yubico.com/wsapi/2.0/verify"
   };
 
-  public YubicoVerificationService() {
+  public YubicoOtpProvider() {
     this.clientId = System.getProperty(PROPERTY_CLIENT_ID);
     this.secretKey = System.getProperty(PROPERTY_SECRET_KEY);
     if (clientId == null || secretKey == null) {
-      throw new IllegalStateException("Missing Yubico clientId or secretKey system properties!");
+      throw new IllegalStateException("Missing Yubico clientId or secretKey system properties");
     }
-    log.fine("YubicoVerificationService initialized with clientId and secretKey");
+    log.fine("YubicoVerificationService initialized");
+  }
+
+  @Override
+  public String id() {
+    return "yubico-otp";
+  }
+
+  @Override
+  public Optional<String> deriveBinding(String token) {
+    if (token == null || token.length() < 12) {
+      return Optional.empty();
+    }
+    return Optional.of(token.substring(0, 12));
   }
 
   @Override

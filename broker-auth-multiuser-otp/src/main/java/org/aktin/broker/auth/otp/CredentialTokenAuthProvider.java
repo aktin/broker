@@ -12,10 +12,10 @@ import org.aktin.broker.auth.otp.service.UserService;
 import org.aktin.broker.auth.otp.token.CredentialTokenAuth;
 import org.aktin.broker.auth.otp.token.TokenManager;
 import org.aktin.broker.auth.otp.token.TokenManagerImpl;
-import org.aktin.broker.auth.otp.utils.OtpVerificationService;
+import org.aktin.broker.auth.otp.utils.OtpProvider;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
 import org.aktin.broker.auth.otp.utils.Pbkdf2PasswordHasher;
-import org.aktin.broker.auth.otp.utils.YubicoVerificationService;
+import org.aktin.broker.auth.otp.utils.YubicoOtpProvider;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
 
 public class CredentialTokenAuthProvider extends AbstractAuthProvider {
@@ -31,9 +31,9 @@ public class CredentialTokenAuthProvider extends AbstractAuthProvider {
     this.tokenAuth = new CredentialTokenAuth(manager);
     this.repository = new FsUserRepository();
     PasswordHasher hasher = new Pbkdf2PasswordHasher();
-    this.service = new FsUserService(repository, hasher);
-    OtpVerificationService otpVerification = new YubicoVerificationService();
-    this.userAuth = new UserAuthServiceImpl(service, otpVerification);
+    OtpProvider otpProvider = new YubicoOtpProvider();
+    this.service = new FsUserService(repository, hasher, otpProvider);
+    this.userAuth = new UserAuthServiceImpl(service);
   }
 
   @Override

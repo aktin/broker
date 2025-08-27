@@ -6,7 +6,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.aktin.broker.auth.otp.repository.OperationResult;
 import org.aktin.broker.auth.otp.repository.User;
-import org.aktin.broker.auth.otp.utils.OtpVerificationService;
 
 @Singleton
 public class UserAuthServiceImpl implements UserAuthService {
@@ -16,12 +15,10 @@ public class UserAuthServiceImpl implements UserAuthService {
   private static final String PROPERTY_ENFORCE_OTP = "aktin.broker.auth.enforce.otp";
 
   private final UserService userService;
-  private final OtpVerificationService otpVerificationService;
 
   @Inject
-  public UserAuthServiceImpl(UserService service, OtpVerificationService otpVerificationService) {
+  public UserAuthServiceImpl(UserService service) {
     this.userService = Objects.requireNonNull(service);
-    this.otpVerificationService = Objects.requireNonNull(otpVerificationService);
   }
 
   @Override
@@ -65,11 +62,15 @@ public class UserAuthServiceImpl implements UserAuthService {
       }
     }
     if (userHasOtp && hasToken) {
-      if (!isPublicIdValid(user, token)) {
+      if (!userService.isOtpProviderSupported(user)) {
+        log.info(String.format("Authentication failed for %s: unsupported OTP provider %s", username, user.tokenProvider));
+        return false;
+      }
+      if (!userService.doesOtpBindingMatch(user, token)) {
         log.info(String.format("Authentication failed for %s: OTP public ID mismatch", username));
         return false;
       }
-      boolean otpValid = otpVerificationService.verify(token);
+      boolean otpValid = userService.verifyOtpToken(token);
       if (!otpValid) {
         log.info(String.format("Authentication failed for %s: invalid OTP token", username));
         return false;
@@ -77,14 +78,5 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
     log.info(String.format("Authentication succeeded for %s", username));
     return true;
-  }
-
-  private boolean isPublicIdValid(User user, String token) {
-    if (token.length() < 12) {
-      return false;
-    }
-    String expectedPublicId = user.token.get();
-    String actualPublicId = token.substring(0, 12);
-    return expectedPublicId.equals(actualPublicId);
   }
 }

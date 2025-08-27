@@ -21,4 +21,10 @@ public interface UserService {
   boolean verifyUserPassword(User user, char[] password);
 
   boolean isUserAlgorithmSupported(User user);
+
+  boolean doesOtpBindingMatch(User user, String token);
+
+  boolean verifyOtpToken(String token);
+
+  boolean isOtpProviderSupported(User user);
 }
