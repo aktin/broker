@@ -15,11 +15,6 @@ public class Pbkdf2PasswordHasher implements PasswordHasher {
   private static final int DK_LEN = 32; // 256-bit
 
   @Override
-  public String algorithm() {
-    return ALG;
-  }
-
-  @Override
   public String hash(char[] password) {
     byte[] salt = new byte[SALT_BYTES];
     RNG.nextBytes(salt);

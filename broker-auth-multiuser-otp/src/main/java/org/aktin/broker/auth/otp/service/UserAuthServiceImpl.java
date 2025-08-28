@@ -32,10 +32,6 @@ public class UserAuthServiceImpl implements UserAuthService {
       log.info(String.format("Authentication failed for %s: user inactive", username));
       return false;
     }
-    if (!userService.isUserAlgorithmSupported(user)) {
-      log.warning(String.format("Authentication failed for %s: unsupported algorithm %s", username, user.algorithm));
-      return false;
-    }
     if (!userService.verifyUserPassword(user, providedPassword)) {
       log.info(String.format("Authentication failed for %s: invalid password", username));
       return false;
@@ -62,10 +58,6 @@ public class UserAuthServiceImpl implements UserAuthService {
       }
     }
     if (userHasOtp && hasToken) {
-      if (!userService.isOtpProviderSupported(user)) {
-        log.info(String.format("Authentication failed for %s: unsupported OTP provider %s", username, user.tokenProvider));
-        return false;
-      }
       if (!userService.doesOtpBindingMatch(user, token)) {
         log.info(String.format("Authentication failed for %s: OTP public ID mismatch", username));
         return false;

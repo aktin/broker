@@ -62,17 +62,17 @@ public class FsUserService implements UserService {
   @Override
   public OperationResult create(String username, char[] password) {
     String hash = passwordHasher.hash(password);
-    return repository.insert(username, hash, passwordHasher.algorithm());
+    return repository.insert(username, hash);
   }
 
   @Override
   public OperationResult activate(String username) {
-    return repository.update(username, null, null, true, Optional.empty(), Optional.empty());
+    return repository.update(username, null, true, Optional.empty());
   }
 
   @Override
   public OperationResult deactivate(String username) {
-    return repository.update(username, null, null, false, Optional.empty(), Optional.empty());
+    return repository.update(username, null, false, Optional.empty());
   }
 
   @Override
@@ -85,7 +85,7 @@ public class FsUserService implements UserService {
       return OperationResult.FAILED;
     }
     String binding = maybeBinding.get();
-    return repository.update(username, null, null, null, Optional.of(otpProvider.id()), Optional.of(binding));
+    return repository.update(username, null, null, Optional.of(binding));
   }
 
   @Override
@@ -94,11 +94,6 @@ public class FsUserService implements UserService {
       return false;
     }
     return passwordHasher.verify(password, user.password);
-  }
-
-  @Override
-  public boolean isUserAlgorithmSupported(User user) {
-    return user != null && passwordHasher.algorithm().equalsIgnoreCase(user.algorithm);
   }
 
   @Override
@@ -117,13 +112,5 @@ public class FsUserService implements UserService {
   @Override
   public boolean verifyOtpToken(String token) {
     return otpProvider.verify(token);
-  }
-
-  @Override
-  public boolean isOtpProviderSupported(User user) {
-    if (user == null || user.tokenProvider.isEmpty()) {
-      return false;
-    }
-    return otpProvider.id().equalsIgnoreCase(user.tokenProvider.get());
   }
 }

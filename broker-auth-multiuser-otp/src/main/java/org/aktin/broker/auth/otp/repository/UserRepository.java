@@ -9,7 +9,7 @@ public interface UserRepository {
 
   List<User> findAll();
 
-  OperationResult insert(String username, String hash, String algorithm);
+  OperationResult insert(String username, String hash);
 
-  OperationResult update(String username, String hash, String algorithm, Boolean active, Optional<String> provider, Optional<String> token);
+  OperationResult update(String username, String hash, Boolean active, Optional<String> token);
 }

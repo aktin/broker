@@ -13,10 +13,9 @@ public class UserDTO implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public String username;
-  public String algorithm;
   public boolean active;
   public long createdAt;
-  public String otpProvider;
+  public boolean hasOTP;
 
   public UserDTO() {
   }
@@ -24,10 +23,9 @@ public class UserDTO implements Serializable {
   public static UserDTO of(User u) {
     UserDTO dto = new UserDTO();
     dto.username = u.username;
-    dto.algorithm = u.algorithm;
     dto.active = u.active;
     dto.createdAt = u.createdAt;
-    dto.otpProvider = u.tokenProvider.orElse("");
+    dto.hasOTP = u.token.isPresent();
     return dto;
   }
 }

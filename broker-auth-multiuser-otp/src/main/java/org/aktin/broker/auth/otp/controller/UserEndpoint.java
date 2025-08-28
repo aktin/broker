@@ -78,7 +78,7 @@ public class UserEndpoint {
     switch (result) {
       case SUCCESS:
         log.info(String.format("User %s activated user %s", token.getName(), username));
-        return Response.status(Status.ACCEPTED).build();
+        return Response.status(Status.OK).build();
       case USER_NOT_FOUND:
         log.warning(String.format("User %s failed to activate user %s: not found", token.getName(), username));
         throw new ClientErrorException(Status.NOT_FOUND);
@@ -102,7 +102,7 @@ public class UserEndpoint {
     switch (result) {
       case SUCCESS:
         log.info(String.format("User %s deactivated user %s", token.getName(), username));
-        return Response.status(Status.ACCEPTED).build();
+        return Response.status(Status.OK).build();
       case USER_NOT_FOUND:
         log.warning(String.format("User %s failed to deactivate user %s: not found", token.getName(), username));
         throw new ClientErrorException(Status.NOT_FOUND);

@@ -61,12 +61,12 @@ public class FsUserRepository implements UserRepository {
           continue;
         }
         String[] parts = line.split(FIELD_SEPARATOR, -1);
-        if (parts.length == 7) {
+        if (parts.length == 5) {
           User user = parseUser(parts);
           userCache.put(user.username, user);
           loadedCount++;
         } else {
-          log.warning(String.format("Skipping malformed line in %s: expected 7 fields, got %d", usersFile.getFileName(), parts.length));
+          log.warning(String.format("Skipping malformed line in %s: expected 5 fields, got %d", usersFile.getFileName(), parts.length));
         }
       }
       log.info(String.format("Loaded %d users into cache from %s", loadedCount, usersFile.getFileName()));
@@ -96,14 +96,14 @@ public class FsUserRepository implements UserRepository {
   }
 
   @Override
-  public OperationResult insert(String username, String hash, String algorithm) {
+  public OperationResult insert(String username, String hash) {
     lock.writeLock().lock();
     try {
       if (userCache.containsKey(username)) {
         return OperationResult.USER_ALREADY_EXISTS;
       }
       long createdAt = System.currentTimeMillis();
-      User user = new User(username, hash, algorithm, true, createdAt, Optional.empty(), Optional.empty());
+      User user = new User(username, hash, true, createdAt, Optional.empty());
       userCache.put(username, user);
       saveUsersToFile((ReentrantReadWriteLock) lock);
       return OperationResult.SUCCESS;
@@ -116,7 +116,7 @@ public class FsUserRepository implements UserRepository {
   }
 
   @Override
-  public OperationResult update(String username, String hash, String algorithm, Boolean active, Optional<String> provider, Optional<String> token) {
+  public OperationResult update(String username, String hash, Boolean active, Optional<String> token) {
     lock.writeLock().lock();
     try {
       User existingUser = userCache.get(username);
@@ -124,11 +124,9 @@ public class FsUserRepository implements UserRepository {
         return OperationResult.USER_NOT_FOUND;
       }
       String newHash = (hash != null) ? hash : existingUser.password;
-      String newAlg = (algorithm != null) ? algorithm : existingUser.algorithm;
       boolean newActive = (active != null) ? active : existingUser.active;
-      Optional<String> newProvider = provider.isPresent() ? provider : existingUser.tokenProvider;
       Optional<String> newToken = token.isPresent() ? token : existingUser.token;
-      User updatedUser = new User(username, newHash, newAlg, newActive, existingUser.createdAt, newProvider, newToken);
+      User updatedUser = new User(username, newHash, newActive, existingUser.createdAt, newToken);
       userCache.put(username, updatedUser);
       saveUsersToFile((ReentrantReadWriteLock) lock);
       return OperationResult.SUCCESS;
@@ -158,24 +156,19 @@ public class FsUserRepository implements UserRepository {
   private User parseUser(String[] parts) {
     String username = parts[0];
     String password = parts[1];
-    String algorithm = parts[2];
-    boolean active = Boolean.parseBoolean(parts[3]);
-    long createdAt = Long.parseLong(parts[4]);
-    String providerStr = parts[5];
-    Optional<String> provider = providerStr.isEmpty() ? Optional.empty() : Optional.of(providerStr);
-    String tokenStr = parts[6];
+    boolean active = Boolean.parseBoolean(parts[2]);
+    long createdAt = Long.parseLong(parts[3]);
+    String tokenStr = parts[4];
     Optional<String> token = tokenStr.isEmpty() ? Optional.empty() : Optional.of(tokenStr);
-    return new User(username, password, algorithm, active, createdAt, provider, token);
+    return new User(username, password, active, createdAt, token);
   }
 
   private String formatUserLine(User user) {
     return String.join(FIELD_SEPARATOR,
         user.username,
         user.password,
-        user.algorithm,
         String.valueOf(user.active),
         String.valueOf(user.createdAt),
-        user.tokenProvider.orElse(""),
         user.token.orElse(""));
   }
 }

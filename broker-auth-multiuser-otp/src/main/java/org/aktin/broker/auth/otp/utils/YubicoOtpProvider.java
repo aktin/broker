@@ -50,11 +50,6 @@ public class YubicoOtpProvider implements OtpProvider {
   }
 
   @Override
-  public String id() {
-    return "yubico-otp";
-  }
-
-  @Override
   public Optional<String> deriveBinding(String token) {
     if (token == null || token.length() < 12) {
       return Optional.empty();
