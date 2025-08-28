@@ -36,29 +36,17 @@ public class FsUserService implements UserService {
   private void initializeDefaultUser() {
     String username = System.getProperty(PROPERTY_ADMIN_USER, DEFAULT_ADMIN_USER);
     String password = System.getProperty(PROPERTY_ADMIN_PASSWORD);
+    if (password == null || password.isBlank()) {
+      throw new IllegalStateException("Missing required property: " + PROPERTY_ADMIN_PASSWORD);
+    }
+    String hash = passwordHasher.hash(password.toCharArray());
     User initialUser = repository.find(username);
     if (initialUser == null) {
-      String raw;
-      if (password == null || password.isBlank()) {
-        raw = generateRandomPassword();
-        log.info(String.format("Creating default user %s with random password %s", username, raw));
-      } else {
-        raw = password;
-        log.info(String.format("Creating default user %s from system properties", username));
-      }
-      String hash = passwordHasher.hash(raw.toCharArray());
-      repository.insert(username, hash, passwordHasher.algorithm());
+      repository.insert(username, hash);
+    } else {
+      repository.update(username, hash, null, Optional.empty());
     }
-  }
-
-  private static String generateRandomPassword() {
-    var b = new StringBuilder(12);
-    final String alpha = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz1234567890@#!$%&=?";
-    for (int i = 0; i < 16; i++) {
-      int idx = (int) (Math.random() * alpha.length());
-      b.append(alpha.charAt(idx));
-    }
-    return b.toString();
+    log.info(String.format("Initialized default user %s from system properties", username));
   }
 
   @Override
