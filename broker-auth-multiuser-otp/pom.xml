@@ -1,0 +1,52 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <name>AKTIN : Broker : multi-user authentication + OTP plugin</name>
+  <packaging>jar</packaging>
+
+  <description>
+    Provides user authentication via username/password with optional YubiKey OTP support.
+    This module is meant for the broker-server.
+  </description>
+
+  <artifactId>broker-auth-multiuser-otp</artifactId>
+
+  <parent>
+    <groupId>org.aktin</groupId>
+    <artifactId>broker</artifactId>
+    <version>1.5.3-SNAPSHOT</version>
+  </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.2</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- broker API -->
+    <dependency>
+      <groupId>org.aktin</groupId>
+      <artifactId>broker-api</artifactId>
+      <version>1.5.3-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.aktin</groupId>
+      <artifactId>broker-server</artifactId>
+      <version>1.5.3-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+</project>

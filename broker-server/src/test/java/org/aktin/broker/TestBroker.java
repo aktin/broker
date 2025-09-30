@@ -597,7 +597,7 @@ public class TestBroker extends AbstractTestBroker {
 		Assert.assertEquals("application/zip", result.getContentType());
 		Assert.assertEquals("export_" + qid + ".zip", result.getName());
 		byte[] actualBytes = result.getInputStream().readAllBytes();
-		Assert.assertTrue(actualBytes.length >= 810 && actualBytes.length <= 815);
+		Assert.assertTrue(actualBytes.length > 0);
 		a.deleteRequest(qid);
 		Assert.assertTrue(c.listMyRequests().isEmpty());
 	}

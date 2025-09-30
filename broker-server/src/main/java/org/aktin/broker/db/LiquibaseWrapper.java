@@ -16,7 +16,7 @@ import liquibase.resource.ResourceAccessor;
 /**
  * Wraps the liquibase API with operations
  * that are supported for the AKTIN database.
- * 
+ *
  * @author R.W.Majeed
  *
  */
@@ -33,7 +33,7 @@ public class LiquibaseWrapper implements AutoCloseable {
 	 */
 	public LiquibaseWrapper(Connection connection) throws LiquibaseException{
 		database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-		
+
 		ResourceAccessor ra = new ClassLoaderResourceAccessor(this.getClass().getClassLoader());
 		liquibase = new Liquibase(CHANGELOG_RESOURCE, ra, database);
 	}
@@ -50,7 +50,7 @@ public class LiquibaseWrapper implements AutoCloseable {
 		liquibase.dropAll();
 		update();
 	}
-	
+
 
 
 	@Override

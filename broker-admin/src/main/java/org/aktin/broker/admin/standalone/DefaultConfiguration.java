@@ -29,7 +29,7 @@ public class DefaultConfiguration implements Configuration{
 	private static final String DEFAULT_AUTH_PROVIDER = "org.aktin.broker.auth.apikey.ApiKeyPropertiesAuthProvider,org.aktin.broker.auth.cred.CredentialTokenAuthProvider";
 	private AuthProvider authProvider;
 
-	
+
 	public DefaultConfiguration() {
 		String ap = System.getProperty("aktin.broker.auth.provider", DEFAULT_AUTH_PROVIDER);
 

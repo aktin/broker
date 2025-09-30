@@ -27,9 +27,10 @@ $(document).ready(function(){
     $('#login').on('submit', function(e){
         e.preventDefault();
         // build XML
-        var xml = $.parseXML("<credentials><username/><password/></credentials>");
+        var xml = $.parseXML("<credentials><username/><password/><token/></credentials>");
         $(xml).find('username').text($('#user').val());
         $(xml).find('password').text($('#pass').val());
+        $(xml).find('token').text($('#token').val());
 		$.ajax({
 			type: 'POST',
 			url: rest_base+'/auth/login',
@@ -55,6 +56,7 @@ $(document).ready(function(){
 			<form id="login">
 				<label>Login <input type="text" id="user"/></label><br/>
 				<label>Password <input type="password" id="pass"/></label><br/>
+				<label>Token <input type="text" id="token"/></label><br/>
 				<button>Anmelden</button><br/>
 			</form>
 		</div>
