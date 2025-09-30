@@ -14,6 +14,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 import javax.inject.Singleton;
 
+/**
+ * A file-system-based, thread-safe repository for user data.
+ * <p>
+ * This implementation stores user data in a plain text file and maintains a synchronized in-memory cache for fast read access. The path to the user file is configurable via the
+ * {@code aktin.broker.users.file} system property.
+ * <p>
+ * A single {@link java.util.concurrent.locks.ReentrantReadWriteLock} is used to manage concurrency. This lock ensures thread-safe access to the in-memory cache and serializes write operations to
+ * prevent corruption of the user file. The write lock is held during the entire transaction (cache update and file write) to guarantee consistency between the cache and the file system.
+ */
 @Singleton
 public class FsUserRepository implements UserRepository {
 
@@ -95,6 +104,9 @@ public class FsUserRepository implements UserRepository {
     }
   }
 
+  /**
+   * Inserts a new user by atomically updating the cache and writing the changes to the file.
+   */
   @Override
   public OperationResult insert(String username, String hash) {
     lock.writeLock().lock();
@@ -115,6 +127,9 @@ public class FsUserRepository implements UserRepository {
     }
   }
 
+  /**
+   * Updates a user by atomically updating the cache and writing the changes to the file.
+   */
   @Override
   public OperationResult update(String username, String hash, Boolean active, Optional<String> token) {
     lock.writeLock().lock();
@@ -138,6 +153,13 @@ public class FsUserRepository implements UserRepository {
     }
   }
 
+  /**
+   * Saves the current user cache to the file, sorted by username. This method requires the caller to hold the write lock to ensure file integrity.
+   *
+   * @param rw The lock instance, used to verify that the write lock is held.
+   * @throws IOException           if the file cannot be written to.
+   * @throws IllegalStateException if the current thread does not hold the write lock.
+   */
   private void saveUsersToFile(ReentrantReadWriteLock rw) throws IOException {
     if (!rw.isWriteLockedByCurrentThread()) {
       throw new IllegalStateException("saveUsersToFile requires the write lock");
