@@ -6,6 +6,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.aktin.broker.auth.otp.repository.User;
 
+/**
+ * User information without sensitive data like password hashes.
+ */
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class UserDTO implements Serializable {

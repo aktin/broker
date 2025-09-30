@@ -36,6 +36,16 @@ public class UserEndpoint {
   @Inject
   private UserService service;
 
+  /**
+   * Lists all registered users. Requires default administrator privileges.
+   * <ul>
+   * <li>{@code 200} - Success. The body contains the list of users.</li>
+   * <li>{@code 401} - The provided admin bearer token is invalid.</li>
+   * </ul>
+   *
+   * @param bearer The administrator's session token.
+   * @return A list of {@link UserDTO} objects.
+   */
   @GET
   @Authenticated
   @RequireAdmin
@@ -45,6 +55,19 @@ public class UserEndpoint {
     return service.list().stream().map(UserDTO::of).collect(Collectors.toList());
   }
 
+  /**
+   * Creates a new user. Requires default administrator privileges.
+   *
+   * @param bearer The administrator's session token.
+   * @param cred   A {@link CredentialsDTO} containing the new user's username and password.
+   * @return A Response indicating the result of the operation: <ul>
+   * <li>{@code 201} - User created successfully.</li>
+   * <li>{@code 400} - Username or password not provided in the request body.</li>
+   * <li>{@code 401} - The provided admin bearer token is invalid.</li>
+   * <li>{@code 409} - A user with the specified username already exists.</li>
+   * <li>{@code 500} - An internal server error occurred during user creation.</li>
+   * </ul>
+   */
   @POST
   @Authenticated
   @RequireAdmin
@@ -68,6 +91,18 @@ public class UserEndpoint {
     }
   }
 
+  /**
+   * Activates a user account, allowing them to log in. Requires default administrator privileges.
+   *
+   * @param bearer   The administrator's session token.
+   * @param username The username of the account to activate.
+   * @return A Response indicating the result of the operation: <ul>
+   * <li>{@code 200} - User activated successfully.</li>
+   * <li>{@code 401} - The provided admin bearer token is invalid.</li>
+   * <li>{@code 404} - The specified user was not found.</li>
+   * <li>{@code 500} - An internal server error occurred.</li>
+   * </ul>
+   */
   @POST
   @Authenticated
   @RequireAdmin
@@ -88,6 +123,19 @@ public class UserEndpoint {
     }
   }
 
+  /**
+   * Deactivates a user account, preventing them from logging in. Requires default administrator privileges. The default administrator user cannot be deactivated.
+   *
+   * @param bearer   The administrator's session token.
+   * @param username The username of the account to deactivate.
+   * @return A Response indicating the result of the operation: <ul>
+   * <li>{@code 200} - User deactivated successfully.</li>
+   * <li>{@code 401} - The provided admin bearer token is invalid.</li>
+   * <li>{@code 403} - Deactivating the default administrator is forbidden.</li>
+   * <li>{@code 404} - The specified user was not found.</li>
+   * <li>{@code 500} - An internal server error occurred.</li>
+   * </ul>
+   */
   @DELETE
   @Authenticated
   @RequireAdmin

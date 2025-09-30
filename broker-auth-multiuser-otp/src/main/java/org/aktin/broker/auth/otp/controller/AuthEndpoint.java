@@ -31,6 +31,17 @@ public class AuthEndpoint {
   @Inject
   private UserAuthService auth;
 
+  /**
+   * Authenticates a user based on their credentials and issues a session token.
+   * <ul>
+   * <li>{@code 200} - Authentication successful. The body contains the token.</li>
+   * <li>{@code 400} - Bad request, required credential fields are missing.</li>
+   * <li>{@code 401} - Authentication failed due to invalid credentials.</li>
+   * </ul>
+   *
+   * @param cred The user's credentials, including username, password, and an optional OTP token.
+   * @return The unique session GUID (bearer token) on success.
+   */
   @POST
   @Path("login")
   @Produces(MediaType.TEXT_PLAIN)
@@ -48,6 +59,16 @@ public class AuthEndpoint {
     return t.getGUID();
   }
 
+  /**
+   * Retrieves the status of the current authenticated session.
+   * <ul>
+   * <li>{@code 200} - Success. The body contains the session status.</li>
+   * <li>{@code 401} - The provided bearer token is invalid or expired.</li>
+   * </ul>
+   *
+   * @param bearer The Authorization header containing the session's bearer token.
+   * @return A {@link StatusDTO} containing details about the session.
+   */
   @GET
   @Authenticated
   @RequireAdmin
@@ -62,6 +83,15 @@ public class AuthEndpoint {
     return s;
   }
 
+  /**
+   * Logs out the current user by revoking their session token.
+   * <ul>
+   * <li>{@code 204} - Logout successful (implicitly, as the method is void).</li>
+   * <li>{@code 401} - The provided bearer token is invalid or expired.</li>
+   * </ul>
+   *
+   * @param bearer The Authorization header containing the session's bearer token.
+   */
   @POST
   @Authenticated
   @RequireAdmin
