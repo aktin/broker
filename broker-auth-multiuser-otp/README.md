@@ -21,7 +21,7 @@ System properties:
 
 ## Usage
 1. Build this package
-2. Move the created `.jar` to the other `.jars` of the AKTIN Broker (by default in the `lib/` folder)
+2. Move the created `.jar` to the other `.jar` files of the AKTIN Broker (by default in the `lib/` folder)
 3. Add the system property `-Daktin.broker.auth.provider="org.aktin.broker.auth.otp.CredentialTokenAuthProvider"` to enable this authentication module
 4. Dont forget to set the other required system properties required by this module!
 5. Start the AKTIN Broker
