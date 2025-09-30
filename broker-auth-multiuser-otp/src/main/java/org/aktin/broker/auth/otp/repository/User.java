@@ -3,6 +3,9 @@ package org.aktin.broker.auth.otp.repository;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * An immutable data object representing a single user account. It serves as the data model for all persistent user attributes.
+ */
 public final class User {
 
   public final String username;
