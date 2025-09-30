@@ -10,7 +10,8 @@ import javax.inject.Singleton;
 /**
  * A thread-safe, in-memory implementation of the {@link TokenManager}.
  * <p>
- * This manager stores session tokens in a {@link ConcurrentHashMap}. The lifespan of tokens is configurable via the {@code aktin.broker.auth.token.lifespan} system property.
+ * This manager stores session tokens in a {@link java.util.concurrent.ConcurrentHashMap}. The lifespan of tokens is configurable via the {@code aktin.broker.auth.token.lifespan} system property, with
+ * a default of 5 minutes (300 seconds).
  */
 @Singleton
 public class TokenManagerImpl implements TokenManager {
@@ -30,11 +31,6 @@ public class TokenManagerImpl implements TokenManager {
     this(Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS));
   }
 
-  /**
-   * Constructs a TokenManager with a specific token time-to-live.
-   *
-   * @param tokenTimeToLive The lifespan of tokens in seconds.
-   */
   public TokenManagerImpl(long tokenTimeToLive) {
     if (tokenTimeToLive <= 0) {
       log.warning("Token lifespan must be > 0. Using default lifespan.");

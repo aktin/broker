@@ -5,6 +5,12 @@ import java.util.Base64;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+/**
+ * A {@link PasswordHasher} implementation that uses the PBKDF2WithHmacSHA256 algorithm.
+ * <p>
+ * The generated hash string is formatted as {@code alg:iter:salt:hash} and includes all necessary parameters for verification. The verification process uses a constant-time comparison to mitigate
+ * timing attacks.
+ */
 public class Pbkdf2PasswordHasher implements PasswordHasher {
 
   private static final SecureRandom RNG = new SecureRandom();

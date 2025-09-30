@@ -9,9 +9,14 @@ import org.aktin.broker.auth.otp.token.Token;
 import org.aktin.broker.auth.otp.token.TokenManager;
 import org.aktin.broker.server.auth.HttpBearerAuthentication;
 
+/**
+ * A utility class providing static helper methods for {@link org.aktin.broker.auth.otp.controller.AuthEndpoint} and {@link org.aktin.broker.auth.otp.controller.UserEndpoint}.
+ */
 public class EndpointUtils {
 
-  // must match UserService implementation bootstrap property
+  /**
+   * Must match {@link org.aktin.broker.auth.otp.service.UserService} implementation bootstrap property
+   */
   private static final String PROPERTY_ADMIN_USER = "aktin.broker.username";
   private static final String DEFAULT_ADMIN_USER = "admin";
 

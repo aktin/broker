@@ -18,6 +18,12 @@ import org.aktin.broker.auth.otp.utils.Pbkdf2PasswordHasher;
 import org.aktin.broker.auth.otp.utils.YubicoOtpProvider;
 import org.aktin.broker.server.auth.AbstractAuthProvider;
 
+/**
+ * The main provider that bootstraps and configures the credential/token authentication module.
+ * <p>
+ * This class implements {@link org.aktin.broker.server.auth.AbstractAuthProvider} to integrate with the AKTIN Broker's lifecycle. It is the central point where all services, repositories, and
+ * endpoints for this authentication mechanism are instantiated and wired together.
+ */
 public class CredentialTokenAuthProvider extends AbstractAuthProvider {
 
   private final TokenManager manager;

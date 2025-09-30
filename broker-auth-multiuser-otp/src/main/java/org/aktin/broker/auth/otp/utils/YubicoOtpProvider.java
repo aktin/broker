@@ -21,7 +21,14 @@ import java.util.stream.Collectors;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-// docs: https://developers.yubico.com/OTP/Specifications/OTP_validation_protocol.html
+/**
+ * An {@link OtpProvider} that validates YubiKey OTP tokens using the Yubico Validation Protocol v2.0.
+ * <p>
+ * This implementation requires the {@code aktin.broker.auth.yubico.clientId} and {@code aktin.broker.auth.yubico.secretKey} system properties to be set. It contacts the official Yubico API servers
+ * for validation and tries multiple endpoints for resilience.
+ *
+ * @see <a href="https://developers.yubico.com/OTP/Specifications/OTP_validation_protocol.html">https://developers.yubico.com/OTP/Specifications/OTP_validation_protocol.html</a>
+ */
 public class YubicoOtpProvider implements OtpProvider {
 
   private static final Logger log = Logger.getLogger(YubicoOtpProvider.class.getName());
