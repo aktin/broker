@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 import javax.inject.Singleton;
@@ -23,10 +22,11 @@ public class FsUserRepository implements UserRepository {
   private static final String PROPERTY_USER_FILE = "aktin.broker.users.file";
   private static final String DEFAULT_USER_FILE = "users.txt";
   private static final String FIELD_SEPARATOR = "\t";
+  private static final int EXPECTED_FIELD_COUNT = 5;
 
   private final Path usersFile;
   private final Map<String, User> userCache = new HashMap<>();
-  private final ReadWriteLock lock = new ReentrantReadWriteLock();
+  private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
   public FsUserRepository() {
     this(System.getProperty(PROPERTY_USER_FILE, DEFAULT_USER_FILE));
@@ -47,7 +47,7 @@ public class FsUserRepository implements UserRepository {
         Files.createFile(usersFile);
         log.info("Created users file: " + usersFile.toAbsolutePath());
       } catch (IOException e) {
-        log.severe("Could not create users file: " + e.getMessage());
+        throw new IllegalStateException("Could not create users file: " + usersFile, e);
       }
     }
   }
@@ -61,17 +61,17 @@ public class FsUserRepository implements UserRepository {
           continue;
         }
         String[] parts = line.split(FIELD_SEPARATOR, -1);
-        if (parts.length == 5) {
+        if (parts.length == EXPECTED_FIELD_COUNT) {
           User user = parseUser(parts);
           userCache.put(user.username, user);
           loadedCount++;
         } else {
-          log.warning(String.format("Skipping malformed line in %s: expected 5 fields, got %d", usersFile.getFileName(), parts.length));
+          log.warning(String.format("Skipping malformed line in %s: expected %d fields, got %d", usersFile.getFileName(), EXPECTED_FIELD_COUNT, parts.length));
         }
       }
       log.info(String.format("Loaded %d users into cache from %s", loadedCount, usersFile.getFileName()));
     } catch (IOException e) {
-      log.severe("Failed to load users from file: " + e.getMessage());
+      throw new IllegalStateException("Failed to load users from file: " + usersFile, e);
     }
   }
 
@@ -105,11 +105,11 @@ public class FsUserRepository implements UserRepository {
       long createdAt = System.currentTimeMillis();
       User user = new User(username, hash, true, createdAt, Optional.empty());
       userCache.put(username, user);
-      saveUsersToFile((ReentrantReadWriteLock) lock);
+      saveUsersToFile(lock);
       return OperationResult.SUCCESS;
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.severe(String.format("Failed to insert user %s: %s", username, e.getMessage()));
-      return OperationResult.FAILED;
+      throw new RuntimeException("Failed to save user data", e);
     } finally {
       lock.writeLock().unlock();
     }
@@ -128,29 +128,25 @@ public class FsUserRepository implements UserRepository {
       Optional<String> newToken = token.isPresent() ? token : existingUser.token;
       User updatedUser = new User(username, newHash, newActive, existingUser.createdAt, newToken);
       userCache.put(username, updatedUser);
-      saveUsersToFile((ReentrantReadWriteLock) lock);
+      saveUsersToFile(lock);
       return OperationResult.SUCCESS;
-    } catch (Exception e) {
+    } catch (IOException e) {
       log.severe(String.format("Failed to update user %s: %s", username, e.getMessage()));
-      return OperationResult.FAILED;
+      throw new RuntimeException("Failed to save user data", e);
     } finally {
       lock.writeLock().unlock();
     }
   }
 
-  private void saveUsersToFile(ReentrantReadWriteLock rw) {
+  private void saveUsersToFile(ReentrantReadWriteLock rw) throws IOException {
     if (!rw.isWriteLockedByCurrentThread()) {
       throw new IllegalStateException("saveUsersToFile requires the write lock");
     }
-    try {
-      List<String> lines = new ArrayList<>();
-      userCache.values().stream()
-          .sorted(Comparator.comparing(u -> u.username))
-          .forEach(user -> lines.add(formatUserLine(user)));
-      Files.write(usersFile, lines);
-    } catch (IOException e) {
-      log.severe("Failed to persist user data: " + e.getMessage());
-    }
+    List<String> lines = new ArrayList<>();
+    userCache.values().stream()
+        .sorted(Comparator.comparing(u -> u.username))
+        .forEach(user -> lines.add(formatUserLine(user)));
+    Files.write(usersFile, lines);
   }
 
   private User parseUser(String[] parts) {
