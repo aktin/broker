@@ -7,6 +7,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.inject.Singleton;
 
+/**
+ * A thread-safe, in-memory implementation of the {@link TokenManager}.
+ * <p>
+ * This manager stores session tokens in a {@link ConcurrentHashMap}. The lifespan of tokens is configurable via the {@code aktin.broker.auth.token.lifespan} system property.
+ */
 @Singleton
 public class TokenManagerImpl implements TokenManager {
 
@@ -25,6 +30,11 @@ public class TokenManagerImpl implements TokenManager {
     this(Long.getLong(PROPERTY_TTL_SECONDS, DEFAULT_TTL_SECONDS));
   }
 
+  /**
+   * Constructs a TokenManager with a specific token time-to-live.
+   *
+   * @param tokenTimeToLive The lifespan of tokens in seconds.
+   */
   public TokenManagerImpl(long tokenTimeToLive) {
     if (tokenTimeToLive <= 0) {
       log.warning("Token lifespan must be > 0. Using default lifespan.");
@@ -53,6 +63,7 @@ public class TokenManagerImpl implements TokenManager {
     if (token == null) {
       return null;
     }
+    // Perform cleanup of invalid tokens on access
     if (!token.isValid()) {
       sessions.remove(guid);
       return null;
@@ -68,6 +79,9 @@ public class TokenManagerImpl implements TokenManager {
     }
   }
 
+  /**
+   * @return A 32-byte, URL-safe Base64 encoded random string.
+   */
   private String generateGUID() {
     byte[] buf = new byte[ID_BYTES];
     RANDOM.nextBytes(buf);

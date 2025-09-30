@@ -3,6 +3,9 @@ package org.aktin.broker.auth.otp.token;
 import java.security.Principal;
 import java.util.Objects;
 
+/**
+ * Represents a time-limited session token that authenticates a user.
+ */
 public class Token implements Principal {
 
   private final String user;
@@ -10,7 +13,8 @@ public class Token implements Principal {
   private final long issued;
   private final long ttl;
 
-  // Mutable Values, lastAccess and expiresAt in Milliseconds
+  // mutable values
+  // lastAccess and expiresAt in ms
   private volatile boolean revoked;
   private volatile long lastAccess;
   private volatile long expiresAt;
@@ -62,6 +66,7 @@ public class Token implements Principal {
     this.revoked = true;
   }
 
+  //new expiration is set to the current time plus the token's original TTL.
   public synchronized void renew() {
     if (isValid()) {
       long now = System.currentTimeMillis();
