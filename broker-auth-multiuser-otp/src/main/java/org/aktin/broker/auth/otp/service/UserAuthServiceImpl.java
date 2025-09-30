@@ -7,6 +7,12 @@ import javax.inject.Singleton;
 import org.aktin.broker.auth.otp.repository.OperationResult;
 import org.aktin.broker.auth.otp.repository.User;
 
+/**
+ * Implements the user authentication logic.
+ * <p>
+ * This service coordinates the authentication flow by delegating to a {@link UserService} for user lookups and credential verification. It enforces OTP policies based on whether a user has an OTP
+ * configured or if OTP is globally enforced via the {@code aktin.broker.auth.enforce.otp} system property.
+ */
 @Singleton
 public class UserAuthServiceImpl implements UserAuthService {
 
@@ -21,6 +27,26 @@ public class UserAuthServiceImpl implements UserAuthService {
     this.userService = Objects.requireNonNull(service);
   }
 
+  /**
+   * Authenticates a user by performing a sequence of checks:
+   * <ol>
+   * <li>Verifies the user exists and is active.</li>
+   * <li>Verifies the provided password is correct.</li>
+   * <li>Handles OTP logic:
+   * <ul>
+   * <li>If the user has no OTP set, it attempts to enroll the provided token.</li>
+   * <li>If the user has an OTP, it verifies the provided token matches and is valid.</li>
+   * <li>If OTP is globally enforced, a token is always required.</li>
+   * </ul>
+   * </li>
+   * </ol>
+   * Authentication fails if any step is unsuccessful.
+   *
+   * @param username         The user's name.
+   * @param providedPassword The plaintext password provided by the user.
+   * @param token            The one-time password (OTP) token provided by the user.
+   * @return {@code true} on success, {@code false} otherwise.
+   */
   @Override
   public boolean authenticate(String username, char[] providedPassword, String token) {
     User user = userService.get(username);

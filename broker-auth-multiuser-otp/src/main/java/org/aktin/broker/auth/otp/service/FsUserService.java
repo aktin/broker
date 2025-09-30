@@ -12,6 +12,11 @@ import org.aktin.broker.auth.otp.repository.UserRepository;
 import org.aktin.broker.auth.otp.utils.OtpProvider;
 import org.aktin.broker.auth.otp.utils.PasswordHasher;
 
+/**
+ * Filesystem-based implementation of the {@link UserService}.
+ * <p>
+ * This service orchestrates user management by using a {@link UserRepository} for persistence, a {@link PasswordHasher} for securing passwords, and an {@link OtpProvider} for OTP operations.
+ */
 @Singleton
 public class FsUserService implements UserService {
 
@@ -33,6 +38,11 @@ public class FsUserService implements UserService {
     initializeDefaultUser();
   }
 
+  /**
+   * Creates or updates the admin user from system properties. Uses {@code aktin.broker.username} (default: {@code "admin"}) and {@code aktin.broker.password} (required).
+   *
+   * @throws IllegalStateException if {@code aktin.broker.password} is missing or blank
+   */
   private void initializeDefaultUser() {
     String username = System.getProperty(PROPERTY_ADMIN_USER, DEFAULT_ADMIN_USER);
     String password = System.getProperty(PROPERTY_ADMIN_PASSWORD);
