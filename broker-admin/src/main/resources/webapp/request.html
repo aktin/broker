@@ -35,29 +35,104 @@ function annotateStatusMessage(requestId, nodeId){
 	});
 }
 
-var prettifyXml = function(sourceXml)
-{
-    var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');
-    var xsltDoc = new DOMParser().parseFromString([
-        // describes how we want to modify the XML - indent everything
-        '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
-        '  <xsl:strip-space elements="*"/>',
-        '  <xsl:template match="para[content-style][not(text())]">', // change to just text() to strip space in text nodes
-        '    <xsl:value-of select="normalize-space(.)"/>',
-        '  </xsl:template>',
-        '  <xsl:template match="node()|@*">',
-        '    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
-        '  </xsl:template>',
-        '  <xsl:output indent="yes"/>',
-        '</xsl:stylesheet>',
-    ].join('\n'), 'application/xml');
+function prettifyXml(sourceXml) {
+	// Try to parse with DOMParser; if it fails, return original string
+	if (!sourceXml || typeof sourceXml !== 'string')
+    return sourceXml;
+	var doc = new DOMParser().parseFromString(sourceXml, 'application/xml');
+	if (doc.getElementsByTagName('parsererror').length)
+		return sourceXml;
+	var INDENT = '  ';
 
-    var xsltProcessor = new XSLTProcessor();    
-    xsltProcessor.importStylesheet(xsltDoc);
-    var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
-    var resultXml = new XMLSerializer().serializeToString(resultDoc);
-    return resultXml;
-};
+	function escapeAttr(s) {
+		return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	}
+	function trimTrailingNewlines(s) {
+		return s.replace(/\n+$/g, '');
+	}
+	function formatNode(node, indent) {
+		var out = '';
+		var i, child;
+
+		switch (node.nodeType) {
+			case Node.DOCUMENT_NODE:
+				for (i = 0; i < node.childNodes.length; i++) {
+					out += formatNode(node.childNodes[i], '');
+				}
+				break;
+			case Node.ELEMENT_NODE:
+				var name = node.nodeName; // includes prefix if present
+				var attrs = '';
+				if (node.attributes && node.attributes.length) {
+					for (i = 0; i < node.attributes.length; i++) {
+						var a = node.attributes[i];
+						attrs += ' ' + a.name + '="' + escapeAttr(a.value) + '"';
+					}
+				}
+				var children = node.childNodes;
+				if (children.length === 0) {
+					out += indent + '<' + name + attrs + '/>\n';
+				} else if (children.length === 1 && children[0].nodeType === Node.TEXT_NODE) {
+					// single text child: inline or multiline-preserve
+					var text = children[0].nodeValue || '';
+					if (text.indexOf('\n') === -1) {
+						// short text -> inline
+						out += indent + '<' + name + attrs + '>' + text + '</' + name + '>\n';
+					} else {
+						// multiline text -> preserve internal newlines, indent subsequent lines
+						var lines = text.split('\n');
+						// first line immediately after opening tag
+						out += indent + '<' + name + attrs + '>' + (lines[0] !== undefined ? lines[0] : '') + '\n';
+						for (var li = 1; li < lines.length; li++) {
+							// keep original content but trim only trailing/leading newlines per line
+							out += indent + INDENT + lines[li] + '\n';
+						}
+						out += indent + '</' + name + '>\n';
+					}
+				} else {
+					// mixed or element children -> open line, then children each indented
+					out += indent + '<' + name + attrs + '>\n';
+					for (i = 0; i < children.length; i++) {
+						child = children[i];
+						out += formatNode(child, indent + INDENT);
+					}
+					out += indent + '</' + name + '>\n';
+				}
+				break;
+			case Node.TEXT_NODE:
+				var v = node.nodeValue || '';
+				// collapse pure-whitespace text nodes
+				if (v.trim().length === 0) break;
+				var textLines = v.split('\n');
+				for (i = 0; i < textLines.length; i++) {
+					out += indent + textLines[i] + '\n';
+				}
+				break;
+			case Node.CDATA_SECTION_NODE:
+				out += indent + '<![CDATA[' + (node.nodeValue || '') + ']]>\n';
+				break;
+			case Node.COMMENT_NODE:
+				out += indent + '<!--' + (node.nodeValue || '') + '-->\n';
+				break;
+			case Node.PROCESSING_INSTRUCTION_NODE:
+				out += indent + '<?' + node.nodeName + ' ' + (node.nodeValue || '') + '?>\n';
+				break;
+			default:
+				try {
+					out += indent + new XMLSerializer().serializeToString(node) + '\n';
+				} catch (e) {
+					// ignore unknown node types
+				}
+		}
+		return out;
+	}
+	try {
+		return trimTrailingNewlines(formatNode(doc, ''));
+	} catch (e) {
+		console.warn('prettifyXml error, returning raw XML', e);
+		return sourceXml;
+	}
+}
 
 function loadResultDef(requestId, index, type){
 	$.ajax({
